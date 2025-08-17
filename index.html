@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA Market — Realtime Multi-Timeframe (Tanpa API Key)</title>
+<title>ZAVANA Market — Pro+ (Walk‑Forward Backtest, ATR TP/SL, Risk & Realtime)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
@@ -13,7 +13,7 @@
   .wrap{max-width:1300px; margin:24px auto; padding:0 16px}
   h1{font-size:22px; margin:0; font-weight:800}
   .muted{color:var(--muted); font-size:12px}
-  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:16px; margin-top:16px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(390px,1fr)); gap:16px; margin-top:16px}
   .card{background:var(--card); border:1px solid var(--accent); border-radius:14px; padding:12px; display:flex; flex-direction:column}
   .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
   .title{font-weight:800}
@@ -26,7 +26,7 @@
   .badge{border:1px solid var(--accent); padding:4px 8px; border-radius:999px; font-size:12px}
   .accrow{display:flex; gap:8px; align-items:center; margin-top:8px}
   .accbar{flex:1; height:8px; background:#0b1220; border:1px solid var(--accent); border-radius:999px; overflow:hidden}
-  .accfill{height:100%; width:0%; background:linear-gradient(90deg, rgba(59,130,246,.9), rgba(59,130,246,.35)); transition:width .4s}
+  .accfill{height:100%; width:0%; background:linear-gradient(90deg, rgba(34,197,94,.9), rgba(34,197,94,.35)); transition:width .4s}
   .note{font-size:12px; color:var(--muted)}
   .tabs{display:flex; gap:6px; margin-top:8px}
   .tab{cursor:pointer; padding:6px 10px; border-radius:999px; border:1px solid var(--accent); font-size:12px}
@@ -34,7 +34,15 @@
   .favbar{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
   .fav{padding:6px 10px; border:1px solid var(--accent); border-radius:999px; font-size:12px; cursor:pointer}
   .fav.active{background:#122036}
+  .meta{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px}
+  .kv{display:flex; align-items:center; justify-content:space-between; padding:8px; border:1px dashed var(--accent); border-radius:10px; font-size:12px}
   .err{color:#fca5a5}
+  .tog{margin-left:auto; font-size:12px; cursor:pointer; opacity:.8}
+  .log{display:none; margin-top:8px; max-height:180px; overflow:auto; border:1px solid var(--accent); border-radius:8px}
+  .log table{width:100%; border-collapse:collapse; font-size:12px}
+  .log th,.log td{border-bottom:1px solid rgba(255,255,255,0.06); padding:6px 8px; text-align:right}
+  .log th:first-child,.log td:first-child{text-align:left}
+  .log tr:last-child td{border:0}
   /* responsive tweaks */
   @media (max-width:420px){
     .tvbox{height:180px}
@@ -46,8 +54,8 @@
 <div class="wrap">
   <div class="row" style="justify-content:space-between; border-bottom:1px solid var(--accent); padding-bottom:10px; margin-bottom:10px">
     <div>
-      <h1>ZAVANA Market  </h1>
-      <div class="muted">Signal Scalping • Swing • Hold</div>
+      <h1>ZAVANA Market — Pro+</h1>
+      <div class="muted">Realtime • Walk‑Forward Backtest • ATR‑TP/SL • Risk‑Aware</div>
     </div>
     <div class="muted" id="lastSync">Sinkronisasi: -</div>
   </div>
@@ -66,7 +74,7 @@
 
 <script>
 /* =========================
-   TAMBAHAN: cryptos favorit (termasuk SOL, XRP, BNB)
+   TIMEFRAMES & MARKETS
    ========================= */
 const TIMEFRAMES = [
   { key:"scalp", label:"Scalping", tv:"1",  bin:"1m",  yfi:"5m",  refresh:10000 },
@@ -90,144 +98,180 @@ const MARKETS = [
   { id:"WTI",      title:"WTI Crude",group:"COMMOD",  provider:"yahoo", fetchSymbol:"CL=F",     tvSymbol:"TVC:USOIL" },
 ];
 
-// Favorit awal
 const FAVORITES = ["BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT","BNBUSDT","EURUSD","XAUUSD"];
 
 /* =========================
-   INDIKATOR (tetap seperti semula)
+   UTILS & INDIKATOR
    ========================= */
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 function SMA(arr, p=14){ if(arr.length<p) return null; const s=arr.slice(-p).reduce((a,b)=>a+b,0); return s/p; }
-function EMA(arr, p=14){
-  if(arr.length<p) return null;
-  const k = 2/(p+1);
-  let emaPrev = arr.slice(0,p).reduce((a,b)=>a+b,0)/p;
-  for(let i=p;i<arr.length;i++) emaPrev = arr[i]*k + emaPrev*(1-k);
-  return emaPrev;
-}
-function RSI(closes, p=14){
-  if(closes.length<p+1) return null;
-  let gains=0, losses=0;
-  for(let i=closes.length-p;i<closes.length;i++){
-    const diff = closes[i]-closes[i-1];
-    if(diff>=0) gains+=diff; else losses-=diff;
-  }
-  if(losses===0) return 100;
-  const rs = gains/losses;
-  return 100 - (100/(1+rs));
-}
-function emaSeries(arr, p){
-  const k=2/(p+1), out=new Array(arr.length).fill(null);
-  if(arr.length<p) return out;
-  let emaPrev = arr.slice(0,p).reduce((a,b)=>a+b,0)/p; out[p-1]=emaPrev;
-  for(let i=p;i<arr.length;i++){ emaPrev = arr[i]*k + emaPrev*(1-k); out[i]=emaPrev; }
-  return out;
-}
-function MACD(closes, fast=12, slow=26, signalP=9){
-  if(closes.length<slow+signalP) return null;
-  const ef = emaSeries(closes, fast), es = emaSeries(closes, slow);
-  const macdLine = closes.map((_,i)=> (ef[i]!=null&&es[i]!=null)?(ef[i]-es[i]):null);
-  const valid = macdLine.filter(v=>v!=null);
-  if(valid.length<signalP) return null;
-  const sig = emaSeries(valid, signalP);
-  const hist = macdLine.slice(macdLine.length-sig.length).map((v,i)=> v - sig[i]);
-  return { macd: macdLine[macdLine.length-1], signal: sig[sig.length-1], hist: hist[hist.length-1] };
-}
+function EMA(arr, p=14){ if(arr.length<p) return null; const k=2/(p+1); let e=arr.slice(0,p).reduce((a,b)=>a+b,0)/p; for(let i=p;i<arr.length;i++) e=arr[i]*k+e*(1-k); return e; }
+function emaSeries(arr,p){ const k=2/(p+1),out=new Array(arr.length).fill(null); if(arr.length<p) return out; let e=arr.slice(0,p).reduce((a,b)=>a+b,0)/p; out[p-1]=e; for(let i=p;i<arr.length;i++){ e=arr[i]*k+e*(1-k); out[i]=e;} return out; }
+function RSI(closes,p=14){ if(closes.length<p+1) return null; let g=0,l=0; for(let i=closes.length-p;i<closes.length;i++){ const d=closes[i]-closes[i-1]; if(d>=0) g+=d; else l-=d; } if(l===0) return 100; const rs=g/l; return 100-(100/(1+rs)); }
+function rsiSeries(closes,p=14){ const out=new Array(closes.length).fill(null); if(closes.length<p+1) return out; let g=0,l=0; for(let i=1;i<=p;i++){ const d=closes[i]-closes[i-1]; if(d>=0) g+=d; else l-=d;} let ag=g/p, al=l/p; out[p]=al===0?100:100-(100/(1+(ag/al))); for(let i=p+1;i<closes.length;i++){ const d=closes[i]-closes[i-1]; ag=(ag*(p-1)+Math.max(0,d))/p; al=(al*(p-1)+Math.max(0,-d))/p; out[i]=al===0?100:100-(100/(1+(ag/al))); } return out; }
+function ATR(ohlc, p=14){ if(!ohlc||ohlc.length<p+1) return []; const tr=[]; for(let i=1;i<ohlc.length;i++){ const h=ohlc[i].high,l=ohlc[i].low,c=ohlc[i-1].close; tr.push(Math.max(h-l, Math.abs(h-c), Math.abs(l-c))); } const trClose=[ohlc[0].close,...ohlc.slice(1).map(()=>null)]; const out=new Array(ohlc.length).fill(null); let sma=tr.slice(0,p).reduce((a,b)=>a+b,0)/p; out[p]=sma; for(let i=p+1;i<tr.length;i++){ sma=(sma*(p-1)+tr[i])/p; out[i+1]=sma; } return out; }
+function macdSeries(closes, fast=12, slow=26, signalP=9){ const ef=emaSeries(closes,fast), es=emaSeries(closes,slow); const macd=closes.map((_,i)=> (ef[i]!=null&&es[i]!=null)?(ef[i]-es[i]):null); const macdValid=macd.map(v=>v==null?0:v).slice(slow-1); const sigRaw=emaSeries(macdValid, signalP); const sig=new Array(closes.length).fill(null); for(let i=0;i<sigRaw.length;i++){ const idx=slow-1+i; sig[idx]=sigRaw[i]; } const hist=macd.map((v,i)=> (v!=null&&sig[i]!=null)?v-sig[i]:null); return { macd, signal:sig, hist }; }
 
 /* =========================
    DATA FEEDS
-   - fetchBinanceKlines: mengembalikan OHLC (dipakai mini-chart)
-   - fetchBinanceCloses: mengembalikan array close (dipakai indikator)
-   - fetchYahooCloses: tetap seperti sebelumnya
    ========================= */
-async function fetchBinanceKlinesFull(symbol, interval="1m", limit=200){
-  const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
-  const r = await fetch(url); const j = await r.json();
-  if(!Array.isArray(j)) throw new Error("Invalid Binance data");
-  // return array of objects {time, open, high, low, close}
-  return j.map(k => ({
-    time: Math.floor(k[0]/1000), // unix seconds
-    open: parseFloat(k[1]),
-    high: parseFloat(k[2]),
-    low: parseFloat(k[3]),
-    close: parseFloat(k[4])
-  }));
+async function fetchBinanceKlines(symbol, interval="1m", limit=1000){
+  const url=`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  const r=await fetch(url); const j=await r.json(); if(!Array.isArray(j)) throw new Error("Invalid Binance data");
+  return j.map(k=>({ time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4] }));
 }
-async function fetchBinanceCloses(symbol, interval="1m", limit=300){
-  const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
-  const r = await fetch(url); const j = await r.json();
-  if(!Array.isArray(j)) throw new Error("Invalid Binance data");
-  return j.map(k => parseFloat(k[4]));
-}
-async function fetchYahooCloses(symbol, range="1d", interval="5m"){
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
-  const r = await fetch(url); const j = await r.json();
-  const res = j?.chart?.result?.[0];
+async function fetchYahooCloses(symbol, range="1mo", interval="30m"){
+  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
+  const r=await fetch(url); const j=await r.json(); const res=j?.chart?.result?.[0];
   if(!res?.indicators?.quote?.[0]?.close) throw new Error("Yahoo data unavailable");
-  return res.indicators.quote[0].close.filter(v=>v!=null);
+  const close=res.indicators.quote[0].close.filter(v=>v!=null);
+  // Synth OHLC minimal untuk ATR (pakai close sebagai o/h/l/c agar ATR tidak crash)
+  const ohlc=close.map((c,i)=>({time:res.timestamp?res.timestamp[i]:i, open:c, high:c, low:c, close:c}));
+  return { closes: close, ohlc };
 }
 
 /* =========================
-   SKOR, KEPUTUSAN, HOLD TIME (tetap seperti semula)
+   STRATEGI & BACKTEST
    ========================= */
-function suggestHoldSeconds(mode, status, confidence){
-  const base = mode==="scalp" ? [90, 180] : mode==="swing" ? [900, 1800] : [7200, 14400];
-  const [low, high] = base;
-  let t = Math.round(low + (high-low)*(confidence/100));
-  if(status==="HOLD") t = Math.max(60, Math.min(t, mode==="scalp"?180:mode==="swing"?900:3600));
-  return t;
-}
-function scoreAndDecision(closes, mode){
-  const last = closes[closes.length-1];
-  const sma = SMA(closes,14), ema = EMA(closes,14), rsi = RSI(closes,14), macd = MACD(closes);
-  if([sma,ema,rsi].some(v=>v==null) || !macd){
-    return { status:"HOLD", score:50, confidence:40, holdSec:suggestHoldSeconds(mode,"HOLD",40), detail:"Data belum cukup." };
+function barSeconds(m, tf){ if(m.provider==='binance'){ if(tf.bin==='1m') return 60; if(tf.bin==='15m') return 900; if(tf.bin==='1h') return 3600; } else { if(tf.yfi==='5m') return 300; if(tf.yfi==='30m') return 1800; if(tf.yfi==='1h') return 3600; } return 900; }
+
+function generateSignals({closes, ema14, macdHist, rsi}, params){
+  const { rsiBuyMax, rsiSellMin } = params;
+  const sigs=[];
+  for(let i=1;i<closes.length;i++){
+    const prevAbove=ema14[i-1]!=null && closes[i-1]>ema14[i-1];
+    const nowAbove =ema14[i]!=null   && closes[i]  >ema14[i];
+    const prevBelow=ema14[i-1]!=null && closes[i-1]<ema14[i-1];
+    const nowBelow =ema14[i]!=null   && closes[i]  <ema14[i];
+    if(!Number.isFinite(macdHist[i])) continue;
+    if(!Number.isFinite(rsi[i])) continue;
+    if(!prevAbove && nowAbove && macdHist[i]>0 && rsi[i]<=rsiBuyMax){ sigs.push({ idx:i, side:'BUY' }); }
+    if(!prevBelow && nowBelow && macdHist[i]<0 && rsi[i]>=rsiSellMin){ sigs.push({ idx:i, side:'SELL' }); }
   }
-  let score = 50, votes = 0, agree = 0;
-  if(last>ema){ score+=8; votes++; agree++; } else { score-=8; votes++; }
-  if(last>sma){ score+=5; agree++; } else { score-=5; }
-  if(rsi<30){ score+=10; votes++; agree++; }
-  else if(rsi>70){ score-=10; votes++; }
-  if(macd.hist>0){ score+=7; votes++; agree++; } else { score-=7; votes++; }
-  const n=14, slice=closes.slice(-n), mean=slice.reduce((a,b)=>a+b,0)/n;
-  const variance = slice.reduce((a,b)=>a+(b-mean)**2,0)/n;
-  const stdevPct = Math.sqrt(variance)/mean*100;
-  let confidence = Math.min(95, Math.max(35, 55 + (agree - (votes-agree))*8 - stdevPct*0.7));
-  let status="HOLD";
-  if(score>=65 && last>ema && macd.hist>0) status="BUY";
-  if(score<=35 && last<ema && macd.hist<0) status="SELL";
-  const holdSec = suggestHoldSeconds(mode, status, confidence);
-  const detail = `RSI:${rsi.toFixed(1)} | EMA14:${ema.toFixed(2)} | SMA14:${sma.toFixed(2)} | MACD hist:${macd.hist.toFixed(4)} | Vol:${stdevPct.toFixed(2)}%`;
-  return { status, score:Math.round(score), confidence:Math.round(confidence), holdSec, detail };
+  return sigs;
+}
+
+function simulateTrades({closes, ohlc, atr, signals}, params){
+  const { tpATR, slATR, timeStopBars } = params;
+  const trades=[]; let wins=0, losses=0, sumR=0, retSum=0;
+  for(const s of signals){
+    const entryI=s.idx; if(entryI>=closes.length-1) continue;
+    const entry=closes[entryI];
+    const atrVal=atr[entryI] || (entry*0.005); // fallback atr 0.5%
+    const tp= entry + (s.side==='BUY'? +tpATR*atrVal : -tpATR*atrVal);
+    const sl= entry + (s.side==='BUY'? -slATR*atrVal : +slATR*atrVal);
+    const maxExit = Math.min(closes.length-1, entryI + timeStopBars);
+    let exitI = maxExit; let reason='TIME';
+    for(let i=entryI+1;i<=maxExit;i++){
+      const hi=ohlc[i]?.high ?? closes[i];
+      const lo=ohlc[i]?.low ?? closes[i];
+      if(s.side==='BUY'){
+        if(lo<=sl){ exitI=i; reason='SL'; break; }
+        if(hi>=tp){ exitI=i; reason='TP'; break; }
+      } else {
+        if(hi>=sl){ exitI=i; reason='SL'; break; }
+        if(lo<=tp){ exitI=i; reason='TP'; break; }
+      }
+    }
+    const exit=closes[exitI];
+    const ret = s.side==='BUY' ? (exit-entry)/entry : (entry-exit)/entry;
+    const R   = s.side==='BUY' ? (exit-entry)/atrVal : (entry-exit)/atrVal; // in ATR units
+    if(ret>0) wins++; else losses++;
+    trades.push({ entryI, exitI, side:s.side, entry, exit, ret, R:+R.toFixed(2), reason });
+    sumR += R; retSum += ret;
+  }
+  const total=trades.length; const winRate= total? Math.round((wins/total)*100):0;
+  const avgR = total? +(sumR/total).toFixed(2):0; const avgRet = total ? +(retSum/total*100).toFixed(2):0;
+  const pf = (()=>{ const g=trades.filter(t=>t.ret>0).reduce((a,b)=>a+b.ret,0); const l=-trades.filter(t=>t.ret<=0).reduce((a,b)=>a+b.ret,0); return l>0? +(g/l).toFixed(2) : (g>0?99:0); })();
+  const expectancy = total? +((wins/total)* (avgRet/100) - (losses/total)* (Math.abs(avgRet)/100) ).toFixed(4) : 0; // approx
+  return { trades, wins, losses, total, winRate, avgR, avgRet, pf, expectancy };
+}
+
+function kFoldWalkForward({closes, ohlc}, k=3){
+  // split terakhir: gunakan 60% train, 40% test dibagi k fold berjalan
+  const N=closes.length; const minBars=200; if(N<minBars) return [];
+  const testSize=Math.floor(N*0.4); const foldSize=Math.max(120, Math.floor(testSize/k));
+  const folds=[]; let start=N-testSize; for(let i=0;i<k;i++){ const trainStart=Math.max(0,start- Math.floor(N*0.6)); const trainEnd=start; const testEnd=Math.min(N, start+foldSize); folds.push({train:[trainStart,trainEnd], test:[start,testEnd]}); start=testEnd; if(testEnd>=N-5) break; }
+  return folds;
+}
+
+function optimizeParams(dataset, mode){
+  // grid parameter
+  const rsiBuyMaxList = mode==='scalp'? [55,60,65] : mode==='swing'? [60,65,70] : [65,70,75];
+  const rsiSellMinList= mode==='scalp'? [45,40,35] : mode==='swing'? [40,35,30] : [35,30,25];
+  const tpATRList     = mode==='scalp'? [0.8,1.0,1.2] : mode==='swing'? [1.2,1.6,2.0] : [2.0,2.5,3.0];
+  const slATRList     = mode==='scalp'? [0.6,0.8,1.0] : mode==='swing'? [0.8,1.0,1.2] : [1.0,1.2,1.5];
+  const timeStopBarsL = mode==='scalp'? [6,10,14] : mode==='swing'? [12,20,28] : [24,36,48];
+
+  const ema14=emaSeries(dataset.closes,14);
+  const { hist }=macdSeries(dataset.closes);
+  const rsi=rsiSeries(dataset.closes,14);
+  const atr=ATR(dataset.ohlc,14);
+
+  const folds=kFoldWalkForward({closes:dataset.closes, ohlc:dataset.ohlc}, 3);
+  const results=[];
+
+  for(const rB of rsiBuyMaxList){
+    for(const rS of rsiSellMinList){
+      for(const tp of tpATRList){
+        for(const sl of slATRList){
+          for(const tb of timeStopBarsL){
+            let oosWins=0,oosTotal=0,oosRet=0,oosPFs=[], inWins=0,inTotal=0;
+            for(const f of folds){
+              // train slice
+              const [trS,trE]=f.train; const [teS,teE]=f.test;
+              const packT={
+                closes:dataset.closes.slice(trS,trE),
+                ohlc:dataset.ohlc.slice(trS,trE),
+                ema14:ema14.slice(trS,trE), macdHist:hist.slice(trS,trE), rsi:rsi.slice(trS,trE)
+              };
+              const packV={
+                closes:dataset.closes.slice(teS,teE),
+                ohlc:dataset.ohlc.slice(teS,teE),
+                ema14:ema14.slice(teS,teE), macdHist:hist.slice(teS,teE), rsi:rsi.slice(teS,teE)
+              };
+              const params={ rsiBuyMax:rB, rsiSellMin:rS, tpATR:tp, slATR:sl, timeStopBars:tb };
+              const sigT=generateSignals(packT, params);
+              const btT=simulateTrades({closes:packT.closes, ohlc:packT.ohlc, atr:ATR(packT.ohlc,14), signals:sigT}, params);
+              inWins+=btT.wins; inTotal+=btT.total;
+
+              const sigV=generateSignals(packV, params);
+              const btV=simulateTrades({closes:packV.closes, ohlc:packV.ohlc, atr:ATR(packV.ohlc,14), signals:sigV}, params);
+              oosWins+=btV.wins; oosTotal+=btV.total; oosRet+=btV.avgRet; oosPFs.push(btV.pf);
+            }
+            const oosWR = oosTotal? (oosWins/oosTotal*100):0; const inWR = inTotal? (inWins/inTotal*100):0; const meanPF = oosPFs.length? (oosPFs.reduce((a,b)=>a+b,0)/oosPFs.length):0;
+            results.push({ params:{ rsiBuyMax:rB, rsiSellMin:rS, tpATR:tp, slATR:sl, timeStopBars:tb }, inWR:Math.round(inWR), oosWR:Math.round(oosWR), meanPF:+meanPF.toFixed(2), oosAvgRet:+(oosRet/Math.max(1,folds.length)).toFixed(2), oosTrades:oosTotal });
+          }
+        }
+      }
+    }
+  }
+  // pilih params dengan oosWR tertinggi, lalu meanPF, lalu oosTrades
+  results.sort((a,b)=> (b.oosWR-a.oosWR) || (b.meanPF-a.meanPF) || (b.oosTrades-a.oosTrades));
+  return results[0] || null;
 }
 
 /* =========================
-   UI & MINI-CHART LOGIC
+   UI & STATE
    ========================= */
-const grid = document.getElementById('grid');
-const favbar = document.getElementById('favbar');
-const cards = new Map();
-const countdownTargets = new Map();
+const grid=document.getElementById('grid');
+const favbar=document.getElementById('favbar');
+const cards=new Map(); // id -> { tv, mini, activeTf, timers, model:{[tf]:opt}, metrics:{[tf]:{}} }
+const countdownTargets=new Map();
 
-function fmtTime(ts){
-  const d = new Date(ts);
-  return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-}
+function fmtTime(ts){ const d=new Date(ts); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}); }
 
 function addFavoriteChips(){
   MARKETS.forEach(m=>{
-    const chip = document.createElement('div');
-    chip.className = 'fav' + (FAVORITES.includes(m.id) ? ' active' : '');
-    chip.textContent = `${m.title}`;
-    chip.onclick = ()=>{ const el = document.getElementById(`card-${m.id}`); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); };
+    const chip=document.createElement('div'); chip.className='fav'+(FAVORITES.includes(m.id)?' active':''); chip.textContent=`${m.title}`;
+    chip.onclick=()=>{ const el=document.getElementById(`card-${m.id}`); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); };
     favbar.appendChild(chip);
   });
 }
 
 function makeCard(m){
-  const el = document.createElement('div');
-  el.className='card';
-  el.id = `card-${m.id}`;
-  el.innerHTML = `
+  const el=document.createElement('div'); el.className='card'; el.id=`card-${m.id}`;
+  el.innerHTML=`
     <div class="row" style="justify-content:space-between">
       <div class="title">${m.title} <span class="muted">(${m.group})</span></div>
       <div class="muted">${m.provider.toUpperCase()}</div>
@@ -238,7 +282,6 @@ function makeCard(m){
     </div>
 
     <div class="tvbox" id="tv-${m.id}"></div>
-
     <div class="mini-chart" id="mini-${m.id}"></div>
 
     ${TIMEFRAMES.map(tf=>`
@@ -246,169 +289,137 @@ function makeCard(m){
         <div class="pill hold" id="st-${m.id}-${tf.key}">HOLD</div>
         <span class="badge" id="sc-${m.id}-${tf.key}">Score: -</span>
         <span class="badge" id="cf-${m.id}-${tf.key}">Conf: -%</span>
+        <span class="badge" id="bt-${m.id}-${tf.key}">OOS: --% PF --</span>
+        <span class="badge" id="pm-${m.id}-${tf.key}">TP/SL/TS: -</span>
         <span class="badge" id="cl-${m.id}-${tf.key}">Close: --:--:--</span>
         <span class="badge" id="cd-${m.id}-${tf.key}">T-: --s</span>
+        <span class="tog" id="tg-${m.id}-${tf.key}">log</span>
       </div>
     `).join('')}
 
     <div class="accrow">
-      <div class="small muted" style="min-width:64px">Akurasi:</div>
+      <div class="small muted" style="min-width:120px">Akurasi (OOS WR):</div>
       <div class="accbar"><div class="accfill" id="ac-${m.id}"></div></div>
       <span class="badge" id="acv-${m.id}">--%</span>
+    </div>
+
+    <div class="meta" id="meta-${m.id}">
+      <div class="kv"><span>Expectancy</span><b id="ex-${m.id}">-</b></div>
+      <div class="kv"><span>Profit Factor</span><b id="pf-${m.id}">-</b></div>
+      <div class="kv"><span>Avg Return</span><b id="ar-${m.id}">-</b></div>
+      <div class="kv"><span>Trades (OOS)</span><b id="tr-${m.id}">-</b></div>
+    </div>
+
+    <div class="log" id="log-${m.id}">
+      <table><thead><tr><th>#</th><th>Side</th><th>Entry</th><th>Exit</th><th>Ret%</th><th>R(ATR)</th><th>Reason</th></tr></thead>
+      <tbody id="tb-${m.id}"></tbody></table>
     </div>
 
     <div class="note" id="nt-${m.id}" style="margin-top:6px">Menunggu data…</div>
   `;
   grid.appendChild(el);
 
-  // TradingView chart (kept as big chart)
-  const tv = new TradingView.widget({
-    container_id: `tv-${m.id}`, width: "100%", height: "260",
-    symbol: m.tvSymbol, interval: TIMEFRAMES[0].tv,
-    timezone: "Etc/UTC", theme: "dark", style: "1",
-    hide_top_toolbar: true, hide_legend: true, allow_symbol_change: false
-  });
+  // TV Chart
+  const tv=new TradingView.widget({ container_id:`tv-${m.id}`, width:"100%", height:"260", symbol:m.tvSymbol, interval:TIMEFRAMES[0].tv, timezone:"Etc/UTC", theme:"dark", style:"1", hide_top_toolbar:true, hide_legend:true, allow_symbol_change:false });
 
-  // prepare mini-chart (Lightweight Charts)
-  const miniContainer = document.getElementById(`mini-${m.id}`);
-  const chart = LightweightCharts.createChart(miniContainer, {
-    layout: { backgroundColor: '#061021', textColor: '#bfcbdc' },
-    grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.02)' } },
-    rightPriceScale: { borderVisible: false },
-    timeScale: { borderVisible: false, timeVisible: false }
-  });
-  const candleSeries = chart.addCandlestickSeries({
-    upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350'
-  });
+  // Mini chart
+  const miniContainer=document.getElementById(`mini-${m.id}`);
+  const chart=LightweightCharts.createChart(miniContainer,{ layout:{backgroundColor:'#061021', textColor:'#bfcbdc'}, grid:{vertLines:{color:'rgba(255,255,255,0.03)'}, horzLines:{color:'rgba(255,255,255,0.02)'}}, rightPriceScale:{borderVisible:false}, timeScale:{borderVisible:false, timeVisible:false} });
+  const series=chart.addCandlestickSeries({ upColor:'#26a69a', downColor:'#ef5350', borderVisible:false, wickUpColor:'#26a69a', wickDownColor:'#ef5350' });
 
-  cards.set(m.id, { tv, mini: { chart, series: candleSeries }, activeTf: TIMEFRAMES[0].key, timers:new Map() });
+  cards.set(m.id,{ tv, mini:{chart,series}, activeTf:TIMEFRAMES[0].key, timers:new Map(), model:{}, metrics:{}, lastTrades:{} });
 
   // Tabs
-  const tabsWrap = document.getElementById(`tabs-${m.id}`);
-  [...tabsWrap.querySelectorAll('.tab')].forEach((t,i)=>{
-    if(i===0) t.classList.add('active');
-    t.onclick = ()=> switchTf(m, t.getAttribute('data-tf'));
-  });
+  const tabsWrap=document.getElementById(`tabs-${m.id}`);
+  [...tabsWrap.querySelectorAll('.tab')].forEach((t,i)=>{ if(i===0) t.classList.add('active'); t.onclick=()=>switchTf(m, t.getAttribute('data-tf')); });
 
-  // Start loops for each timeframe
+  // Toggle log
+  TIMEFRAMES.forEach(tf=>{ const tg=document.getElementById(`tg-${m.id}-${tf.key}`); const logEl=document.getElementById(`log-${m.id}`); if(tg){ tg.onclick=()=>{ logEl.style.display = (logEl.style.display==='block'?'none':'block'); }; } });
+
   TIMEFRAMES.forEach(tf=> startLoop(m, tf));
 }
 
-function switchTf(m, tfKey){
-  const state = cards.get(m.id);
-  if(!state) return;
-  state.activeTf = tfKey;
-  TIMEFRAMES.forEach(tf=>{
-    const row = document.getElementById(`row-${m.id}-${tf.key}`);
-    if(row) row.style.display = (tf.key===tfKey)?'flex':'none';
-  });
-  const tabs = document.getElementById(`tabs-${m.id}`).querySelectorAll('.tab');
-  tabs.forEach(tb=> tb.classList.toggle('active', tb.getAttribute('data-tf')===tfKey));
-  const tf = TIMEFRAMES.find(t=>t.key===tfKey);
-  if(tf && state.tv) {
-    try { state.tv.chart().setResolution(tf.tv); } catch(e){ /* ignore */ }
-  }
-}
+function switchTf(m, tfKey){ const s=cards.get(m.id); if(!s) return; s.activeTf=tfKey; TIMEFRAMES.forEach(tf=>{ const row=document.getElementById(`row-${m.id}-${tf.key}`); if(row) row.style.display=(tf.key===tfKey)?'flex':'none'; }); const tabs=document.getElementById(`tabs-${m.id}`).querySelectorAll('.tab'); tabs.forEach(tb=>tb.classList.toggle('active', tb.getAttribute('data-tf')===tfKey)); const tf=TIMEFRAMES.find(t=>t.key===tfKey); if(tf && s.tv){ try{s.tv.chart().setResolution(tf.tv);}catch(e){} } }
 
-/* updateOne: tetap seperti sebelumnya tetapi juga update mini-chart menggunakan OHLC (binance) */
+/* =========================
+   UPDATE + MODEL
+   ========================= */
 async function updateOne(m, tf){
-  const setTxt = (sel, t)=> { const el=document.getElementById(sel); if(el) el.textContent = t; };
-  const setClass = (sel, cls)=> { const el=document.getElementById(sel); if(el) el.className = cls; };
+  const setTxt=(sel,t)=>{const el=document.getElementById(sel); if(el) el.textContent=t;};
+  const setClass=(sel,cls)=>{const el=document.getElementById(sel); if(el) el.className=cls;};
   try{
-    let closes;
-    // for mini-chart we need OHLC for crypto
-    let ohlc = null;
+    let closes, ohlc;
     if(m.provider==='binance'){
-      // get full OHLC for mini-chart and closes for indicators
-      ohlc = await fetchBinanceKlinesFull(m.fetchSymbol, tf.bin, 200);
-      closes = ohlc.map(o=>o.close);
-    } else {
-      closes = await fetchYahooCloses(m.fetchSymbol, tf.yfi==="1h"?"5d":"1d", tf.yfi);
+      const bars=await fetchBinanceKlines(m.fetchSymbol, tf.bin, 1000);
+      ohlc=bars; closes=bars.map(b=>b.close);
+      const mini=cards.get(m.id).mini; mini.series.setData(bars.map(b=>({time:b.time, open:b.open, high:b.high, low:b.low, close:b.close}))); mini.chart.timeScale().fitContent();
+    }else{ const y=await fetchYahooCloses(m.fetchSymbol, tf.yfi==='1h'? '3mo':'1mo', tf.yfi); closes=y.closes; ohlc=y.ohlc; }
+    if(!closes||closes.length<240) throw new Error('Data terlalu sedikit');
+
+    const ema14=emaSeries(closes,14); const {hist}=macdSeries(closes); const rsi=rsiSeries(closes,14); const atr=ATR(ohlc,14);
+
+    // Build/Cache model per TF
+    const state=cards.get(m.id);
+    if(!state.model[tf.key]){
+      const best=optimizeParams({closes, ohlc}, tf.key);
+      state.model[tf.key]=best; // may be null
     }
-    if(!closes || closes.length<40) throw new Error("Data terlalu sedikit");
+    const model=state.model[tf.key];
 
-    // update mini-chart if crypto (we have OHLC)
-    if(ohlc && cards.has(m.id)){
-      const mini = cards.get(m.id).mini;
-      try{
-        // map to lightweight format
-        mini.series.setData(ohlc.map(x=>({ time: x.time, open: x.open, high: x.high, low: x.low, close: x.close })));
-        // shift viewport to last bars
-        mini.chart.timeScale().fitContent();
-      }catch(e){
-        // ignore chart draw errors
-        console.warn("mini-chart draw err", e);
-      }
-    }
+    // If no model (data too short), set placeholders
+    if(!model){ throw new Error('Model belum siap (data kurang)'); }
 
-    const {status, score, confidence, holdSec, detail} = scoreAndDecision(closes, tf.key);
+    // Metrics OOS (headline) + display params
+    setTxt(`bt-${m.id}-${tf.key}`, `OOS: ${model.oosWR}% PF ${model.meanPF}`);
+    const p=model.params; setTxt(`pm-${m.id}-${tf.key}`, `TP:${p.tpATR} SL:${p.slATR} TS:${p.timeStopBars}`);
 
-    setTxt(`st-${m.id}-${tf.key}`, status);
-    setClass(`st-${m.id}-${tf.key}`, `pill ${status.toLowerCase()}`);
-    setTxt(`sc-${m.id}-${tf.key}`, `Score: ${score}`);
-    setTxt(`cf-${m.id}-${tf.key}`, `Conf: ${confidence}%`);
+    // Update accuracy bar (use OOS winrate)
+    const acEl=document.getElementById(`ac-${m.id}`); const acvEl=document.getElementById(`acv-${m.id}`);
+    const prev=acEl.getAttribute('data-vals')? JSON.parse(acEl.getAttribute('data-vals')) : {}; prev[tf.key]=model.oosWR; acEl.setAttribute('data-vals', JSON.stringify(prev));
+    const vals=Object.values(prev); const avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length || 0); acEl.style.width=clamp(avg,5,100)+"%"; acvEl.textContent=`${avg}%`;
 
-    // update accuracy bar (avg of TFs)
-    const acEl = document.getElementById(`ac-${m.id}`);
-    const acvEl = document.getElementById(`acv-${m.id}`);
-    const prev = acEl.getAttribute('data-vals') ? JSON.parse(acEl.getAttribute('data-vals')) : {};
-    prev[tf.key] = confidence;
-    acEl.setAttribute('data-vals', JSON.stringify(prev));
-    const vals = Object.values(prev);
-    const avg = Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
-    acEl.style.width = Math.max(5, Math.min(100, avg))+"%";
-    acvEl.textContent = `${avg}%`;
+    // Build signals latest window + simulate last fold for trade log (approx)
+    const pack={ closes, ohlc, ema14, macdHist:hist, rsi };
+    const sigs=generateSignals(pack, p);
+    const sim=simulateTrades({closes, ohlc, atr, signals:sigs}, p);
 
-    // compute absolute close time target
-    const now = Date.now();
-    const target = now + holdSec*1000;
-    setTxt(`cl-${m.id}-${tf.key}`, `Close: ${fmtTime(target)}`);
-    countdownTargets.set(`${m.id}-${tf.key}`, target);
+    // Update meta panel
+    setTxt(`ex-${m.id}`, sim.expectancy.toFixed(4));
+    setTxt(`pf-${m.id}`, sim.pf.toString());
+    setTxt(`ar-${m.id}`, `${sim.avgRet}%`);
+    setTxt(`tr-${m.id}`, `${sim.total}`);
 
+    // Render last 20 trades to log
+    const tb=document.getElementById(`tb-${m.id}`); if(tb){ tb.innerHTML=''; const last=sim.trades.slice(-20); last.forEach((t,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${sim.trades.length- last.length + i +1}</td><td>${t.side}</td><td>${t.entry.toFixed(4)}</td><td>${t.exit.toFixed(4)}</td><td>${(t.ret*100).toFixed(2)}</td><td>${t.R}</td><td>${t.reason}</td>`; tb.appendChild(tr); }); }
+
+    // Realtime status using score + model params to set holdSec
+    const last=closes[closes.length-1]; const sSMA=SMA(closes,14), sEMA=EMA(closes,14), sRSI=RSI(closes,14); const macdLast=hist[hist.length-1];
+    let score=50; let votes=0,agree=0; if(last>sEMA){score+=8;votes++;agree++;}else{score-=8;votes++;} if(last>sSMA){score+=5;agree++;}else{score-=5;} if(sRSI<30){score+=10;votes++;agree++;}else if(sRSI>70){score-=10;votes++;} if(macdLast>0){score+=7;votes++;agree++;}else{score-=7;votes++;}
+    const n=14, slice=closes.slice(-n), mean=slice.reduce((a,b)=>a+b,0)/n; const variance=slice.reduce((a,b)=>a+(b-mean)**2,0)/n; const stdevPct=Math.sqrt(variance)/mean*100; let confidence=clamp(Math.round(Math.min(95, Math.max(35, 55+(agree-(votes-agree))*8 - stdevPct*0.7))),35,95);
+    let status='HOLD'; if(score>=65 && last>sEMA && macdLast>0) status='BUY'; if(score<=35 && last<sEMA && macdLast<0) status='SELL';
+
+    setTxt(`st-${m.id}-${tf.key}`, status); setClass(`st-${m.id}-${tf.key}`, `pill ${status.toLowerCase()}`); setTxt(`sc-${m.id}-${tf.key}`, `Score: ${Math.round(score)}`); setTxt(`cf-${m.id}-${tf.key}`, `Conf: ${confidence}%`);
+
+    // holdSec derived from model's timeStopBars (bar-based) + capped by volatility
+    const secPerBar=barSeconds(m, tf); const holdBars=p.timeStopBars; const holdSec=holdBars*secPerBar; const now=Date.now(); const target=now+holdSec*1000; setTxt(`cl-${m.id}-${tf.key}`, `Close: ${fmtTime(target)}`); countdownTargets.set(`${m.id}-${tf.key}`, target);
+
+    const detail=`RSI:${sRSI?.toFixed?.(1)} | EMA14:${sEMA?.toFixed?.(2)} | MACD hist:${macdLast?.toFixed?.(4)} | Vol:${stdevPct.toFixed(2)}% | OOS:${model.oosWR}% PF:${model.meanPF} | Params TP:${p.tpATR} SL:${p.slATR} TS:${p.timeStopBars}`;
     setTxt(`nt-${m.id}`, detail);
-    document.getElementById('lastSync').textContent = "Sinkronisasi: " + new Date().toLocaleTimeString();
+    document.getElementById('lastSync').textContent="Sinkronisasi: "+ new Date().toLocaleTimeString();
   }catch(err){
-    setTxt(`st-${m.id}-${tf.key}`, "HOLD");
-    setClass(`st-${m.id}-${tf.key}`, `pill hold`);
-    setTxt(`sc-${m.id}-${tf.key}`, `Score: -`);
-    setTxt(`cf-${m.id}-${tf.key}`, `Conf: -%`);
-    setTxt(`cl-${m.id}-${tf.key}`, `Close: --:--:--`);
-    countdownTargets.delete(`${m.id}-${tf.key}`);
-    const cdEl = document.getElementById(`cd-${m.id}-${tf.key}`);
-    if(cdEl) cdEl.textContent = "T-: --s";
-    setTxt(`nt-${m.id}`, `⛔ ${m.title} (${tf.label}) — data belum tersedia (${m.provider}).`);
+    setTxt(`st-${m.id}-${tf.key}`, 'HOLD'); setClass(`st-${m.id}-${tf.key}`, 'pill hold'); setTxt(`sc-${m.id}-${tf.key}`, 'Score: -'); setTxt(`cf-${m.id}-${tf.key}`, 'Conf: -%'); setTxt(`bt-${m.id}-${tf.key}`, 'OOS: --% PF --'); setTxt(`pm-${m.id}-${tf.key}`, 'TP/SL/TS: -'); setTxt(`cl-${m.id}-${tf.key}`, 'Close: --:--:--'); countdownTargets.delete(`${m.id}-${tf.key}`); const cdEl=document.getElementById(`cd-${m.id}-${tf.key}`); if(cdEl) cdEl.textContent='T-: --s'; const ntEl=document.getElementById(`nt-${m.id}`); if(ntEl) ntEl.textContent=`⛔ ${m.title} (${tf.label}) — ${err.message}`;
   }
 }
 
-function startLoop(m, tf){
-  const state = cards.get(m.id);
-  if(!state) return;
-  const key = `loop-${tf.key}`;
-  if(state.timers.has(key)) clearInterval(state.timers.get(key));
-  updateOne(m, tf);
-  const t = setInterval(()=>updateOne(m, tf), tf.refresh);
-  state.timers.set(key, t);
-}
+function startLoop(m, tf){ const s=cards.get(m.id); if(!s) return; const key=`loop-${tf.key}`; if(s.timers.has(key)) clearInterval(s.timers.get(key)); updateOne(m, tf); const t=setInterval(()=>updateOne(m, tf), tf.refresh); s.timers.set(key, t); }
 
-/* Global countdown tick every 1s (safe, single interval) */
-setInterval(()=>{
-  countdownTargets.forEach((ts, key)=>{
-    const left = Math.max(0, Math.floor((ts - Date.now())/1000));
-    // key format 'ID-TFKEY', element id is cd-ID-TFKEY
-    const el = document.getElementById(`cd-${key}`);
-    if(el) el.textContent = `T-: ${left}s`;
-    if(left===0) countdownTargets.delete(key);
-  });
-}, 1000);
+// Countdown
+setInterval(()=>{ countdownTargets.forEach((ts,key)=>{ const left=Math.max(0, Math.floor((ts-Date.now())/1000)); const el=document.getElementById(`cd-${key}`); if(el) el.textContent=`T-: ${left}s`; if(left===0){ countdownTargets.delete(key); if(el) el.textContent='T-: --s'; } }); }, 1000);
 
 /* =========================
    INIT
    ========================= */
-function init(){
-  addFavoriteChips();
-  const ordered = [...MARKETS].sort((a,b)=> (FAVORITES.includes(b.id)?1:0) - (FAVORITES.includes(a.id)?1:0));
-  ordered.forEach(makeCard);
-}
+function init(){ addFavoriteChips(); const ordered=[...MARKETS].sort((a,b)=> (FAVORITES.includes(b.id)?1:0) - (FAVORITES.includes(a.id)?1:0)); ordered.forEach(makeCard); }
 init();
 </script>
 </body>
