@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>ZAVANA Market — Realtime Multi-Timeframe (Tanpa API Key)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --bg:#0a0f1a; --card:#0e1625; --muted:#9aa5b1; --text:#e5e7eb;
+    --accent:#233147; --ok:#16a34a; --bad:#ef4444; --warn:#f59e0b; --info:#3b82f6;
+  }
+  html,body{background:var(--bg); color:var(--text); font-family:ui-sans-serif,system-ui; margin:0}
+  .wrap{max-width:1300px; margin:24px auto; padding:0 16px}
+  h1{font-size:22px; margin:0; font-weight:800}
+  .muted{color:var(--muted); font-size:12px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:16px; margin-top:16px}
+  .card{background:var(--card); border:1px solid var(--accent); border-radius:14px; padding:12px; display:flex; flex-direction:column}
+  .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .title{font-weight:800}
+  .tvbox{height:260px; border-radius:10px; overflow:hidden; border:1px solid var(--accent); background:#0b1220; margin-top:8px}
+  .mini-chart{height:120px; margin-top:8px; border-radius:8px; overflow:hidden; background:#061021; border:1px solid rgba(255,255,255,0.03)}
+  .pill{background:#0b1220; border:1px solid var(--accent); color:#c9d1d9; padding:6px 10px; border-radius:10px; font-weight:800; font-size:12px}
+  .pill.buy{background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.35); color:#86efac}
+  .pill.sell{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.35); color:#fca5a5}
+  .pill.hold{background:rgba(148,163,184,.12); border-color:rgba(148,163,184,.35); color:#cbd5e1}
+  .badge{border:1px solid var(--accent); padding:4px 8px; border-radius:999px; font-size:12px}
+  .accrow{display:flex; gap:8px; align-items:center; margin-top:8px}
+  .accbar{flex:1; height:8px; background:#0b1220; border:1px solid var(--accent); border-radius:999px; overflow:hidden}
+  .accfill{height:100%; width:0%; background:linear-gradient(90deg, rgba(59,130,246,.9), rgba(59,130,246,.35)); transition:width .4s}
+  .note{font-size:12px; color:var(--muted)}
+  .tabs{display:flex; gap:6px; margin-top:8px}
+  .tab{cursor:pointer; padding:6px 10px; border-radius:999px; border:1px solid var(--accent); font-size:12px}
+  .tab.active{background:#122036}
+  .favbar{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+  .fav{padding:6px 10px; border:1px solid var(--accent); border-radius:999px; font-size:12px; cursor:pointer}
+  .fav.active{background:#122036}
+  .err{color:#fca5a5}
+  /* responsive tweaks */
+  @media (max-width:420px){
+    .tvbox{height:180px}
+    .mini-chart{height:100px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row" style="justify-content:space-between; border-bottom:1px solid var(--accent); padding-bottom:10px; margin-bottom:10px">
+    <div>
+      <h1>ZAVANA Market  </h1>
+      <div class="muted">Signal Scalping • Swing • Hold</div>
+    </div>
+    <div class="muted" id="lastSync">Sinkronisasi: -</div>
+  </div>
+
+  <div>
+    <div class="muted">Ockhand Tage</div>
+    <div class="favbar" id="favbar"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- TradingView + Lightweight Charts -->
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+
+<script>
+/* =========================
+   TAMBAHAN: cryptos favorit (termasuk SOL, XRP, BNB)
+   ========================= */
+const TIMEFRAMES = [
+  { key:"scalp", label:"Scalping", tv:"1",  bin:"1m",  yfi:"5m",  refresh:10000 },
+  { key:"swing", label:"Swing",    tv:"15", bin:"15m", yfi:"30m", refresh:30000 },
+  { key:"hold",  label:"Hold",     tv:"60", bin:"1h",  yfi:"1h",  refresh:60000 },
+];
+
+const MARKETS = [
+  // CRYPTO (Binance)
+  { id:"BTCUSDT",  title:"BTC/USDT", group:"CRYPTO",  provider:"binance", fetchSymbol:"BTCUSDT", tvSymbol:"BINANCE:BTCUSDT" },
+  { id:"ETHUSDT",  title:"ETH/USDT", group:"CRYPTO",  provider:"binance", fetchSymbol:"ETHUSDT", tvSymbol:"BINANCE:ETHUSDT" },
+  { id:"SOLUSDT",  title:"SOL/USDT", group:"CRYPTO",  provider:"binance", fetchSymbol:"SOLUSDT", tvSymbol:"BINANCE:SOLUSDT" },
+  { id:"XRPUSDT",  title:"XRP/USDT", group:"CRYPTO",  provider:"binance", fetchSymbol:"XRPUSDT", tvSymbol:"BINANCE:XRPUSDT" },
+  { id:"BNBUSDT",  title:"BNB/USDT", group:"CRYPTO",  provider:"binance", fetchSymbol:"BNBUSDT", tvSymbol:"BINANCE:BNBUSDT" },
+
+  // FOREX & COMMOD (Yahoo)
+  { id:"EURUSD",   title:"EURUSD",   group:"FOREX",   provider:"yahoo", fetchSymbol:"EURUSD=X", tvSymbol:"FX:EURUSD" },
+  { id:"GBPUSD",   title:"GBPUSD",   group:"FOREX",   provider:"yahoo", fetchSymbol:"GBPUSD=X", tvSymbol:"FX:GBPUSD" },
+  { id:"USDJPY",   title:"USDJPY",   group:"FOREX",   provider:"yahoo", fetchSymbol:"JPY=X",    tvSymbol:"FX:USDJPY" },
+  { id:"XAUUSD",   title:"XAUUSD",   group:"METAL",   provider:"yahoo", fetchSymbol:"XAUUSD=X", tvSymbol:"OANDA:XAUUSD" },
+  { id:"WTI",      title:"WTI Crude",group:"COMMOD",  provider:"yahoo", fetchSymbol:"CL=F",     tvSymbol:"TVC:USOIL" },
+];
+
+// Favorit awal
+const FAVORITES = ["BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT","BNBUSDT","EURUSD","XAUUSD"];
+
+/* =========================
+   INDIKATOR (tetap seperti semula)
+   ========================= */
+function SMA(arr, p=14){ if(arr.length<p) return null; const s=arr.slice(-p).reduce((a,b)=>a+b,0); return s/p; }
+function EMA(arr, p=14){
+  if(arr.length<p) return null;
+  const k = 2/(p+1);
+  let emaPrev = arr.slice(0,p).reduce((a,b)=>a+b,0)/p;
+  for(let i=p;i<arr.length;i++) emaPrev = arr[i]*k + emaPrev*(1-k);
+  return emaPrev;
+}
+function RSI(closes, p=14){
+  if(closes.length<p+1) return null;
+  let gains=0, losses=0;
+  for(let i=closes.length-p;i<closes.length;i++){
+    const diff = closes[i]-closes[i-1];
+    if(diff>=0) gains+=diff; else losses-=diff;
+  }
+  if(losses===0) return 100;
+  const rs = gains/losses;
+  return 100 - (100/(1+rs));
+}
+function emaSeries(arr, p){
+  const k=2/(p+1), out=new Array(arr.length).fill(null);
+  if(arr.length<p) return out;
+  let emaPrev = arr.slice(0,p).reduce((a,b)=>a+b,0)/p; out[p-1]=emaPrev;
+  for(let i=p;i<arr.length;i++){ emaPrev = arr[i]*k + emaPrev*(1-k); out[i]=emaPrev; }
+  return out;
+}
+function MACD(closes, fast=12, slow=26, signalP=9){
+  if(closes.length<slow+signalP) return null;
+  const ef = emaSeries(closes, fast), es = emaSeries(closes, slow);
+  const macdLine = closes.map((_,i)=> (ef[i]!=null&&es[i]!=null)?(ef[i]-es[i]):null);
+  const valid = macdLine.filter(v=>v!=null);
+  if(valid.length<signalP) return null;
+  const sig = emaSeries(valid, signalP);
+  const hist = macdLine.slice(macdLine.length-sig.length).map((v,i)=> v - sig[i]);
+  return { macd: macdLine[macdLine.length-1], signal: sig[sig.length-1], hist: hist[hist.length-1] };
+}
+
+/* =========================
+   DATA FEEDS
+   - fetchBinanceKlines: mengembalikan OHLC (dipakai mini-chart)
+   - fetchBinanceCloses: mengembalikan array close (dipakai indikator)
+   - fetchYahooCloses: tetap seperti sebelumnya
+   ========================= */
+async function fetchBinanceKlinesFull(symbol, interval="1m", limit=200){
+  const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  const r = await fetch(url); const j = await r.json();
+  if(!Array.isArray(j)) throw new Error("Invalid Binance data");
+  // return array of objects {time, open, high, low, close}
+  return j.map(k => ({
+    time: Math.floor(k[0]/1000), // unix seconds
+    open: parseFloat(k[1]),
+    high: parseFloat(k[2]),
+    low: parseFloat(k[3]),
+    close: parseFloat(k[4])
+  }));
+}
+async function fetchBinanceCloses(symbol, interval="1m", limit=300){
+  const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  const r = await fetch(url); const j = await r.json();
+  if(!Array.isArray(j)) throw new Error("Invalid Binance data");
+  return j.map(k => parseFloat(k[4]));
+}
+async function fetchYahooCloses(symbol, range="1d", interval="5m"){
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
+  const r = await fetch(url); const j = await r.json();
+  const res = j?.chart?.result?.[0];
+  if(!res?.indicators?.quote?.[0]?.close) throw new Error("Yahoo data unavailable");
+  return res.indicators.quote[0].close.filter(v=>v!=null);
+}
+
+/* =========================
+   SKOR, KEPUTUSAN, HOLD TIME (tetap seperti semula)
+   ========================= */
+function suggestHoldSeconds(mode, status, confidence){
+  const base = mode==="scalp" ? [90, 180] : mode==="swing" ? [900, 1800] : [7200, 14400];
+  const [low, high] = base;
+  let t = Math.round(low + (high-low)*(confidence/100));
+  if(status==="HOLD") t = Math.max(60, Math.min(t, mode==="scalp"?180:mode==="swing"?900:3600));
+  return t;
+}
+function scoreAndDecision(closes, mode){
+  const last = closes[closes.length-1];
+  const sma = SMA(closes,14), ema = EMA(closes,14), rsi = RSI(closes,14), macd = MACD(closes);
+  if([sma,ema,rsi].some(v=>v==null) || !macd){
+    return { status:"HOLD", score:50, confidence:40, holdSec:suggestHoldSeconds(mode,"HOLD",40), detail:"Data belum cukup." };
+  }
+  let score = 50, votes = 0, agree = 0;
+  if(last>ema){ score+=8; votes++; agree++; } else { score-=8; votes++; }
+  if(last>sma){ score+=5; agree++; } else { score-=5; }
+  if(rsi<30){ score+=10; votes++; agree++; }
+  else if(rsi>70){ score-=10; votes++; }
+  if(macd.hist>0){ score+=7; votes++; agree++; } else { score-=7; votes++; }
+  const n=14, slice=closes.slice(-n), mean=slice.reduce((a,b)=>a+b,0)/n;
+  const variance = slice.reduce((a,b)=>a+(b-mean)**2,0)/n;
+  const stdevPct = Math.sqrt(variance)/mean*100;
+  let confidence = Math.min(95, Math.max(35, 55 + (agree - (votes-agree))*8 - stdevPct*0.7));
+  let status="HOLD";
+  if(score>=65 && last>ema && macd.hist>0) status="BUY";
+  if(score<=35 && last<ema && macd.hist<0) status="SELL";
+  const holdSec = suggestHoldSeconds(mode, status, confidence);
+  const detail = `RSI:${rsi.toFixed(1)} | EMA14:${ema.toFixed(2)} | SMA14:${sma.toFixed(2)} | MACD hist:${macd.hist.toFixed(4)} | Vol:${stdevPct.toFixed(2)}%`;
+  return { status, score:Math.round(score), confidence:Math.round(confidence), holdSec, detail };
+}
+
+/* =========================
+   UI & MINI-CHART LOGIC
+   ========================= */
+const grid = document.getElementById('grid');
+const favbar = document.getElementById('favbar');
+const cards = new Map();
+const countdownTargets = new Map();
+
+function fmtTime(ts){
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+
+function addFavoriteChips(){
+  MARKETS.forEach(m=>{
+    const chip = document.createElement('div');
+    chip.className = 'fav' + (FAVORITES.includes(m.id) ? ' active' : '');
+    chip.textContent = `${m.title}`;
+    chip.onclick = ()=>{ const el = document.getElementById(`card-${m.id}`); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); };
+    favbar.appendChild(chip);
+  });
+}
+
+function makeCard(m){
+  const el = document.createElement('div');
+  el.className='card';
+  el.id = `card-${m.id}`;
+  el.innerHTML = `
+    <div class="row" style="justify-content:space-between">
+      <div class="title">${m.title} <span class="muted">(${m.group})</span></div>
+      <div class="muted">${m.provider.toUpperCase()}</div>
+    </div>
+
+    <div class="tabs" id="tabs-${m.id}">
+      ${TIMEFRAMES.map(tf=>`<div class="tab" data-tf="${tf.key}">${tf.label}</div>`).join('')}
+    </div>
+
+    <div class="tvbox" id="tv-${m.id}"></div>
+
+    <div class="mini-chart" id="mini-${m.id}"></div>
+
+    ${TIMEFRAMES.map(tf=>`
+      <div class="row" id="row-${m.id}-${tf.key}" style="margin-top:10px; display:${tf.key==='scalp'?'flex':'none'}">
+        <div class="pill hold" id="st-${m.id}-${tf.key}">HOLD</div>
+        <span class="badge" id="sc-${m.id}-${tf.key}">Score: -</span>
+        <span class="badge" id="cf-${m.id}-${tf.key}">Conf: -%</span>
+        <span class="badge" id="cl-${m.id}-${tf.key}">Close: --:--:--</span>
+        <span class="badge" id="cd-${m.id}-${tf.key}">T-: --s</span>
+      </div>
+    `).join('')}
+
+    <div class="accrow">
+      <div class="small muted" style="min-width:64px">Akurasi:</div>
+      <div class="accbar"><div class="accfill" id="ac-${m.id}"></div></div>
+      <span class="badge" id="acv-${m.id}">--%</span>
+    </div>
+
+    <div class="note" id="nt-${m.id}" style="margin-top:6px">Menunggu data…</div>
+  `;
+  grid.appendChild(el);
+
+  // TradingView chart (kept as big chart)
+  const tv = new TradingView.widget({
+    container_id: `tv-${m.id}`, width: "100%", height: "260",
+    symbol: m.tvSymbol, interval: TIMEFRAMES[0].tv,
+    timezone: "Etc/UTC", theme: "dark", style: "1",
+    hide_top_toolbar: true, hide_legend: true, allow_symbol_change: false
+  });
+
+  // prepare mini-chart (Lightweight Charts)
+  const miniContainer = document.getElementById(`mini-${m.id}`);
+  const chart = LightweightCharts.createChart(miniContainer, {
+    layout: { backgroundColor: '#061021', textColor: '#bfcbdc' },
+    grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.02)' } },
+    rightPriceScale: { borderVisible: false },
+    timeScale: { borderVisible: false, timeVisible: false }
+  });
+  const candleSeries = chart.addCandlestickSeries({
+    upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+  });
+
+  cards.set(m.id, { tv, mini: { chart, series: candleSeries }, activeTf: TIMEFRAMES[0].key, timers:new Map() });
+
+  // Tabs
+  const tabsWrap = document.getElementById(`tabs-${m.id}`);
+  [...tabsWrap.querySelectorAll('.tab')].forEach((t,i)=>{
+    if(i===0) t.classList.add('active');
+    t.onclick = ()=> switchTf(m, t.getAttribute('data-tf'));
+  });
+
+  // Start loops for each timeframe
+  TIMEFRAMES.forEach(tf=> startLoop(m, tf));
+}
+
+function switchTf(m, tfKey){
+  const state = cards.get(m.id);
+  if(!state) return;
+  state.activeTf = tfKey;
+  TIMEFRAMES.forEach(tf=>{
+    const row = document.getElementById(`row-${m.id}-${tf.key}`);
+    if(row) row.style.display = (tf.key===tfKey)?'flex':'none';
+  });
+  const tabs = document.getElementById(`tabs-${m.id}`).querySelectorAll('.tab');
+  tabs.forEach(tb=> tb.classList.toggle('active', tb.getAttribute('data-tf')===tfKey));
+  const tf = TIMEFRAMES.find(t=>t.key===tfKey);
+  if(tf && state.tv) {
+    try { state.tv.chart().setResolution(tf.tv); } catch(e){ /* ignore */ }
+  }
+}
+
+/* updateOne: tetap seperti sebelumnya tetapi juga update mini-chart menggunakan OHLC (binance) */
+async function updateOne(m, tf){
+  const setTxt = (sel, t)=> { const el=document.getElementById(sel); if(el) el.textContent = t; };
+  const setClass = (sel, cls)=> { const el=document.getElementById(sel); if(el) el.className = cls; };
+  try{
+    let closes;
+    // for mini-chart we need OHLC for crypto
+    let ohlc = null;
+    if(m.provider==='binance'){
+      // get full OHLC for mini-chart and closes for indicators
+      ohlc = await fetchBinanceKlinesFull(m.fetchSymbol, tf.bin, 200);
+      closes = ohlc.map(o=>o.close);
+    } else {
+      closes = await fetchYahooCloses(m.fetchSymbol, tf.yfi==="1h"?"5d":"1d", tf.yfi);
+    }
+    if(!closes || closes.length<40) throw new Error("Data terlalu sedikit");
+
+    // update mini-chart if crypto (we have OHLC)
+    if(ohlc && cards.has(m.id)){
+      const mini = cards.get(m.id).mini;
+      try{
+        // map to lightweight format
+        mini.series.setData(ohlc.map(x=>({ time: x.time, open: x.open, high: x.high, low: x.low, close: x.close })));
+        // shift viewport to last bars
+        mini.chart.timeScale().fitContent();
+      }catch(e){
+        // ignore chart draw errors
+        console.warn("mini-chart draw err", e);
+      }
+    }
+
+    const {status, score, confidence, holdSec, detail} = scoreAndDecision(closes, tf.key);
+
+    setTxt(`st-${m.id}-${tf.key}`, status);
+    setClass(`st-${m.id}-${tf.key}`, `pill ${status.toLowerCase()}`);
+    setTxt(`sc-${m.id}-${tf.key}`, `Score: ${score}`);
+    setTxt(`cf-${m.id}-${tf.key}`, `Conf: ${confidence}%`);
+
+    // update accuracy bar (avg of TFs)
+    const acEl = document.getElementById(`ac-${m.id}`);
+    const acvEl = document.getElementById(`acv-${m.id}`);
+    const prev = acEl.getAttribute('data-vals') ? JSON.parse(acEl.getAttribute('data-vals')) : {};
+    prev[tf.key] = confidence;
+    acEl.setAttribute('data-vals', JSON.stringify(prev));
+    const vals = Object.values(prev);
+    const avg = Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+    acEl.style.width = Math.max(5, Math.min(100, avg))+"%";
+    acvEl.textContent = `${avg}%`;
+
+    // compute absolute close time target
+    const now = Date.now();
+    const target = now + holdSec*1000;
+    setTxt(`cl-${m.id}-${tf.key}`, `Close: ${fmtTime(target)}`);
+    countdownTargets.set(`${m.id}-${tf.key}`, target);
+
+    setTxt(`nt-${m.id}`, detail);
+    document.getElementById('lastSync').textContent = "Sinkronisasi: " + new Date().toLocaleTimeString();
+  }catch(err){
+    setTxt(`st-${m.id}-${tf.key}`, "HOLD");
+    setClass(`st-${m.id}-${tf.key}`, `pill hold`);
+    setTxt(`sc-${m.id}-${tf.key}`, `Score: -`);
+    setTxt(`cf-${m.id}-${tf.key}`, `Conf: -%`);
+    setTxt(`cl-${m.id}-${tf.key}`, `Close: --:--:--`);
+    countdownTargets.delete(`${m.id}-${tf.key}`);
+    const cdEl = document.getElementById(`cd-${m.id}-${tf.key}`);
+    if(cdEl) cdEl.textContent = "T-: --s";
+    setTxt(`nt-${m.id}`, `⛔ ${m.title} (${tf.label}) — data belum tersedia (${m.provider}).`);
+  }
+}
+
+function startLoop(m, tf){
+  const state = cards.get(m.id);
+  if(!state) return;
+  const key = `loop-${tf.key}`;
+  if(state.timers.has(key)) clearInterval(state.timers.get(key));
+  updateOne(m, tf);
+  const t = setInterval(()=>updateOne(m, tf), tf.refresh);
+  state.timers.set(key, t);
+}
+
+/* Global countdown tick every 1s (safe, single interval) */
+setInterval(()=>{
+  countdownTargets.forEach((ts, key)=>{
+    const left = Math.max(0, Math.floor((ts - Date.now())/1000));
+    // key format 'ID-TFKEY', element id is cd-ID-TFKEY
+    const el = document.getElementById(`cd-${key}`);
+    if(el) el.textContent = `T-: ${left}s`;
+    if(left===0) countdownTargets.delete(key);
+  });
+}, 1000);
+
+/* =========================
+   INIT
+   ========================= */
+function init(){
+  addFavoriteChips();
+  const ordered = [...MARKETS].sort((a,b)=> (FAVORITES.includes(b.id)?1:0) - (FAVORITES.includes(a.id)?1:0));
+  ordered.forEach(makeCard);
+}
+init();
+</script>
+</body>
+</html>
