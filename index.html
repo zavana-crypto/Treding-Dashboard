@@ -579,9 +579,30 @@ async function fetchSignals() {
 setInterval(fetchSignals, 5000);
 fetchSignals();
 init();
+
 </script>
 </body>
 </html>
+<script>
+function kirimSinyal(symbol, action, lot, sl, tp) {
+    fetch('http://localhost:5000/sinyal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol, action, lot, sl, tp })
+    })
+    .then(res => res.json())
+    .then(data => console.log("Response server:", data))
+    .catch(err => console.error("Gagal kirim sinyal:", err));
+}
+
+// Tombol trading
+document.getElementById("buy-eurusd").addEventListener("click", () => {
+    kirimSinyal("EURUSD", "BUY", 0.01, 1.1000, 1.1200);
+});
+document.getElementById("sell-xauusd").addEventListener("click", () => {
+    kirimSinyal("XAUUSD", "SELL", 0.01, 1950, 1900);
+});
+</script>
 
 <!DOCTYPE html>
 
