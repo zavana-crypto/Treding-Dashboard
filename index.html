@@ -440,15 +440,12 @@ function init(){
   const ordered=[...MARKETS].sort((a,b)=> (FAVORITES.includes(b.id)?1:0) - (FAVORITES.includes(a.id)?1:0));
   ordered.forEach(makeCard);
 }
-init();
-</script>
-  async function fetchSignals() {
+async function fetchSignals() {
   try {
     const res = await fetch("http://localhost:5000/signals");
     const data = await res.json();
     console.log("Sinyal dari bot:", data);
-
-    // update elemen status sesuai sinyal dari API
+    // contoh: update salah satu elemen dashboard
     Object.entries(data).forEach(([pair, signal]) => {
       const el = document.getElementById(`st-${pair}-scalp`);
       if (el) {
@@ -461,9 +458,10 @@ init();
   }
 }
 
-// jalankan pertama kali + auto refresh tiap 5 detik
+// refresh tiap 5 detik
 setInterval(fetchSignals, 5000);
 fetchSignals();
+init();
 </script>
 </body>
 </html>
