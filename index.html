@@ -99,7 +99,6 @@
 
   <div class="grid" id="grid"></div>
 </div>
-
 <!-- TradingView + Lightweight Charts -->
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -538,9 +537,11 @@ setTxt(`pm-${m.id}-${tf.key}`, `TP:${tpPrice.toFixed(4)} SL:${slPrice.toFixed(4)
     if (ntEl) ntEl.textContent = `⛔ ${m.title} (${tf.label}) — ${err.message}`;
   }
 }
+
 function startLoop(m, tf){ const state=cards.get(m.id); if(!state) return; const key=`loop-${tf.key}`; if(state.timers?.get?.(key)) clearInterval(state.timers.get(key)); updateOne(m, tf); const t=setInterval(()=>updateOne(m, tf), tf.refresh); state.timers.set(key, t); }
 
 setInterval(()=>{ countdownTargets.forEach((ts,key)=>{ const left=Math.max(0, Math.floor((ts-Date.now())/1000)); const el=document.getElementById(`cd-${key}`); if(el) el.textContent=`T-: ${left}s`; if(left===0){ countdownTargets.delete(key); if(el) el.textContent='T-: --s'; } }); }, 1000);
+
 
 /* =========================
    INIT + News UI
@@ -579,5 +580,211 @@ setInterval(fetchSignals, 5000);
 fetchSignals();
 init();
 </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trading Dashboard Full</title>
+<style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0d1117;
+      color: white;
+    }
+    header {
+      background: #161b22;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      color: #58a6ff;
+    }
+    section {
+      padding: 20px;
+      margin-bottom: 30px;
+      background: #161b22;
+      border-radius: 10px;
+    }
+    h2 {
+      margin-bottom: 15px;
+      color: #58a6ff;
+    }
+    iframe, .tradingview-widget-container {
+      width: 100% !important;
+    }
+  </style>
+</head>
+<body>
+<header>📊 Trading Dashboard Full</header>
+<section>
+<h2>⏰ Market Ticker</h2>
+<div class="tradingview-widget-container">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" type="text/javascript">
+    {
+      "symbols": [
+        {"proName": "FX_IDC:EURUSD","title": "EUR/USD"},
+        {"proName": "OANDA:XAUUSD","title": "Gold"},
+        {"proName": "BINANCE:BTCUSDT","title": "BTC/USDT"},
+        {"proName": "FOREXCOM:SPXUSD","title": "S&P 500"},
+        {"proName": "FOREXCOM:NSXUSD","title": "Nasdaq 100"}
+      ],
+      "colorTheme": "dark",
+      "isTransparent": false,
+      "locale": "en"
+    }
+    </script>
+</div>
+</section>
+<section>
+<h2>⏰ Market Ticker – Forex Majors</h2>
+<div class="tradingview-widget-container">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" type="text/javascript">
+    {
+      "symbols": [
+        {"proName": "FX_IDC:EURUSD","title": "EUR/USD"},
+        {"proName": "FX_IDC:GBPUSD","title": "GBP/USD"},
+        {"proName": "FX_IDC:USDJPY","title": "USD/JPY"},
+        {"proName": "FX_IDC:USDCHF","title": "USD/CHF"},
+        {"proName": "FX_IDC:AUDUSD","title": "AUD/USD"},
+        {"proName": "FX_IDC:NZDUSD","title": "NZD/USD"},
+        {"proName": "FX_IDC:USDCAD","title": "USD/CAD"}
+      ],
+      "colorTheme": "dark",
+      "isTransparent": false,
+      "locale": "en"
+    }
+    </script>
+</div>
+</section>
+<section>
+<h2>⏰ Market Ticker – Metals, Energy, Indeks, Crypto</h2>
+<div class="tradingview-widget-container">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" type="text/javascript">
+    {
+      "symbols": [
+        {"proName": "OANDA:XAUUSD","title": "Gold"},
+        {"proName": "OANDA:XAGUSD","title": "Silver"},
+        {"proName": "OANDA:WTICOUSD","title": "WTI Oil"},
+        {"proName": "FOREXCOM:SPXUSD","title": "S&P 500"},
+        {"proName": "FOREXCOM:NSXUSD","title": "Nasdaq 100"},
+        {"proName": "FOREXCOM:DJI","title": "Dow Jones"},
+        {"proName": "BINANCE:BTCUSDT","title": "BTC/USDT"},
+        {"proName": "BINANCE:ETHUSDT","title": "ETH/USDT"}
+      ],
+      "colorTheme": "dark",
+      "isTransparent": false,
+      "locale": "en"
+    }
+    </script>
+</div>
+</section>
+<section>
+<h2>📰 Breaking News</h2>
+<div class="tradingview-widget-container">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" type="text/javascript">
+    {
+      "feedMode": "market",
+      "colorTheme": "dark",
+      "isTransparent": false,
+      "displayMode": "regular",
+      "width": "100%",
+      "height": "500",
+      "locale": "en"
+    }
+    </script>
+</div>
+</section>
+<section>
+<h2>📅 Kalender Ekonomi</h2>
+<div class="tradingview-widget-container">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" type="text/javascript">
+    {
+      "colorTheme": "dark",
+      "isTransparent": false,
+      "width": "100%",
+      "height": "600",
+      "locale": "en"
+    }
+    </script>
+</div>
+</section>
+<section>
+<h2>📈 Technical Analysis - Forex</h2>
+<div class="tradingview-widget-container">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
+    {
+      "interval": "1h",
+      "width": "100%",
+      "height": "350",
+      "symbol": "FX:EURUSD",
+      "showIntervalTabs": true,
+      "locale": "en",
+      "colorTheme": "dark"
+    }
+    </script>
+</div>
+<div class="tradingview-widget-container" style="margin-top:20px">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
+    {
+      "interval": "1h",
+      "width": "100%",
+      "height": "350",
+      "symbol": "FX:GBPUSD",
+      "showIntervalTabs": true,
+      "locale": "en",
+      "colorTheme": "dark"
+    }
+    </script>
+</div>
+<div class="tradingview-widget-container" style="margin-top:20px">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
+    {
+      "interval": "1h",
+      "width": "100%",
+      "height": "350",
+      "symbol": "FX:USDJPY",
+      "showIntervalTabs": true,
+      "locale": "en",
+      "colorTheme": "dark"
+    }
+    </script>
+</div>
+</section>
+<section>
+<h2>📈 Technical Analysis - Crypto</h2>
+<div class="tradingview-widget-container">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
+    {
+      "interval": "1h",
+      "width": "100%",
+      "height": "350",
+      "symbol": "BINANCE:BTCUSDT",
+      "showIntervalTabs": true,
+      "locale": "en",
+      "colorTheme": "dark"
+    }
+    </script>
+</div>
+<div class="tradingview-widget-container" style="margin-top:20px">
+<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
+    {
+      "interval": "1h",
+      "width": "100%",
+      "height": "350",
+      "symbol": "BINANCE:ETHUSDT",
+      "showIntervalTabs": true,
+      "locale": "en",
+      "colorTheme": "dark"
+    }
+    </script>
+</div>
+</section>
+<section>
 </body>
 </html>
