@@ -454,6 +454,51 @@ async function updateOne(m, tf) {
 
     const pm = `TP:${FIXED_PARAMS.tpATR}${rrFixed ? `(RR ${rrFixed})` : ''} SL:${FIXED_PARAMS.slATR} TR:${FIXED_PARAMS.trailATR} TS:${FIXED_PARAMS.timeStopBars} ${volFilterOn && m.provider === 'binance' ? `| VOL≥${FIXED_PARAMS.volSpikeK}×MA` : ''} | MTF:${mtfNote}`;
     setTxt(`pm-${m.id}-${tf.key}`, pm);
+// =========================
+// Exit kombinasi: TP/SL + Waktu maksimal
+// =========================
+const entryI = closes.length - 1; // posisi terakhir sebagai contoh
+const entryPrice = closes[entryI];
+const atrVal = atr[entryI] || (entryPrice*0.005);
+
+const tpPrice = entryPrice + (status==='BUY'? FIXED_PARAMS.tpATR*atrVal : -FIXED_PARAMS.tpATR*atrVal);
+const slPrice = entryPrice + (status==='BUY'? -FIXED_PARAMS.slATR*atrVal : +FIXED_PARAMS.slATR*atrVal);
+
+// Tentukan exit maksimal berdasarkan jumlah bar
+const maxBars = FIXED_PARAMS.timeStopBars; // misal 12 bar
+const barSecVal = barSec(m, tf);
+const maxExitTime = Date.now() + maxBars*barSecVal*1000;
+
+let exitReason = 'TIME';
+let exitPrice = entryPrice;
+for(let i=entryI+1; i<closes.length; i++){
+    const hi = ohlc[i]?.high ?? closes[i];
+    const lo = ohlc[i]?.low ?? closes[i];
+
+    // trailing ATR update SL
+    if(FIXED_PARAMS.trailATR>0){
+        const tr = atr[i]||atrVal;
+        if(status==='BUY'){ const cand=hi - FIXED_PARAMS.trailATR*tr; if(cand>slPrice) slPrice=cand; }
+        else { const cand=lo + FIXED_PARAMS.trailATR*tr; if(cand<slPrice) slPrice=cand; }
+    }
+
+    // Cek TP/SL
+    if(status==='BUY'){
+        if(lo <= slPrice){ exitPrice = slPrice; exitReason='SL'; break; }
+        if(hi >= tpPrice){ exitPrice = tpPrice; exitReason='TP'; break; }
+    } else if(status==='SELL'){
+        if(hi >= slPrice){ exitPrice = slPrice; exitReason='SL'; break; }
+        if(lo <= tpPrice){ exitPrice = tpPrice; exitReason='TP'; break; }
+    }
+
+    // Cek exit waktu
+    const t = Date.now() + (i-entryI)*barSecVal*1000;
+    if(t >= maxExitTime){ exitPrice = closes[i]; exitReason='TIME'; break; }
+}
+
+// Update UI
+setTxt(`cl-${m.id}-${tf.key}`, `Close: ${fmtTime(maxExitTime)}`);
+setTxt(`pm-${m.id}-${tf.key}`, `TP:${tpPrice.toFixed(4)} SL:${slPrice.toFixed(4)} | Exit max time:${fmtTime(maxExitTime)}`);
 
     // Trade log
     const tb = document.getElementById(`tb-${m.id}`);
