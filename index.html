@@ -442,5 +442,28 @@ function init(){
 }
 init();
 </script>
+  async function fetchSignals() {
+  try {
+    const res = await fetch("http://localhost:5000/signals");
+    const data = await res.json();
+    console.log("Sinyal dari bot:", data);
+
+    // update elemen status sesuai sinyal dari API
+    Object.entries(data).forEach(([pair, signal]) => {
+      const el = document.getElementById(`st-${pair}-scalp`);
+      if (el) {
+        el.textContent = signal;
+        el.className = "pill " + signal.toLowerCase();
+      }
+    });
+  } catch (err) {
+    console.warn("Gagal ambil sinyal:", err);
+  }
+}
+
+// jalankan pertama kali + auto refresh tiap 5 detik
+setInterval(fetchSignals, 5000);
+fetchSignals();
+</script>
 </body>
 </html>
