@@ -79,6 +79,12 @@
         </select>
       </label>
       <label>Filter Session (jam lokal): <input id="sessStart" type="number" min="0" max="23" value="7"/> — <input id="sessEnd" type="number" min="0" max="23" value="23"/></label>
+      <label>Mode Signal:
+  <select id="signalMode">
+    <option value="scalping">Scalping (BUY/SELL pasti)</option>
+    <option value="swing" selected>Swing (aturan lengkap)</option>
+  </select>
+</label>
     </div>
     <div class="row" style="margin-top:8px">
       <label>Kalender Ekonomi (tanpa API) — JSON sederhana:
@@ -442,9 +448,15 @@ async function updateOne(m, tf) {
     const macdDn = macdLast < 0;
 
     if (!filtered) {
-      if (crossUp && macdUp && rsiOkBuy) status = 'BUY';
-      else if (crossDn && macdDn && rsiOkSell) status = 'SELL';
-    }
+  if (crossUp && macdUp && rsiOkBuy) {
+    status = 'BUY';
+  } else if (crossDn && macdDn && rsiOkSell) {
+    status = 'SELL';
+  } else {
+    // fallback biar sinyal selalu ada
+    status = (last > sEMA) ? 'BUY' : 'SELL';
+  }
+}
 
     setTxt(`st-${m.id}-${tf.key}`, status);
     setClass(`st-${m.id}-${tf.key}`, `pill ${status.toLowerCase()}`);
@@ -808,4 +820,3 @@ document.getElementById("sell-xauusd").addEventListener("click", () => {
 </section>
 <section>
 </body>
-</html>
