@@ -50,6 +50,58 @@
   @media (max-width:420px){ .tvbox{height:180px} .mini-chart{height:100px} }
 </style>
 </head>
+<script>
+async function loadSignals() {
+  try {
+    let res = await fetch("http://localhost:5000/signals");
+    let data = await res.json();
+
+    for (let sym in data) {
+      const el = document.getElementById(sym + "-signal");
+      if (el) {
+        const sig = data[sym]["1m"].signal; // ambil timeframe 1 menit
+        el.innerText = sig;
+
+        if (sig === "BUY") { el.style.background = "green"; el.style.color = "white"; }
+        else if (sig === "SELL") { el.style.background = "red"; el.style.color = "white"; }
+        else { el.style.background = "yellow"; el.style.color = "black"; }
+      }
+    }
+  } catch (err) {
+    console.error("Gagal ambil sinyal:", err);
+  }
+}
+
+loadSignals();
+setInterval(loadSignals, 10000); // refresh 10 detik sekali
+</script>
+<script>
+async function loadSignals() {
+  try {
+    let res = await fetch("http://localhost:5000/signals");
+    let data = await res.json();
+
+    for (let sym in data) {
+      const el = document.getElementById(sym + "-signal");
+      if (el) {
+        const sig = data[sym]["1m"].signal; // timeframe default 1 menit
+        el.innerText = sig;
+
+        if (sig === "BUY") { el.style.background = "green"; el.style.color = "white"; }
+        else if (sig === "SELL") { el.style.background = "red"; el.style.color = "white"; }
+        else { el.style.background = "yellow"; el.style.color = "black"; }
+      }
+    }
+  } catch (err) {
+    console.error("Gagal ambil sinyal:", err);
+  }
+}
+
+// load pertama kali + auto refresh setiap 10 detik
+loadSignals();
+setInterval(loadSignals, 10000);
+</script>
+
 <body>
 <div class="wrap">
   <div class="row" style="justify-content:space-between; border-bottom:1px solid var(--accent); padding-bottom:10px; margin-bottom:10px">
@@ -418,7 +470,6 @@ init();
 
 </script>
 </body>
-</html>
 <script>
 function kirimSinyal(symbol, action, lot, sl, tp) {
     fetch('http://localhost:5000/sinyal', {
