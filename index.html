@@ -114,31 +114,34 @@
    TIMEFRAMES & MARKETS
    ========================= */
 const TIMEFRAMES=[
-  { key:"scalp", label:"Scalping", tv:"1",  bin:"1m",  yfi:"1m",  refresh:2500 },
-  { key:"swing", label:"Swing",    tv:"5", bin:"5m", yfi:"15m", refresh:10000 },
-  { key:"hold",  label:"Hold",     tv:"30", bin:"30m",  yfi:"60m",  refresh:30000 },
+    { key:"scalp", label:"Scalping", tv:"1", bin:"1m", refresh:3000 },
+  { key:"swing", label:"Swing",    tv:"5", bin:"5m", refresh:8000 },
+  { key:"hold",  label:"Hold",     tv:"30", bin:"30m", refresh:20000 },
 ];
 
 const MARKETS=[
-  { id:"BTCUSDT", title:"BTC/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"BTCUSDT", tvSymbol:"BINANCE:BTCUSDT" },
+   { id:"BTCUSDT", title:"BTC/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"BTCUSDT", tvSymbol:"BINANCE:BTCUSDT" },
   { id:"ETHUSDT", title:"ETH/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"ETHUSDT", tvSymbol:"BINANCE:ETHUSDT" },
+  { id:"BNBUSDT", title:"BNB/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"BNBUSDT", tvSymbol:"BINANCE:BNBUSDT" },
   { id:"SOLUSDT", title:"SOL/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"SOLUSDT", tvSymbol:"BINANCE:SOLUSDT" },
   { id:"XRPUSDT", title:"XRP/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"XRPUSDT", tvSymbol:"BINANCE:XRPUSDT" },
-  { id:"BNBUSDT", title:"BNB/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"BNBUSDT", tvSymbol:"BINANCE:BNBUSDT" },
-  { id:"EURUSD",  title:"EURUSD",   group:"FOREX",  provider:"yahoo",   fetchSymbol:"EURUSD=X", tvSymbol:"FX:EURUSD" },
-  { id:"GBPUSD",  title:"GBPUSD",   group:"FOREX",  provider:"yahoo",   fetchSymbol:"GBPUSD=X", tvSymbol:"FX:GBPUSD" },
-  { id:"USDJPY",  title:"USDJPY",   group:"FOREX",  provider:"yahoo",   fetchSymbol:"JPY=X",    tvSymbol:"FX:USDJPY" },
-  { id:"XAUUSD",  title:"XAUUSD",   group:"METAL",  provider:"yahoo",   fetchSymbol:"XAUUSD=X", tvSymbol:"OANDA:XAUUSD" },
-  { id:"WTI",     title:"WTI Crude",group:"COMMOD", provider:"yahoo",   fetchSymbol:"CL=F",     tvSymbol:"TVC:USOIL" },
+  { id:"ADAUSDT", title:"ADA/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"ADAUSDT", tvSymbol:"BINANCE:ADAUSDT" },
+  { id:"DOGEUSDT", title:"DOGE/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"DOGEUSDT", tvSymbol:"BINANCE:DOGEUSDT" },
+  { id:"TRXUSDT", title:"TRX/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"TRXUSDT", tvSymbol:"BINANCE:TRXUSDT" },
+  { id:"DOTUSDT", title:"DOT/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"DOTUSDT", tvSymbol:"BINANCE:DOTUSDT" },
+  { id:"LTCUSDT", title:"LTC/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"LTCUSDT", tvSymbol:"BINANCE:LTCUSDT" },
+  { id:"SHIBUSDT", title:"SHIB/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"SHIBUSDT", tvSymbol:"BINANCE:SHIBUSDT" },
+  { id:"AVAXUSDT", title:"AVAX/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"AVAXUSDT", tvSymbol:"BINANCE:AVAXUSDT" },
+  { id:"PEPEUSDT", title:"PEPE/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"PEPEUSDT", tvSymbol:"BINANCE:PEPEUSDT" },
+  { id:"CAKEUSDT", title:"CAKE/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"CAKEUSDT", tvSymbol:"BINANCE:CAKEUSDT" }
 ];
 
-const FAVORITES=["BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT","BNBUSDT","EURUSD","XAUUSD"];
+const FAVORITES=["BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT","BNBUSDT"]; // urutan kartu
 
 /* =========================
-   UTILS & INDIKATOR
+   UTIL & INDIKATOR
    ========================= */
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-const toISO=(d)=> new Date(d).toISOString();
 function SMA(arr,p=14){ if(arr.length<p) return null; const s=arr.slice(-p).reduce((a,b)=>a+b,0); return s/p; }
 function EMA(arr,p=14){ if(arr.length<p) return null; const k=2/(p+1); let e=arr.slice(0,p).reduce((a,b)=>a+b,0)/p; for(let i=p;i<arr.length;i++) e=arr[i]*k+e*(1-k); return e; }
 function emaSeries(arr,p){ const k=2/(p+1),out=new Array(arr.length).fill(null); if(arr.length<p) return out; let e=arr.slice(0,p).reduce((a,b)=>a+b,0)/p; out[p-1]=e; for(let i=p;i<arr.length;i++){ e=arr[i]*k+e*(1-k); out[i]=e;} return out; }
@@ -148,64 +151,42 @@ function ATR(ohlc,p=14){ if(!ohlc||ohlc.length<p+1) return []; const tr=[]; for(
 function macdSeries(closes,fast=12,slow=26,signalP=9){ const ef=emaSeries(closes,fast), es=emaSeries(closes,slow); const macd=closes.map((_,i)=> (ef[i]!=null&&es[i]!=null)?(ef[i]-es[i]):null); const macdValid=macd.map(v=>v==null?0:v).slice(slow-1); const sigRaw=emaSeries(macdValid, signalP); const sig=new Array(closes.length).fill(null); for(let i=0;i<sigRaw.length;i++){ const idx=slow-1+i; sig[idx]=sigRaw[i]; } const hist=macd.map((v,i)=> (v!=null&&sig[i]!=null)?v-sig[i]:null); return { macd, signal:sig, hist } }
 
 /* =========================
-   DATA FEEDS (OHLC + Volume jika ada)
+   DATA FEED (Binance — gratis tanpa API key)
    ========================= */
 async function fetchBinanceKlines(symbol, interval="1m", limit=1000){
   const url=`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
   const r=await fetch(url); const j=await r.json(); if(!Array.isArray(j)) throw new Error("Invalid Binance data");
   return j.map(k=>({ time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5] }));
 }
-async function fetchYahoo(symbol, range="1mo", interval="30m"){
-  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
-  const r=await fetch(url); const j=await r.json(); const res=j?.chart?.result?.[0]; if(!res?.indicators?.quote?.[0]?.close) throw new Error("Yahoo data unavailable");
-  const close=res.indicators.quote[0].close.filter(v=>v!=null); const ts=res.timestamp||Array.from({length:close.length},(_,i)=>i);
-  const ohlc=close.map((c,i)=>({time:ts[i], open:c, high:c, low:c, close:c, volume:0})); // no real volume
-  return { closes:close, ohlc };
-}
 
 /* =========================
-   ECON CALENDAR (tanpa API)
+   ECON CALENDAR (localStorage)
    ========================= */
 const LS_KEY_NEWS='zavana_news_calendar_v1';
 function loadNews(){ try{ return JSON.parse(localStorage.getItem(LS_KEY_NEWS)||'[]'); }catch(e){ return []; } }
 function saveNews(list){ localStorage.setItem(LS_KEY_NEWS, JSON.stringify(list||[])); }
 function matchEvent(symbol, group, padMin){
   const items=loadNews(); const now=Date.now(); const pad=padMin*60*1000;
-  return items.some(ev=>{
-    try{
-      const t=new Date(ev.time).getTime(); if(!isFinite(t)) return false;
-      const within=Math.abs(t-now)<=pad;
-      if(!within) return false;
-      const impact=(ev.impact||'').toLowerCase(); if(!(impact==='high'||impact==='medium')) return false;
-      const pair=(ev.pair||'').toUpperCase();
-      if(pair==='CRYPTO' && group==='CRYPTO') return true;
-      if(pair==='FX' && (group==='FOREX'||group==='METAL'||group==='COMMOD')) return true;
-      if(pair===symbol || pair===symbol.replace('=X','') || pair===symbol.replace('USDT','USD')) return true;
-      return false;
-    }catch(_){ return false; }
-  });
+  return items.some(ev=>{ try{ const t=new Date(ev.time).getTime(); if(!isFinite(t)) return false; const within=Math.abs(t-now)<=pad; if(!within) return false; const impact=(ev.impact||'').toLowerCase(); if(!(impact==='high'||impact==='medium')) return false; const pair=(ev.pair||'').toUpperCase(); if(pair==='CRYPTO' && group==='CRYPTO') return true; if(pair===symbol) return true; return false; }catch(_){ return false; } });
 }
 
 /* =========================
-   STRATEGI (Fixed + Adaptive opsional)
+   STRATEGI (Fixed)
    ========================= */
 const FIXED_PARAMS={ rsiBuyMax:65, rsiSellMin:35, emaLen:14, tpATR:1.5, slATR:1.0, trailATR:1.0, timeStopBars:12, volSpikeK:1.5, useMTF:true };
-
-function barSeconds(m, tf){ if(m.provider==='binance'){ if(tf.bin==='1m') return 60; if(tf.bin==='15m') return 900; if(tf.bin==='1h') return 3600; } else { if(tf.yfi==='5m') return 300; if(tf.yfi==='30m') return 1800; if(tf.yfi==='1h') return 3600; } return 900; }
-
+function barSeconds(tf){ if(tf.bin==='1m') return 60; if(tf.bin==='5m') return 300; if(tf.bin==='30m') return 1800; return 900; }
 function generateSignalsFixed({closes, ema14, macdHist, rsi, volume, volMA}, params, opts){
   const { rsiBuyMax, rsiSellMin } = params; const res=[];
   for(let i=1;i<closes.length;i++){
     const crossUp = ema14[i-1]!=null && closes[i-1]<=ema14[i-1] && closes[i]>ema14[i];
     const crossDn = ema14[i-1]!=null && closes[i-1]>=ema14[i-1] && closes[i]<ema14[i];
     const macdUp = macdHist[i]>0, macdDn = macdHist[i]<0; const rsiOkBuy=rsi[i]!=null && rsi[i]<=rsiBuyMax; const rsiOkSell=rsi[i]!=null && rsi[i]>=rsiSellMin;
-    if(opts.volFilter && volume){ const sp=volMA[i]? (volume[i]/volMA[i]) : 1; if(sp<opts.volK) continue; }
+    if(opts.volFilter){ const sp=volMA[i]? (volume[i]/volMA[i]) : 1; if(sp<opts.volK) continue; }
     if(crossUp && macdUp && rsiOkBuy) res.push({ idx:i, side:'BUY' });
     if(crossDn && macdDn && rsiOkSell) res.push({ idx:i, side:'SELL' });
   }
   return res;
 }
-
 function simulateTrades({closes, ohlc, atr, signals}, params, rrFixed){
   const { tpATR, slATR, trailATR, timeStopBars } = params; const out=[];
   for(const s of signals){
@@ -215,10 +196,9 @@ function simulateTrades({closes, ohlc, atr, signals}, params, rrFixed){
     let sl= entry + (s.side==='BUY'? -slATR*atrVal : +slATR*atrVal);
     if(rrFixed && rrFixed>0){ const risk=Math.abs(entry-sl); tp = s.side==='BUY'? entry + rrFixed*risk : entry - rrFixed*risk; }
     const maxExit = Math.min(closes.length-1, entryI + timeStopBars);
-    let exitI=maxExit, reason='TIME'; let trailRef=entry;
+    let exitI=maxExit, reason='TIME';
     for(let i=entryI+1;i<=maxExit;i++){
       const hi=ohlc[i]?.high ?? closes[i]; const lo=ohlc[i]?.low ?? closes[i];
-      // trailing ATR
       if(trailATR>0){ const tr=atr[i]||atrVal; if(s.side==='BUY'){ const cand=hi - trailATR*tr; if(cand>sl) sl=cand; } else { const cand=lo + trailATR*tr; if(cand<sl) sl=cand; } }
       if(s.side==='BUY'){ if(lo<=sl){ exitI=i; reason='SL'; break; } if(hi>=tp){ exitI=i; reason='TP'; break; } }
       else { if(hi>=sl){ exitI=i; reason='SL'; break; } if(lo<=tp){ exitI=i; reason='TP'; break; } }
@@ -230,44 +210,33 @@ function simulateTrades({closes, ohlc, atr, signals}, params, rrFixed){
 }
 
 /* =========================
-   MTF (konfirmasi higher timeframe)
+   MTF (HTF via Binance juga)
    ========================= */
 async function fetchHTF(m, tf){
-  // gunakan 4x timeframe saat ini sebagai HTF (1m->15m? gunakan 5m utk yahoo)
-  if(m.provider==='binance'){
-    const map={ '1m':'5m', '15m':'1h', '1h':'4h' }; const next=map[tf.bin]||'1h';
-    const bars=await fetchBinanceKlines(m.fetchSymbol, next, 500); const closes=bars.map(b=>b.close); return { closes };
-  } else {
-    const map={ '5m':['1d','1h'], '30m':['1mo','1d'], '1h':['3mo','1d'] };
-    const spec=map[tf.yfi]||['1mo','1d']; const y=await fetchYahoo(m.fetchSymbol, spec[0], spec[1]); return { closes:y.closes };
-  }
+  const map={ '1m':'5m', '5m':'30m', '30m':'4h' }; const next=map[tf.bin]||'30m';
+  const bars=await fetchBinanceKlines(m.fetchSymbol, next, 500); const closes=bars.map(b=>b.close); return { closes };
 }
-function htfTrend(closes){ const e=emaSeries(closes,34); const slope=(arr)=>{ const n=arr.length; if(n<10) return 0; const a=arr[n-1], b=arr[n-6]; return a-b; }; const t= slope(e); return t>0? 1 : t<0? -1 : 0; }
+function htfTrend(closes){ const e=emaSeries(closes,34); const n=e.length; if(n<10) return 0; const slope=e[n-1]-e[n-6]; return slope>0?1:(slope<0?-1:0); }
 
 /* =========================
    UI & STATE
    ========================= */
 const grid=document.getElementById('grid'); const favbar=document.getElementById('favbar');
 const countdownTargets=new Map(); const cards=new Map();
-
 function fmtTime(ts){ const d=new Date(ts); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}); }
 function addFavoriteChips(){ MARKETS.forEach(m=>{ const chip=document.createElement('div'); chip.className='fav'+(FAVORITES.includes(m.id)?' active':''); chip.textContent=m.title; chip.onclick=()=>{ const el=document.getElementById(`card-${m.id}`); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }; favbar.appendChild(chip); }); }
-
 function makeCard(m){
   const el=document.createElement('div'); el.className='card'; el.id=`card-${m.id}`;
   el.innerHTML=`
     <div class="row" style="justify-content:space-between">
       <div class="title">${m.title} <span class="muted">(${m.group})</span></div>
-      <div class="muted">${m.provider.toUpperCase()}</div>
+      <div class="muted">BINANCE</div>
     </div>
-
     <div class="tabs" id="tabs-${m.id}">
       ${TIMEFRAMES.map(tf=>`<div class="tab" data-tf="${tf.key}">${tf.label}</div>`).join('')}
     </div>
-
     <div class="tvbox" id="tv-${m.id}"></div>
     <div class="mini-chart" id="mini-${m.id}"></div>
-
     ${TIMEFRAMES.map(tf=>`
       <div class="row" id="row-${m.id}-${tf.key}" style="margin-top:10px; display:${tf.key==='scalp'?'flex':'none'}">
         <div class="pill hold" id="st-${m.id}-${tf.key}">HOLD</div>
@@ -280,25 +249,21 @@ function makeCard(m){
         <span class="tog" id="tg-${m.id}-${tf.key}">log</span>
       </div>
     `).join('')}
-
     <div class="accrow">
       <div class="small muted" style="min-width:120px">Akurasi (Fixed WR):</div>
       <div class="accbar"><div class="accfill" id="ac-${m.id}"></div></div>
       <span class="badge" id="acv-${m.id}">--%</span>
     </div>
-
     <div class="meta">
       <div class="kv"><span>Avg Return</span><b id="ar-${m.id}">-</b></div>
       <div class="kv"><span>Trades</span><b id="tr-${m.id}">-</b></div>
       <div class="kv"><span>Session</span><b id="se-${m.id}">-</b></div>
       <div class="kv"><span>News Window</span><b id="nw-${m.id}">-</b></div>
     </div>
-
     <div class="log" id="log-${m.id}">
       <table><thead><tr><th>#</th><th>Side</th><th>Entry</th><th>Exit</th><th>Ret%</th><th>Reason</th></tr></thead>
       <tbody id="tb-${m.id}"></tbody></table>
     </div>
-
     <div class="note" id="nt-${m.id}" style="margin-top:6px">Menunggu data…</div>
   `;
   grid.appendChild(el);
@@ -318,248 +283,106 @@ function makeCard(m){
 
   TIMEFRAMES.forEach(tf=> startLoop(m, tf));
 }
-
 function switchTf(m, tfKey){ const s=cards.get(m.id); if(!s) return; s.activeTf=tfKey; TIMEFRAMES.forEach(tf=>{ const row=document.getElementById(`row-${m.id}-${tf.key}`); if(row) row.style.display=(tf.key===tfKey)?'flex':'none'; }); const tabs=document.getElementById(`tabs-${m.id}`).querySelectorAll('.tab'); tabs.forEach(tb=>tb.classList.toggle('active', tb.getAttribute('data-tf')===tfKey)); const tf=TIMEFRAMES.find(t=>t.key===tfKey); if(tf && s.tv){ try{s.tv.chart().setResolution(tf.tv);}catch(e){} } }
 
 /* =========================
    UPDATE LOOP
    ========================= */
-function barSec(m,tf){ return barSeconds(m,tf); }
 function inSession(start,end){ const h=new Date().getHours(); return (start<=end)? (h>=start && h<end) : (h>=start || h<end); }
-
-async function updateOne(m, tf) {
-  const setTxt = (sel, t) => { const el = document.getElementById(sel); if (el) el.textContent = t; };
-  const setClass = (sel, cls) => { const el = document.getElementById(sel); if (el) el.className = cls; };
-
-  try {
-    // =========================
+async function updateOne(m, tf){
+  const setTxt=(sel,t)=>{ const el=document.getElementById(sel); if(el) el.textContent=t; };
+  const setClass=(sel,cls)=>{ const el=document.getElementById(sel); if(el) el.className=cls; };
+  try{
     // Global settings
-    // =========================
-    const mode = document.getElementById('modeSelect').value;
-    const rrFixed = parseFloat(document.getElementById('rrFixed').value || '0');
-    const riskPct = parseFloat(document.getElementById('riskPct').value || '1');
-    const newsPad = parseInt(document.getElementById('newsPad').value || '0');
-    const volFilterOn = document.getElementById('volFilter').value === 'on';
-    const sessStart = parseInt(document.getElementById('sessStart').value || '0');
-    const sessEnd = parseInt(document.getElementById('sessEnd').value || '23');
+    const rrFixed=parseFloat(document.getElementById('rrFixed').value||'0');
+    const newsPad=parseInt(document.getElementById('newsPad').value||'0');
+    const volFilterOn=document.getElementById('volFilter').value==='on';
+    const sessStart=parseInt(document.getElementById('sessStart').value||'0');
+    const sessEnd=parseInt(document.getElementById('sessEnd').value||'23');
 
-    // =========================
-    // Data fetch
-    // =========================
-    let closes, ohlc, volume = null;
-    if (m.provider === 'binance') {
-      const bars = await fetchBinanceKlines(m.fetchSymbol, tf.bin, 1000);
-      ohlc = bars;
-      closes = bars.map(b => b.close);
-      volume = bars.map(b => b.volume);
+    // Fetch
+    const bars=await fetchBinanceKlines(m.fetchSymbol, tf.bin, 1000);
+    const ohlc=bars; const closes=bars.map(b=>b.close); const volume=bars.map(b=>b.volume);
+    const mini=cards.get(m.id).mini; mini.series.setData(bars.map(b=>({time:b.time, open:b.open, high:b.high, low:b.low, close:b.close}))); mini.chart.timeScale().fitContent();
+    if(closes.length<240) throw new Error('Data terlalu sedikit');
 
-      const mini = cards.get(m.id).mini;
-      mini.series.setData(bars.map(b => ({ time: b.time, open: b.open, high: b.high, low: b.low, close: b.close })));
-      mini.chart.timeScale().fitContent();
-    } else {
-      const y = await fetchYahoo(m.fetchSymbol, tf.yfi === '1h' ? '3mo' : '1mo', tf.yfi);
-      closes = y.closes;
-      ohlc = y.ohlc;
-    }
-
-    if (!closes || closes.length < 240) throw new Error('Data terlalu sedikit');
-
-    // =========================
     // Indicators
-    // =========================
-    const ema14 = emaSeries(closes, FIXED_PARAMS.emaLen);
-    const { hist: macdHist } = macdSeries(closes);
-    const rsiArr = rsiSeries(closes, 14);
-    const atr = ATR(ohlc, 14);
-    const volMA = volume ? emaSeries(volume, 20) : null;
+    const ema14=emaSeries(closes, FIXED_PARAMS.emaLen);
+    const { hist:macdHist }=macdSeries(closes);
+    const rsiArr=rsiSeries(closes,14);
+    const atr=ATR(ohlc,14);
+    const volMA=emaSeries(volume,20);
 
-    // =========================
-    // MTF confirmation
-    // =========================
-    let mtfNote = 'N/A';
-    let mtfOk = true;
-    if (FIXED_PARAMS.useMTF) {
-      const htf = await fetchHTF(m, tf);
-      const tr = htfTrend(htf.closes);
-      mtfOk = (tr !== 0) ? tr > 0 : true;
-      mtfNote = tr > 0 ? 'UP' : tr < 0 ? 'DOWN' : 'FLAT';
-    }
+    // MTF
+    let mtfNote='N/A', mtfOk=true; if(FIXED_PARAMS.useMTF){ const htf=await fetchHTF(m, tf); const tr=htfTrend(htf.closes); mtfOk=(tr!==0)? tr>0 : true; mtfNote= tr>0? 'UP' : tr<0? 'DOWN' : 'FLAT'; }
 
-    // =========================
     // Filters
-    // =========================
-    const newsActive = matchEvent(m.id, m.group, newsPad);
-    const sessionActive = inSession(sessStart, sessEnd);
+    const newsActive=matchEvent(m.id, m.group, newsPad);
+    const sessionActive=inSession(sessStart, sessEnd);
 
-    // =========================
-    // Signals & Simulation
-    // =========================
-    const sigs = generateSignalsFixed(
-      { closes, ema14, macdHist, rsi: rsiArr, volume, volMA },
-      FIXED_PARAMS,
-      { volFilter: volFilterOn && m.provider === 'binance', volK: FIXED_PARAMS.volSpikeK }
-    );
+    // Signals & Backtest singkat
+    const sigs=generateSignalsFixed({closes, ema14, macdHist, rsi:rsiArr, volume, volMA}, FIXED_PARAMS, {volFilter:volFilterOn, volK:FIXED_PARAMS.volSpikeK});
+    const filtered=newsActive || !sessionActive || !mtfOk;
+    const sim=simulateTrades({closes, ohlc, atr, signals:sigs}, FIXED_PARAMS, rrFixed);
 
-    const filtered = newsActive || !sessionActive || !mtfOk;
-    const sim = simulateTrades({ closes, ohlc, atr, signals: sigs }, FIXED_PARAMS, rrFixed);
-
-    // =========================
-    // UI Metrics
-    // =========================
+    // UI metrics
     setTxt(`bt-${m.id}-${tf.key}`, `WR: ${sim.winRate}%`);
     setTxt(`ar-${m.id}`, `${sim.avgRet}%`);
     setTxt(`tr-${m.id}`, `${sim.total}`);
     setTxt(`se-${m.id}`, sessionActive ? `${sessStart}:00–${sessEnd}:00` : 'OUT');
     setTxt(`nw-${m.id}`, newsActive ? 'PAUSED (news)' : 'OK');
 
-    // Accuracy bar
-    const acEl = document.getElementById(`ac-${m.id}`);
-    const acvEl = document.getElementById(`acv-${m.id}`);
-    const prev = acEl.getAttribute('data-vals') ? JSON.parse(acEl.getAttribute('data-vals')) : {};
-    prev[tf.key] = sim.winRate;
-    acEl.setAttribute('data-vals', JSON.stringify(prev));
-    const avg = Math.round(Object.values(prev).reduce((a, b) => a + b, 0) / Object.values(prev).length || 0);
-    acEl.style.width = clamp(avg, 5, 100) + "%";
-    acvEl.textContent = `${avg}%`;
+    // Accuracy bar (avg multi-TF)
+    const acEl=document.getElementById(`ac-${m.id}`); const acvEl=document.getElementById(`acv-${m.id}`);
+    const prev=acEl.getAttribute('data-vals')? JSON.parse(acEl.getAttribute('data-vals')) : {}; prev[tf.key]=sim.winRate; acEl.setAttribute('data-vals', JSON.stringify(prev));
+    const avg=Math.round(Object.values(prev).reduce((a,b)=>a+b,0)/(Object.values(prev).length||1));
+    acEl.style.width=clamp(avg,5,100)+"%"; acvEl.textContent=`${avg}%`;
 
-    // =========================
     // Realtime status & score
-    // =========================
-    let status = 'HOLD';
-    const i = closes.length - 1;
-    const last = closes[i];
-    const sRSI = RSI(closes, 14);
-    const sEMA = EMA(closes, 14);
-    const macdLast = macdHist[i];
+    let status='HOLD'; const i=closes.length-1; const last=closes[i]; const sRSI=RSI(closes,14); const sEMA=EMA(closes,14); const macdLast=macdHist[i];
+    let score=50; if(last>sEMA) score+=8; else score-=8; if(sRSI<30) score+=10; else if(sRSI>70) score-=10; if(macdLast>0) score+=7; else score-=7;
+    let conf=clamp(60+(sim.winRate-55), 40, 90);
+    const crossUp=ema14[i-1]!=null && closes[i-1]<=ema14[i-1] && closes[i]>ema14[i];
+    const crossDn=ema14[i-1]!=null && closes[i-1]>=ema14[i-1] && closes[i]<ema14[i];
+    const rsiOkBuy=sRSI!=null && sRSI<=FIXED_PARAMS.rsiBuyMax;
+    const rsiOkSell=sRSI!=null && sRSI>=FIXED_PARAMS.rsiSellMin;
+    const macdUp=macdLast>0, macdDn=macdLast<0;
+    if(!filtered){ if(crossUp && macdUp && rsiOkBuy) status='BUY'; else if(crossDn && macdDn && rsiOkSell) status='SELL'; else status=(last>sEMA)?'BUY':'SELL'; }
 
-    let score = 50;
-    if (last > sEMA) score += 8; else score -= 8;
-    if (sRSI < 30) score += 10; else if (sRSI > 70) score -= 10;
-    if (macdLast > 0) score += 7; else score -= 7;
+    setTxt(`st-${m.id}-${tf.key}`, status); setClass(`st-${m.id}-${tf.key}`, `pill ${status.toLowerCase()}`);
+    setTxt(`sc-${m.id}-${tf.key}`, `Score: ${Math.round(score)}`); setTxt(`cf-${m.id}-${tf.key}`, `Conf: ${Math.round(conf)}%`);
 
-    let conf = clamp(60 + (sim.winRate - 55), 40, 90);
+    const entryI=i; const entryPrice=last; const atrVal=atr[entryI] || (entryPrice*0.005);
+    let tpPrice = entryPrice + (status==='BUY'? FIXED_PARAMS.tpATR*atrVal : -FIXED_PARAMS.tpATR*atrVal);
+    let slPrice = entryPrice + (status==='BUY'? -FIXED_PARAMS.slATR*atrVal : +FIXED_PARAMS.slATR*atrVal);
+    if(rrFixed>0){ const risk=Math.abs(entryPrice-slPrice); tpPrice = status==='BUY'? entryPrice + rrFixed*risk : entryPrice - rrFixed*risk; }
+    const maxBars=FIXED_PARAMS.timeStopBars; const barSec=barSeconds(tf); const maxExitTime=Date.now()+maxBars*barSec*1000;
+    setTxt(`pm-${m.id}-${tf.key}`, `TP:${tpPrice.toFixed(2)} SL:${slPrice.toFixed(2)} TR:${FIXED_PARAMS.trailATR} TS:${maxBars} | MTF:${mtfNote}`);
+    setTxt(`cl-${m.id}-${tf.key}`, `Close: ${fmtTime(maxExitTime)}`);
 
-    // Decide BUY/SELL only if not filtered
-    const crossUp = ema14[i - 1] != null && closes[i - 1] <= ema14[i - 1] && closes[i] > ema14[i];
-    const crossDn = ema14[i - 1] != null && closes[i - 1] >= ema14[i - 1] && closes[i] < ema14[i];
-    const rsiOkBuy = sRSI != null && sRSI <= FIXED_PARAMS.rsiBuyMax;
-    const rsiOkSell = sRSI != null && sRSI >= FIXED_PARAMS.rsiSellMin;
-    const macdUp = macdLast > 0;
-    const macdDn = macdLast < 0;
+    // Log
+    const tb=document.getElementById(`tb-${m.id}`); if(tb){ tb.innerHTML=''; const lastTrades=sim.trades.slice(-20); lastTrades.forEach((t,ix)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${sim.trades.length - lastTrades.length + ix + 1}</td><td>${t.side}</td><td>${t.entry.toFixed(2)}</td><td>${t.exit.toFixed(2)}</td><td>${(t.ret*100).toFixed(2)}</td><td>${t.reason}</td>`; tb.appendChild(tr); }); }
 
-    if (!filtered) {
-  if (crossUp && macdUp && rsiOkBuy) {
-    status = 'BUY';
-  } else if (crossDn && macdDn && rsiOkSell) {
-    status = 'SELL';
-  } else {
-    // fallback biar sinyal selalu ada
-    status = (last > sEMA) ? 'BUY' : 'SELL';
-  }
-}
-
-    setTxt(`st-${m.id}-${tf.key}`, status);
-    setClass(`st-${m.id}-${tf.key}`, `pill ${status.toLowerCase()}`);
-    setTxt(`sc-${m.id}-${tf.key}`, `Score: ${Math.round(score)}`);
-    setTxt(`cf-${m.id}-${tf.key}`, `Conf: ${Math.round(conf)}%`);
-
-    const pm = `TP:${FIXED_PARAMS.tpATR}${rrFixed ? `(RR ${rrFixed})` : ''} SL:${FIXED_PARAMS.slATR} TR:${FIXED_PARAMS.trailATR} TS:${FIXED_PARAMS.timeStopBars} ${volFilterOn && m.provider === 'binance' ? `| VOL≥${FIXED_PARAMS.volSpikeK}×MA` : ''} | MTF:${mtfNote}`;
-    setTxt(`pm-${m.id}-${tf.key}`, pm);
-// =========================
-// Exit kombinasi: TP/SL + Waktu maksimal
-// =========================
-const entryI = closes.length - 1; // posisi terakhir sebagai contoh
-const entryPrice = closes[entryI];
-const atrVal = atr[entryI] || (entryPrice*0.005);
-
-const tpPrice = entryPrice + (status==='BUY'? FIXED_PARAMS.tpATR*atrVal : -FIXED_PARAMS.tpATR*atrVal);
-const slPrice = entryPrice + (status==='BUY'? -FIXED_PARAMS.slATR*atrVal : +FIXED_PARAMS.slATR*atrVal);
-
-// Tentukan exit maksimal berdasarkan jumlah bar
-const maxBars = FIXED_PARAMS.timeStopBars; // misal 12 bar
-const barSecVal = barSec(m, tf);
-const maxExitTime = Date.now() + maxBars*barSecVal*1000;
-
-let exitReason = 'TIME';
-let exitPrice = entryPrice;
-for(let i=entryI+1; i<closes.length; i++){
-    const hi = ohlc[i]?.high ?? closes[i];
-    const lo = ohlc[i]?.low ?? closes[i];
-
-    // trailing ATR update SL
-    if(FIXED_PARAMS.trailATR>0){
-        const tr = atr[i]||atrVal;
-        if(status==='BUY'){ const cand=hi - FIXED_PARAMS.trailATR*tr; if(cand>slPrice) slPrice=cand; }
-        else { const cand=lo + FIXED_PARAMS.trailATR*tr; if(cand<slPrice) slPrice=cand; }
-    }
-
-    // Cek TP/SL
-    if(status==='BUY'){
-        if(lo <= slPrice){ exitPrice = slPrice; exitReason='SL'; break; }
-        if(hi >= tpPrice){ exitPrice = tpPrice; exitReason='TP'; break; }
-    } else if(status==='SELL'){
-        if(hi >= slPrice){ exitPrice = slPrice; exitReason='SL'; break; }
-        if(lo <= tpPrice){ exitPrice = tpPrice; exitReason='TP'; break; }
-    }
-
-    // Cek exit waktu
-    const t = Date.now() + (i-entryI)*barSecVal*1000;
-    if(t >= maxExitTime){ exitPrice = closes[i]; exitReason='TIME'; break; }
-}
-
-// Update UI
-setTxt(`cl-${m.id}-${tf.key}`, `Close: ${fmtTime(maxExitTime)}`);
-setTxt(`pm-${m.id}-${tf.key}`, `TP:${tpPrice.toFixed(4)} SL:${slPrice.toFixed(4)} | Exit max time:${fmtTime(maxExitTime)}`);
-
-    // Trade log
-    const tb = document.getElementById(`tb-${m.id}`);
-    if (tb) {
-      tb.innerHTML = '';
-      const lastTrades = sim.trades.slice(-20);
-      lastTrades.forEach((t, ix) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${sim.trades.length - lastTrades.length + ix + 1}</td><td>${t.side}</td><td>${t.entry.toFixed(4)}</td><td>${t.exit.toFixed(4)}</td><td>${(t.ret * 100).toFixed(2)}</td><td>${t.reason}</td>`;
-        tb.appendChild(tr);
-      });
-    }
-
-    const detail = `RSI:${sRSI?.toFixed?.(1)} | EMA14:${sEMA?.toFixed?.(2)} | MACD hist:${macdLast?.toFixed?.(4)} | News:${newsActive ? 'ON' : 'OFF'} | Session:${sessionActive ? 'IN' : 'OUT'} | MTF:${mtfNote}`;
+    const detail=`RSI:${sRSI?.toFixed?.(1)} | EMA14:${sEMA?.toFixed?.(2)} | MACD hist:${macdLast?.toFixed?.(4)} | News:${newsActive?'ON':'OFF'} | Session:${sessionActive?'IN':'OUT'} | MTF:${mtfNote}`;
     setTxt(`nt-${m.id}`, detail);
 
     // Countdown
-    const holdSec = FIXED_PARAMS.timeStopBars * barSec(m, tf);
-    const now = Date.now();
-    const target = now + holdSec * 1000;
-    setTxt(`cl-${m.id}-${tf.key}`, `Close: ${fmtTime(target)}`);
-    countdownTargets.set(`${m.id}-${tf.key}`, target);
-
-    document.getElementById('lastSync').textContent = "Sinkronisasi: " + new Date().toLocaleTimeString();
-  } catch (err) {
-    setTxt(`st-${m.id}-${tf.key}`, 'HOLD');
-    setClass(`st-${m.id}-${tf.key}`, 'pill hold');
-    setTxt(`sc-${m.id}-${tf.key}`, 'Score: -');
-    setTxt(`cf-${m.id}-${tf.key}`, 'Conf: -%');
-    setTxt(`bt-${m.id}-${tf.key}`, 'WR: --%');
-    setTxt(`pm-${m.id}-${tf.key}`, 'TP/SL/TR/TS: -');
-    setTxt(`cl-${m.id}-${tf.key}`, 'Close: --:--:--');
+    const holdSec=maxBars*barSec; const target=Date.now()+holdSec*1000; countdownTargets.set(`${m.id}-${tf.key}`, target);
+    document.getElementById('lastSync').textContent = "Sinkronisasi: "+ new Date().toLocaleTimeString();
+  }catch(err){
+    setTxt(`st-${m.id}-${tf.key}`, 'HOLD'); setClass(`st-${m.id}-${tf.key}`, 'pill hold'); setTxt(`sc-${m.id}-${tf.key}`, 'Score: -'); setTxt(`cf-${m.id}-${tf.key}`, 'Conf: -%'); setTxt(`bt-${m.id}-${tf.key}`, 'WR: --%'); setTxt(`pm-${m.id}-${tf.key}`, 'TP/SL/TR/TS: -'); setTxt(`cl-${m.id}-${tf.key}`, 'Close: --:--:--');
     countdownTargets.delete(`${m.id}-${tf.key}`);
-    const cdEl = document.getElementById(`cd-${m.id}-${tf.key}`);
-    if (cdEl) cdEl.textContent = 'T-: --s';
-    const ntEl = document.getElementById(`nt-${m.id}`);
-    if (ntEl) ntEl.textContent = `⛔ ${m.title} (${tf.label}) — ${err.message}`;
+    const cdEl=document.getElementById(`cd-${m.id}-${tf.key}`); if(cdEl) cdEl.textContent='T-: --s'; const ntEl=document.getElementById(`nt-${m.id}`); if(ntEl) ntEl.textContent=`⛔ ${m.title} (${tf.label}) — ${err.message}`;
   }
 }
-
-function startLoop(m, tf){ const state=cards.get(m.id); if(!state) return; const key=`loop-${tf.key}`; if(state.timers?.get?.(key)) clearInterval(state.timers.get(key)); updateOne(m, tf); const t=setInterval(()=>updateOne(m, tf), tf.refresh); state.timers.set(key, t); }
-
+function startLoop(m, tf){ const state=cards.get(m.id); if(!state) return; const key=`loop-${tf.key}`; if(state?.timers?.get?.(key)) clearInterval(state.timers.get(key)); updateOne(m, tf); const t=setInterval(()=>updateOne(m, tf), tf.refresh); state.timers.set(key, t); }
 setInterval(()=>{ countdownTargets.forEach((ts,key)=>{ const left=Math.max(0, Math.floor((ts-Date.now())/1000)); const el=document.getElementById(`cd-${key}`); if(el) el.textContent=`T-: ${left}s`; if(left===0){ countdownTargets.delete(key); if(el) el.textContent='T-: --s'; } }); }, 1000);
 
-
 /* =========================
-   INIT + News UI
+   INIT + News UI + Python bridge
    ========================= */
 function init(){
-  // wire news box
+  // news
   const box=document.getElementById('newsBox'); const btnS=document.getElementById('btnSaveNews'); const btnC=document.getElementById('btnClearNews');
   try{ const cur=loadNews(); box.value= JSON.stringify(cur, null, 2); }catch(_){ }
   btnS.onclick=()=>{ try{ const val=JSON.parse(box.value||'[]'); saveNews(val); alert('Kalender disimpan.'); }catch(e){ alert('JSON tidak valid.'); } };
@@ -568,24 +391,25 @@ function init(){
   addFavoriteChips();
   const ordered=[...MARKETS].sort((a,b)=> (FAVORITES.includes(b.id)?1:0) - (FAVORITES.includes(a.id)?1:0));
   ordered.forEach(makeCard);
+
+  // quick trade buttons
+  document.getElementById('btn-buy-btc').onclick=()=>kirimSinyal('BTCUSDT','BUY',0.01,0,0);
+  document.getElementById('btn-sell-btc').onclick=()=>kirimSinyal('BTCUSDT','SELL',0.01,0,0);
+  document.getElementById('btn-buy-eth').onclick=()=>kirimSinyal('ETHUSDT','BUY',0.01,0,0);
+  document.getElementById('btn-sell-eth').onclick=()=>kirimSinyal('ETHUSDT','SELL',0.01,0,0);
 }
-async function fetchSignals() {
-  try {
-    const res = await fetch("http://localhost:5000/signals");
-    const data = await res.json();
-    console.log("Sinyal dari bot:", data);
-    // contoh: update salah satu elemen dashboard
-    Object.entries(data).forEach(([pair, signal]) => {
-      const el = document.getElementById(`st-${pair}-scalp`);
-      if (el) {
-        el.textContent = signal;
-        el.className = "pill " + signal.toLowerCase();
-      }
-    });
-  } catch (err) {
-    console.warn("Gagal ambil sinyal:", err);
+
+async function fetchSignals(){
+  try{ const res=await fetch("http://localhost:5000/signals"); const data=await res.json();
+    Object.entries(data).forEach(([pair, signal])=>{ const el=document.getElementById(`st-${pair}-scalp`); if(el){ el.textContent=signal; el.className="pill "+signal.toLowerCase(); } });
+  }catch(err){ console.warn("Gagal ambil sinyal:", err); }
+}
+setInterval(fetchSignals, 5000); fetchSignals();
+
+function kirimSinyal(symbol, action, lot, sl, tp){
+  fetch('http://localhost:5000/sinyal', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ symbol, action, lot, sl, tp }) })
+  .then(res=>res.json()).then(data=>console.log('Response server:', data)).catch(err=>console.error('Gagal kirim sinyal:', err));
   }
-}
 
 // refresh tiap 5 detik
 setInterval(fetchSignals, 5000);
@@ -615,9 +439,6 @@ document.getElementById("sell-xauusd").addEventListener("click", () => {
     kirimSinyal("XAUUSD", "SELL", 0.01, 1950, 1900);
 });
 </script>
-
-<!DOCTYPE html>
-
 <html lang="id">
 <head>
 <meta charset="utf-8"/>
@@ -747,76 +568,4 @@ document.getElementById("sell-xauusd").addEventListener("click", () => {
     </script>
 </div>
 </section>
-<section>
-<h2>📈 Technical Analysis - Forex</h2>
-<div class="tradingview-widget-container">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
-    {
-      "interval": "1h",
-      "width": "100%",
-      "height": "350",
-      "symbol": "FX:EURUSD",
-      "showIntervalTabs": true,
-      "locale": "en",
-      "colorTheme": "dark"
-    }
-    </script>
-</div>
-<div class="tradingview-widget-container" style="margin-top:20px">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
-    {
-      "interval": "1h",
-      "width": "100%",
-      "height": "350",
-      "symbol": "FX:GBPUSD",
-      "showIntervalTabs": true,
-      "locale": "en",
-      "colorTheme": "dark"
-    }
-    </script>
-</div>
-<div class="tradingview-widget-container" style="margin-top:20px">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
-    {
-      "interval": "1h",
-      "width": "100%",
-      "height": "350",
-      "symbol": "FX:USDJPY",
-      "showIntervalTabs": true,
-      "locale": "en",
-      "colorTheme": "dark"
-    }
-    </script>
-</div>
-</section>
-<section>
-<h2>📈 Technical Analysis - Crypto</h2>
-<div class="tradingview-widget-container">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
-    {
-      "interval": "1h",
-      "width": "100%",
-      "height": "350",
-      "symbol": "BINANCE:BTCUSDT",
-      "showIntervalTabs": true,
-      "locale": "en",
-      "colorTheme": "dark"
-    }
-    </script>
-</div>
-<div class="tradingview-widget-container" style="margin-top:20px">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" type="text/javascript">
-    {
-      "interval": "1h",
-      "width": "100%",
-      "height": "350",
-      "symbol": "BINANCE:ETHUSDT",
-      "showIntervalTabs": true,
-      "locale": "en",
-      "colorTheme": "dark"
-    }
-    </script>
-</div>
-</section>
-<section>
-</body>
+
