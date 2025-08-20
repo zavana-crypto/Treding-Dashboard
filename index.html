@@ -325,7 +325,6 @@ function generateSignalsFixed({closes, ohlc, ema14, macdHist, rsi, volume, volMA
   }
   return res;
 }
-
 function simulateTrades({closes, ohlc, atr, signals}, params, rrFixed){
   const { tpATR, slATR, trailATR, timeStopBars } = params; const out=[];
   for(const s of signals){
@@ -649,7 +648,6 @@ init();
       </script>
     </div>
   </section>
-
   <section>
     <h2>📅 Kalender Ekonomi</h2>
     <div class="tradingview-widget-container">
