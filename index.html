@@ -139,7 +139,7 @@
 const TIMEFRAMES=[
   { key:"scalp", label:"Scalping", tv:"1", bin:"1m", refresh:2500 },
   { key:"swing", label:"Swing",    tv:"30", bin:"30m", refresh:8000 },
-  { key:"hold",  label:"Hold",     tv:"60", bin:"60m", refresh:20000 },
+  { key:"hold",  label:"Hold",     tv:"1H", bin:"1H", refresh:20000 },
 ];
 
 const MARKETS=[
@@ -562,7 +562,70 @@ function kirimSinyal(symbol, action, lot, sl, tp){
 
 init();
 </script>
+<script>
+// === EMA calculation ===
+function EMA(values, period){
+  const k = 2/(period+1);
+  let emaArray=[];
+  let prevEma = values[0];
+  emaArray.push(prevEma);
+  for(let i=1;i<values.length;i++){
+    let ema = values[i]*k + prevEma*(1-k);
+    emaArray.push(ema);
+    prevEma = ema;
+  }
+  return emaArray;
+}
 
+// === Pivot Support/Resistance ===
+function calcPivot(high,low,close){
+  const pivot=(high+low+close)/3;
+  const s1=(2*pivot)-high;
+  const r1=(2*pivot)-low;
+  const s2=pivot-(high-low);
+  const r2=pivot+(high-low);
+  return {pivot,s1,r1,s2,r2};
+}
+
+// === Dummy data (contoh closes/ohlc) ===
+let closes=[1.2030,1.2040,1.2050,1.2060,1.2070];
+let ohlc={high:1.2100,low:1.2000,close:1.2070};
+
+// EMA-50 (pakai closing prices)
+let ema50Arr=EMA(closes,50);
+let ema50=ema50Arr[ema50Arr.length-1];
+
+// Hitung Pivot SR
+let sr=calcPivot(ohlc.high,ohlc.low,ohlc.close);
+
+// === Tentukan Sinyal ===
+let lastClose=closes[closes.length-1];
+let signal="HOLD";
+
+if(lastClose>ema50 && lastClose>sr.r1){
+  signal="BUY (Breakout Resistance)";
+}else if(lastClose<ema50 && lastClose<sr.s1){
+  signal="SELL (Breakout Support)";
+}else if(Math.abs(lastClose-ema50)<0.0005){
+  signal="HOLD (Near EMA50)";
+}else if(Math.abs(lastClose-sr.r1)<0.0005){
+  signal="HOLD (Near Resistance)";
+}else if(Math.abs(lastClose-sr.s1)<0.0005){
+  signal="HOLD (Near Support)";
+}
+
+document.getElementById("signal").innerText=signal;
+
+// === Update WR dan Trend Strength dummy ===
+let wr=47; // contoh WR
+let cont=65; let rev=35;
+
+document.getElementById("wr").innerText=wr+"%";
+const label=document.getElementById("trendstrength-label");
+const bar=document.getElementById("trendstrength-bar");
+label.innerText=cont+"% Continuation | "+rev+"% Reversal";
+bar.style.width=cont+"%";
+bar.style.backgroundColor=`rgb(${255-(cont*2.55)},${cont*2.55},80)`;
 <!-- ===== Secondary: Trading Dashboard Full (kept visually, embedded cleanly) ===== -->
 <div class="tvfull">
   <header>📊 Trading Dashboard Full</header>
