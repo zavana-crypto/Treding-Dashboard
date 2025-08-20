@@ -48,60 +48,30 @@
   .btn{cursor:pointer; padding:6px 10px; border-radius:10px; border:1px solid var(--accent); font-size:12px; background:#0b1220}
   .btn.primary{background:#122036}
   @media (max-width:420px){ .tvbox{height:180px} .mini-chart{height:100px} }
+
+  /* --- Scoped styles for the secondary "Trading Dashboard Full" to preserve its original look without affecting main --- */
+  .tvfull { margin:24px auto; max-width:1320px; padding:0 16px; }
+  .tvfull header {
+    background: #161b22;
+    padding: 15px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #58a6ff;
+    border-radius:10px;
+    border:1px solid var(--accent);
+  }
+  .tvfull section {
+    padding: 20px;
+    margin-top: 16px;
+    background: #161b22;
+    border-radius: 10px;
+    border:1px solid var(--accent);
+  }
+  .tvfull h2 { margin-bottom: 15px; color: #58a6ff; }
+  .tvfull iframe, .tvfull .tradingview-widget-container { width: 100% !important; }
 </style>
 </head>
-<script>
-async function loadSignals() {
-  try {
-    let res = await fetch("http://localhost:5000/signals");
-    let data = await res.json();
-
-    for (let sym in data) {
-      const el = document.getElementById(sym + "-signal");
-      if (el) {
-        const sig = data[sym]["1m"].signal; // ambil timeframe 1 menit
-        el.innerText = sig;
-
-        if (sig === "BUY") { el.style.background = "green"; el.style.color = "white"; }
-        else if (sig === "SELL") { el.style.background = "red"; el.style.color = "white"; }
-        else { el.style.background = "yellow"; el.style.color = "black"; }
-      }
-    }
-  } catch (err) {
-    console.error("Gagal ambil sinyal:", err);
-  }
-}
-
-loadSignals();
-setInterval(loadSignals, 10000); // refresh 10 detik sekali
-</script>
-<script>
-async function loadSignals() {
-  try {
-    let res = await fetch("http://localhost:5000/signals");
-    let data = await res.json();
-
-    for (let sym in data) {
-      const el = document.getElementById(sym + "-signal");
-      if (el) {
-        const sig = data[sym]["1m"].signal; // timeframe default 1 menit
-        el.innerText = sig;
-
-        if (sig === "BUY") { el.style.background = "green"; el.style.color = "white"; }
-        else if (sig === "SELL") { el.style.background = "red"; el.style.color = "white"; }
-        else { el.style.background = "yellow"; el.style.color = "black"; }
-      }
-    }
-  } catch (err) {
-    console.error("Gagal ambil sinyal:", err);
-  }
-}
-
-// load pertama kali + auto refresh setiap 10 detik
-loadSignals();
-setInterval(loadSignals, 10000);
-</script>
-
 <body>
 <div class="wrap">
   <div class="row" style="justify-content:space-between; border-bottom:1px solid var(--accent); padding-bottom:10px; margin-bottom:10px">
@@ -115,7 +85,7 @@ setInterval(loadSignals, 10000);
   <div class="settings" id="globalSettings">
     <h3>Pengaturan Global</h3>
     <div class="row">
-      <label>Mode Entr y/Exit: 
+      <label>Mode Entr y/Exit:
         <select id="modeSelect">
           <option value="fixed" selected>Fixed (pasti & konsisten)</option>
           <option value="adaptive">Adaptive (optimasi walk-forward)</option>
@@ -124,7 +94,7 @@ setInterval(loadSignals, 10000);
       <label>Risk per Trade (%): <input id="riskPct" type="number" step="0.1" min="0.1" value="1.0"/></label>
       <label>RR Fixed: <input id="rrFixed" type="number" step="0.1" min="1" value="1.5"/></label>
       <label>Hindari News (menit ±): <input id="newsPad" type="number" min="0" value="30"/></label>
-      <label>Filter Volume Spike: 
+      <label>Filter Volume Spike:
         <select id="volFilter">
           <option value="on" selected>ON (crypto)</option>
           <option value="off">OFF</option>
@@ -132,11 +102,11 @@ setInterval(loadSignals, 10000);
       </label>
       <label>Filter Session (jam lokal): <input id="sessStart" type="number" min="0" max="23" value="7"/> — <input id="sessEnd" type="number" min="0" max="23" value="23"/></label>
       <label>Mode Signal:
-  <select id="signalMode">
-    <option value="scalping">Scalping (BUY/SELL pasti)</option>
-    <option value="swing" selected>Swing (aturan lengkap)</option>
-  </select>
-</label>
+        <select id="signalMode">
+          <option value="scalping">Scalping (BUY/SELL pasti)</option>
+          <option value="swing" selected>Swing (aturan lengkap)</option>
+        </select>
+      </label>
     </div>
     <div class="row" style="margin-top:8px">
       <label>Kalender Ekonomi (tanpa API) — JSON sederhana:
@@ -157,6 +127,7 @@ setInterval(loadSignals, 10000);
 
   <div class="grid" id="grid"></div>
 </div>
+
 <!-- TradingView + Lightweight Charts -->
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -166,13 +137,13 @@ setInterval(loadSignals, 10000);
    TIMEFRAMES & MARKETS
    ========================= */
 const TIMEFRAMES=[
-    { key:"scalp", label:"Scalping", tv:"1", bin:"1m", refresh:3000 },
+  { key:"scalp", label:"Scalping", tv:"1", bin:"1m", refresh:3000 },
   { key:"swing", label:"Swing",    tv:"5", bin:"5m", refresh:8000 },
   { key:"hold",  label:"Hold",     tv:"30", bin:"30m", refresh:20000 },
 ];
 
 const MARKETS=[
-   { id:"BTCUSDT", title:"BTC/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"BTCUSDT", tvSymbol:"BINANCE:BTCUSDT" },
+  { id:"BTCUSDT", title:"BTC/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"BTCUSDT", tvSymbol:"BINANCE:BTCUSDT" },
   { id:"ETHUSDT", title:"ETH/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"ETHUSDT", tvSymbol:"BINANCE:ETHUSDT" },
   { id:"BNBUSDT", title:"BNB/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"BNBUSDT", tvSymbol:"BINANCE:BNBUSDT" },
   { id:"SOLUSDT", title:"SOL/USDT", group:"CRYPTO", provider:"binance", fetchSymbol:"SOLUSDT", tvSymbol:"BINANCE:SOLUSDT" },
@@ -203,7 +174,93 @@ function ATR(ohlc,p=14){ if(!ohlc||ohlc.length<p+1) return []; const tr=[]; for(
 function macdSeries(closes,fast=12,slow=26,signalP=9){ const ef=emaSeries(closes,fast), es=emaSeries(closes,slow); const macd=closes.map((_,i)=> (ef[i]!=null&&es[i]!=null)?(ef[i]-es[i]):null); const macdValid=macd.map(v=>v==null?0:v).slice(slow-1); const sigRaw=emaSeries(macdValid, signalP); const sig=new Array(closes.length).fill(null); for(let i=0;i<sigRaw.length;i++){ const idx=slow-1+i; sig[idx]=sigRaw[i]; } const hist=macd.map((v,i)=> (v!=null&&sig[i]!=null)?v-sig[i]:null); return { macd, signal:sig, hist } }
 
 /* =========================
-   DATA FEED (Binance — gratis tanpa API key)
+   CANDLE MECHANICS & REVERSAL PATTERNS
+   ========================= */
+function C(o){
+  const body = Math.abs(o.close - o.open);
+  const range = o.high - o.low;
+  const upper = o.high - Math.max(o.open, o.close);
+  const lower = Math.min(o.open, o.close) - o.low;
+  const bull = o.close > o.open;
+  const bear = o.close < o.open;
+  const doji = body <= range * 0.1;
+  return { body, range, upper, lower, bull, bear, doji };
+}
+function near(a,b,tol){ return Math.abs(a-b) <= tol; }
+function mid(a,b){ return (a+b)/2; }
+
+function trendContext(closes, len=34){
+  const e = emaSeries(closes, len);
+  const n = e.length;
+  if(n<6) return 0;
+  const slope = e[n-1]-e[n-6];
+  return slope>0 ? 1 : slope<0 ? -1 : 0;
+}
+
+function detectReversalPatterns(ohlc, i, closes){
+  const out = { dir:null, labels:[], strength:0, explain:"" };
+  if (i<2 || i>=ohlc.length) return out;
+  const c0 = ohlc[i], c1 = ohlc[i-1], c2 = ohlc[i-2];
+  const a0 = C(c0),     a1 = C(c1),     a2 = C(c2);
+  const ctx = trendContext(closes);
+
+  let scoreBull = 0, scoreBear = 0;
+  const add = (dir, label, s)=>{
+    out.labels.push(label);
+    if(dir==="BULL") scoreBull+=s; else scoreBear+=s;
+  };
+
+  // Single-candle
+  if (!a0.doji && a0.lower > a0.body*2 && a0.body <= a0.range*0.35) add("BULL","HAMMER",18);
+  if (!a0.doji && a0.upper > a0.body*2 && a0.body <= a0.range*0.35 && ctx<=0) add("BULL","INVERTED_HAMMER",12);
+  if (!a0.doji && a0.upper > a0.body*2 && a0.body <= a0.range*0.35 && ctx>=0) add("BEAR","SHOOTING_STAR",18);
+  if (a0.doji && a0.lower > a0.range*0.6 && a0.upper <= a0.range*0.1) add("BULL","DRAGONFLY_DOJI",15);
+  if (a0.doji && a0.upper > a0.range*0.6 && a0.lower <= a0.range*0.1) add("BEAR","GRAVESTONE_DOJI",15);
+  if (a0.doji && a0.upper > a0.range*0.3 && a0.lower > a0.range*0.3) { scoreBull*=0.9; scoreBear*=0.9; }
+
+  // Two-candle
+  if (a1.bear && a0.bull && c0.close>c1.open && c0.open<c1.close) add("BULL","BULL_ENGULF",22);
+  if (a1.bull && a0.bear && c0.close<c1.open && c0.open>c1.close) add("BEAR","BEAR_ENGULF",22);
+
+  const mid1 = mid(c1.open, c1.close);
+  if (a1.bear && a0.bull && c0.close>mid1 && c0.open<c1.low) add("BULL","PIERCING",16);
+  if (a1.bull && a0.bear && c0.close<mid1 && c0.open>c1.high) add("BEAR","DARK_CLOUD",16);
+
+  const bodyHigh1 = Math.max(c1.open, c1.close), bodyLow1 = Math.min(c1.open, c1.close);
+  const inside0 = Math.max(c0.open,c0.close) <= bodyHigh1 && Math.min(c0.open,c0.close) >= bodyLow1 && a0.body <= a1.body*0.7;
+  if (inside0 && a1.bear && a0.bull) add("BULL","BULL_HARAMI",12);
+  if (inside0 && a1.bull && a0.bear) add("BEAR","BEAR_HARAMI",12);
+
+  const tol = (c1.high - c1.low) * 0.15;
+  if (near(c0.low, c1.low, tol) && a0.bull && a1.bear) add("BULL","TWEEZER_BOTTOM",12);
+  if (near(c0.high, c1.high, tol) && a0.bear && a1.bull) add("BEAR","TWEEZER_TOP",12);
+
+  // Three-candle
+  const smallBody2 = a1.body <= Math.max(a0.body,a2.body)*0.6;
+  if (a2.bear && smallBody2 && a0.bull && c0.close >= mid(c2.open,c2.close)) add("BULL","MORNING_STAR",24);
+  if (a2.bull && smallBody2 && a0.bear && c0.close <= mid(c2.open,c2.close)) add("BEAR","EVENING_STAR",24);
+
+  const longBull0 = a0.bull && a0.body >= a0.range*0.5;
+  const longBull1 = a1.bull && a1.body >= a1.range*0.45;
+  const longBull2 = a2.bull && a2.body >= a2.range*0.4;
+  if (longBull0 && longBull1 && longBull2 && ctx<=0) add("BULL","THREE_WHITE_SOLDIERS",20);
+
+  const longBear0 = a0.bear && a0.body >= a0.range*0.5;
+  const longBear1 = a1.bear && a1.body >= a1.range*0.45;
+  const longBear2 = a2.bear && a2.body >= a2.range*0.4;
+  if (longBear0 && longBear1 && longBear2 && ctx>=0) add("BEAR","THREE_BLACK_CROWS",20);
+
+  if (ctx<0) scoreBull *= 1.1;
+  if (ctx>0) scoreBear *= 1.1;
+
+  out.dir = scoreBull>scoreBear ? "BULL" : scoreBear>scoreBull ? "BEAR" : null;
+  out.strength = Math.min(100, Math.round(Math.max(scoreBull, scoreBear)));
+  out.explain = out.labels.join(", ");
+  return out;
+}
+
+/* =========================
+   DATA FEED (Binance)
    ========================= */
 async function fetchBinanceKlines(symbol, interval="1m", limit=1000){
   const url=`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
@@ -223,22 +280,52 @@ function matchEvent(symbol, group, padMin){
 }
 
 /* =========================
-   STRATEGI (Fixed)
+   STRATEGI (Fixed) + REVERSAL PARAMS
    ========================= */
-const FIXED_PARAMS={ rsiBuyMax:65, rsiSellMin:35, emaLen:14, tpATR:1.5, slATR:1.0, trailATR:1.0, timeStopBars:12, volSpikeK:1.5, useMTF:true };
+const FIXED_PARAMS = {
+  rsiBuyMax: 65,
+  rsiSellMin: 35,
+  emaLen: 14,
+  tpATR: 1.5,
+  slATR: 1.0,
+  trailATR: 1.0,
+  timeStopBars: 12,
+  volSpikeK: 1.5,
+  useMTF: true,
+  // Reversal integration
+  reversalMinStrength: 18,
+  reversalBoostScore: 10,
+  reversalAsTrigger: true
+};
+
 function barSeconds(tf){ if(tf.bin==='1m') return 60; if(tf.bin==='5m') return 300; if(tf.bin==='30m') return 1800; return 900; }
-function generateSignalsFixed({closes, ema14, macdHist, rsi, volume, volMA}, params, opts){
-  const { rsiBuyMax, rsiSellMin } = params; const res=[];
-  for(let i=1;i<closes.length;i++){
+
+function generateSignalsFixed({closes, ohlc, ema14, macdHist, rsi, volume, volMA}, params, opts){
+  const { rsiBuyMax, rsiSellMin, reversalMinStrength, reversalAsTrigger } = params;
+  const res=[];
+  for(let i=2;i<closes.length;i++){
     const crossUp = ema14[i-1]!=null && closes[i-1]<=ema14[i-1] && closes[i]>ema14[i];
     const crossDn = ema14[i-1]!=null && closes[i-1]>=ema14[i-1] && closes[i]<ema14[i];
-    const macdUp = macdHist[i]>0, macdDn = macdHist[i]<0; const rsiOkBuy=rsi[i]!=null && rsi[i]<=rsiBuyMax; const rsiOkSell=rsi[i]!=null && rsi[i]>=rsiSellMin;
+    const macdUp = macdHist[i]>0, macdDn = macdHist[i]<0;
+    const rsiOkBuy=rsi[i]!=null && rsi[i]<=rsiBuyMax;
+    const rsiOkSell=rsi[i]!=null && rsi[i]>=rsiSellMin;
+
     if(opts.volFilter){ const sp=volMA[i]? (volume[i]/volMA[i]) : 1; if(sp<opts.volK) continue; }
-    if(crossUp && macdUp && rsiOkBuy) res.push({ idx:i, side:'BUY' });
-    if(crossDn && macdDn && rsiOkSell) res.push({ idx:i, side:'SELL' });
+
+    const rev = detectReversalPatterns(ohlc, i, closes);
+    const strongBull = rev.dir==="BULL" && rev.strength>=reversalMinStrength;
+    const strongBear = rev.dir==="BEAR" && rev.strength>=reversalMinStrength;
+
+    if ((crossUp && macdUp && rsiOkBuy) || (reversalAsTrigger && strongBull && macdUp)) {
+      res.push({ idx:i, side:'BUY', reason: strongBull ? `REV:${rev.explain}` : 'INDICATORS' });
+    }
+    if ((crossDn && macdDn && rsiOkSell) || (reversalAsTrigger && strongBear && macdDn)) {
+      res.push({ idx:i, side:'SELL', reason: strongBear ? `REV:${rev.explain}` : 'INDICATORS' });
+    }
   }
   return res;
 }
+
 function simulateTrades({closes, ohlc, atr, signals}, params, rrFixed){
   const { tpATR, slATR, trailATR, timeStopBars } = params; const out=[];
   for(const s of signals){
@@ -255,14 +342,14 @@ function simulateTrades({closes, ohlc, atr, signals}, params, rrFixed){
       if(s.side==='BUY'){ if(lo<=sl){ exitI=i; reason='SL'; break; } if(hi>=tp){ exitI=i; reason='TP'; break; } }
       else { if(hi>=sl){ exitI=i; reason='SL'; break; } if(lo<=tp){ exitI=i; reason='TP'; break; } }
     }
-    const exit=closes[exitI]; const ret= s.side==='BUY'? (exit-entry)/entry : (entry-exit)/entry; out.push({ entryI, exitI, side:s.side, entry, exit, ret, reason });
+    const exit=closes[exitI]; const ret= s.side==='BUY'? (exit-entry)/entry : (entry-exit)/entry; out.push({ entryI, exitI, side:s.side, entry, exit, ret, reason: s.reason || reason });
   }
   const wins=out.filter(t=>t.ret>0).length; const total=out.length; const winRate= total? Math.round(100*wins/total):0; const avgRet= total? +(out.reduce((a,b)=>a+b.ret,0)/total*100).toFixed(2):0;
   return { trades:out, winRate, avgRet, total };
 }
 
 /* =========================
-   MTF (HTF via Binance juga)
+   MTF
    ========================= */
 async function fetchHTF(m, tf){
   const map={ '1m':'5m', '5m':'30m', '30m':'4h' }; const next=map[tf.bin]||'30m';
@@ -294,6 +381,7 @@ function makeCard(m){
         <div class="pill hold" id="st-${m.id}-${tf.key}">HOLD</div>
         <span class="badge" id="sc-${m.id}-${tf.key}">Score: -</span>
         <span class="badge" id="cf-${m.id}-${tf.key}">Conf: -%</span>
+        <span class="badge" id="rp-${m.id}-${tf.key}">Reversal: -</span>
         <span class="badge" id="bt-${m.id}-${tf.key}">WR: --%</span>
         <span class="badge" id="pm-${m.id}-${tf.key}">TP/SL/TR/TS: -</span>
         <span class="badge" id="cl-${m.id}-${tf.key}">Close: --:--:--</span>
@@ -345,61 +433,71 @@ async function updateOne(m, tf){
   const setTxt=(sel,t)=>{ const el=document.getElementById(sel); if(el) el.textContent=t; };
   const setClass=(sel,cls)=>{ const el=document.getElementById(sel); if(el) el.className=cls; };
   try{
-    // Global settings
     const rrFixed=parseFloat(document.getElementById('rrFixed').value||'0');
     const newsPad=parseInt(document.getElementById('newsPad').value||'0');
     const volFilterOn=document.getElementById('volFilter').value==='on';
     const sessStart=parseInt(document.getElementById('sessStart').value||'0');
     const sessEnd=parseInt(document.getElementById('sessEnd').value||'23');
 
-    // Fetch
     const bars=await fetchBinanceKlines(m.fetchSymbol, tf.bin, 1000);
     const ohlc=bars; const closes=bars.map(b=>b.close); const volume=bars.map(b=>b.volume);
     const mini=cards.get(m.id).mini; mini.series.setData(bars.map(b=>({time:b.time, open:b.open, high:b.high, low:b.low, close:b.close}))); mini.chart.timeScale().fitContent();
     if(closes.length<240) throw new Error('Data terlalu sedikit');
 
-    // Indicators
     const ema14=emaSeries(closes, FIXED_PARAMS.emaLen);
     const { hist:macdHist }=macdSeries(closes);
     const rsiArr=rsiSeries(closes,14);
     const atr=ATR(ohlc,14);
     const volMA=emaSeries(volume,20);
 
-    // MTF
     let mtfNote='N/A', mtfOk=true; if(FIXED_PARAMS.useMTF){ const htf=await fetchHTF(m, tf); const tr=htfTrend(htf.closes); mtfOk=(tr!==0)? tr>0 : true; mtfNote= tr>0? 'UP' : tr<0? 'DOWN' : 'FLAT'; }
 
-    // Filters
     const newsActive=matchEvent(m.id, m.group, newsPad);
     const sessionActive=inSession(sessStart, sessEnd);
 
-    // Signals & Backtest singkat
-    const sigs=generateSignalsFixed({closes, ema14, macdHist, rsi:rsiArr, volume, volMA}, FIXED_PARAMS, {volFilter:volFilterOn, volK:FIXED_PARAMS.volSpikeK});
+    const sigs=generateSignalsFixed({closes, ohlc, ema14, macdHist, rsi:rsiArr, volume, volMA}, FIXED_PARAMS, {volFilter:volFilterOn, volK:FIXED_PARAMS.volSpikeK});
     const filtered=newsActive || !sessionActive || !mtfOk;
     const sim=simulateTrades({closes, ohlc, atr, signals:sigs}, FIXED_PARAMS, rrFixed);
 
-    // UI metrics
     setTxt(`bt-${m.id}-${tf.key}`, `WR: ${sim.winRate}%`);
     setTxt(`ar-${m.id}`, `${sim.avgRet}%`);
     setTxt(`tr-${m.id}`, `${sim.total}`);
     setTxt(`se-${m.id}`, sessionActive ? `${sessStart}:00–${sessEnd}:00` : 'OUT');
     setTxt(`nw-${m.id}`, newsActive ? 'PAUSED (news)' : 'OK');
 
-    // Accuracy bar (avg multi-TF)
     const acEl=document.getElementById(`ac-${m.id}`); const acvEl=document.getElementById(`acv-${m.id}`);
     const prev=acEl.getAttribute('data-vals')? JSON.parse(acEl.getAttribute('data-vals')) : {}; prev[tf.key]=sim.winRate; acEl.setAttribute('data-vals', JSON.stringify(prev));
     const avg=Math.round(Object.values(prev).reduce((a,b)=>a+b,0)/(Object.values(prev).length||1));
     acEl.style.width=clamp(avg,5,100)+"%"; acvEl.textContent=`${avg}%`;
 
-    // Realtime status & score
     let status='HOLD'; const i=closes.length-1; const last=closes[i]; const sRSI=RSI(closes,14); const sEMA=EMA(closes,14); const macdLast=macdHist[i];
     let score=50; if(last>sEMA) score+=8; else score-=8; if(sRSI<30) score+=10; else if(sRSI>70) score-=10; if(macdLast>0) score+=7; else score-=7;
+
+    // Reversal badge + boost
+    const revNow = detectReversalPatterns(ohlc, i, closes);
+    if (revNow.dir && revNow.strength >= FIXED_PARAMS.reversalMinStrength) {
+      score += FIXED_PARAMS.reversalBoostScore;
+      const rpEl = document.getElementById(`rp-${m.id}-${tf.key}`);
+      if (rpEl) rpEl.textContent = `Reversal: ${revNow.dir} (${revNow.explain}) [${revNow.strength}]`;
+    } else {
+      const rpEl = document.getElementById(`rp-${m.id}-${tf.key}`);
+      if (rpEl) rpEl.textContent = `Reversal: -`;
+    }
+
     let conf=clamp(60+(sim.winRate-55), 40, 90);
     const crossUp=ema14[i-1]!=null && closes[i-1]<=ema14[i-1] && closes[i]>ema14[i];
     const crossDn=ema14[i-1]!=null && closes[i-1]>=ema14[i-1] && closes[i]<ema14[i];
     const rsiOkBuy=sRSI!=null && sRSI<=FIXED_PARAMS.rsiBuyMax;
     const rsiOkSell=sRSI!=null && sRSI>=FIXED_PARAMS.rsiSellMin;
     const macdUp=macdLast>0, macdDn=macdLast<0;
-    if(!filtered){ if(crossUp && macdUp && rsiOkBuy) status='BUY'; else if(crossDn && macdDn && rsiOkSell) status='SELL'; else status=(last>sEMA)?'BUY':'SELL'; }
+
+    if(!filtered){
+      const strongBull = revNow.dir==="BULL" && revNow.strength>=FIXED_PARAMS.reversalMinStrength;
+      const strongBear = revNow.dir==="BEAR" && revNow.strength>=FIXED_PARAMS.reversalMinStrength;
+      if ((crossUp && macdUp && rsiOkBuy) || (FIXED_PARAMS.reversalAsTrigger && strongBull && macdUp)) status='BUY';
+      else if ((crossDn && macdDn && rsiOkSell) || (FIXED_PARAMS.reversalAsTrigger && strongBear && macdDn)) status='SELL';
+      else status=(last>sEMA)?'BUY':'SELL';
+    }
 
     setTxt(`st-${m.id}-${tf.key}`, status); setClass(`st-${m.id}-${tf.key}`, `pill ${status.toLowerCase()}`);
     setTxt(`sc-${m.id}-${tf.key}`, `Score: ${Math.round(score)}`); setTxt(`cf-${m.id}-${tf.key}`, `Conf: ${Math.round(conf)}%`);
@@ -412,13 +510,11 @@ async function updateOne(m, tf){
     setTxt(`pm-${m.id}-${tf.key}`, `TP:${tpPrice.toFixed(2)} SL:${slPrice.toFixed(2)} TR:${FIXED_PARAMS.trailATR} TS:${maxBars} | MTF:${mtfNote}`);
     setTxt(`cl-${m.id}-${tf.key}`, `Close: ${fmtTime(maxExitTime)}`);
 
-    // Log
     const tb=document.getElementById(`tb-${m.id}`); if(tb){ tb.innerHTML=''; const lastTrades=sim.trades.slice(-20); lastTrades.forEach((t,ix)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${sim.trades.length - lastTrades.length + ix + 1}</td><td>${t.side}</td><td>${t.entry.toFixed(2)}</td><td>${t.exit.toFixed(2)}</td><td>${(t.ret*100).toFixed(2)}</td><td>${t.reason}</td>`; tb.appendChild(tr); }); }
 
     const detail=`RSI:${sRSI?.toFixed?.(1)} | EMA14:${sEMA?.toFixed?.(2)} | MACD hist:${macdLast?.toFixed?.(4)} | News:${newsActive?'ON':'OFF'} | Session:${sessionActive?'IN':'OUT'} | MTF:${mtfNote}`;
     setTxt(`nt-${m.id}`, detail);
 
-    // Countdown
     const holdSec=maxBars*barSec; const target=Date.now()+holdSec*1000; countdownTargets.set(`${m.id}-${tf.key}`, target);
     document.getElementById('lastSync').textContent = "Sinkronisasi: "+ new Date().toLocaleTimeString();
   }catch(err){
@@ -431,10 +527,9 @@ function startLoop(m, tf){ const state=cards.get(m.id); if(!state) return; const
 setInterval(()=>{ countdownTargets.forEach((ts,key)=>{ const left=Math.max(0, Math.floor((ts-Date.now())/1000)); const el=document.getElementById(`cd-${key}`); if(el) el.textContent=`T-: ${left}s`; if(left===0){ countdownTargets.delete(key); if(el) el.textContent='T-: --s'; } }); }, 1000);
 
 /* =========================
-   INIT + News UI + Python bridge
+   INIT + News UI + optional Python bridge
    ========================= */
 function init(){
-  // news
   const box=document.getElementById('newsBox'); const btnS=document.getElementById('btnSaveNews'); const btnC=document.getElementById('btnClearNews');
   try{ const cur=loadNews(); box.value= JSON.stringify(cur, null, 2); }catch(_){ }
   btnS.onclick=()=>{ try{ const val=JSON.parse(box.value||'[]'); saveNews(val); alert('Kalender disimpan.'); }catch(e){ alert('JSON tidak valid.'); } };
@@ -444,16 +539,19 @@ function init(){
   const ordered=[...MARKETS].sort((a,b)=> (FAVORITES.includes(b.id)?1:0) - (FAVORITES.includes(a.id)?1:0));
   ordered.forEach(makeCard);
 
-  // quick trade buttons
-  document.getElementById('btn-buy-btc').onclick=()=>kirimSinyal('BTCUSDT','BUY',0.01,0,0);
-  document.getElementById('btn-sell-btc').onclick=()=>kirimSinyal('BTCUSDT','SELL',0.01,0,0);
-  document.getElementById('btn-buy-eth').onclick=()=>kirimSinyal('ETHUSDT','BUY',0.01,0,0);
-  document.getElementById('btn-sell-eth').onclick=()=>kirimSinyal('ETHUSDT','SELL',0.01,0,0);
+  // Quick trade buttons (guard if not present)
+  const ids=['btn-buy-btc','btn-sell-btc','btn-buy-eth','btn-sell-eth'];
+  ids.forEach(id=>{ const el=document.getElementById(id); if(el){ el.onclick=()=>console.log('Clicked', id); } });
 }
 
 async function fetchSignals(){
-  try{ const res=await fetch("http://localhost:5000/signals"); const data=await res.json();
-    Object.entries(data).forEach(([pair, signal])=>{ const el=document.getElementById(`st-${pair}-scalp`); if(el){ el.textContent=signal; el.className="pill "+signal.toLowerCase(); } });
+  try{
+    const res=await fetch("http://localhost:5000/signals");
+    const data=await res.json();
+    Object.entries(data).forEach(([pair, signal])=>{
+      const el=document.getElementById(`st-${pair}-scalp`);
+      if(el){ el.textContent=signal; el.className="pill "+String(signal).toLowerCase(); }
+    });
   }catch(err){ console.warn("Gagal ambil sinyal:", err); }
 }
 setInterval(fetchSignals, 5000); fetchSignals();
@@ -461,162 +559,112 @@ setInterval(fetchSignals, 5000); fetchSignals();
 function kirimSinyal(symbol, action, lot, sl, tp){
   fetch('http://localhost:5000/sinyal', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ symbol, action, lot, sl, tp }) })
   .then(res=>res.json()).then(data=>console.log('Response server:', data)).catch(err=>console.error('Gagal kirim sinyal:', err));
-  }
-
-// refresh tiap 5 detik
-setInterval(fetchSignals, 5000);
-fetchSignals();
-init();
-
-</script>
-</body>
-<script>
-function kirimSinyal(symbol, action, lot, sl, tp) {
-    fetch('http://localhost:5000/sinyal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol, action, lot, sl, tp })
-    })
-    .then(res => res.json())
-    .then(data => console.log("Response server:", data))
-    .catch(err => console.error("Gagal kirim sinyal:", err));
 }
 
-// Tombol trading
-document.getElementById("buy-eurusd").addEventListener("click", () => {
-    kirimSinyal("EURUSD", "BUY", 0.01, 1.1000, 1.1200);
-});
-document.getElementById("sell-xauusd").addEventListener("click", () => {
-    kirimSinyal("XAUUSD", "SELL", 0.01, 1950, 1900);
-});
+init();
 </script>
-<html lang="id">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Trading Dashboard Full</title>
-<style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #0d1117;
-      color: white;
-    }
-    header {
-      background: #161b22;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      color: #58a6ff;
-    }
-    section {
-      padding: 20px;
-      margin-bottom: 30px;
-      background: #161b22;
-      border-radius: 10px;
-    }
-    h2 {
-      margin-bottom: 15px;
-      color: #58a6ff;
-    }
-    iframe, .tradingview-widget-container {
-      width: 100% !important;
-    }
-  </style>
-</head>
-<body>
-<header>📊 Trading Dashboard Full</header>
-<section>
-<h2>⏰ Market Ticker</h2>
-<div class="tradingview-widget-container">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" type="text/javascript">
-    {
-      "symbols": [
-        {"proName": "FX_IDC:EURUSD","title": "EUR/USD"},
-        {"proName": "OANDA:XAUUSD","title": "Gold"},
-        {"proName": "BINANCE:BTCUSDT","title": "BTC/USDT"},
-        {"proName": "FOREXCOM:SPXUSD","title": "S&P 500"},
-        {"proName": "FOREXCOM:NSXUSD","title": "Nasdaq 100"}
-      ],
-      "colorTheme": "dark",
-      "isTransparent": false,
-      "locale": "en"
-    }
-    </script>
-</div>
-</section>
-<section>
-<h2>⏰ Market Ticker – Forex Majors</h2>
-<div class="tradingview-widget-container">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" type="text/javascript">
-    {
-      "symbols": [
-        {"proName": "FX_IDC:EURUSD","title": "EUR/USD"},
-        {"proName": "FX_IDC:GBPUSD","title": "GBP/USD"},
-        {"proName": "FX_IDC:USDJPY","title": "USD/JPY"},
-        {"proName": "FX_IDC:USDCHF","title": "USD/CHF"},
-        {"proName": "FX_IDC:AUDUSD","title": "AUD/USD"},
-        {"proName": "FX_IDC:NZDUSD","title": "NZD/USD"},
-        {"proName": "FX_IDC:USDCAD","title": "USD/CAD"}
-      ],
-      "colorTheme": "dark",
-      "isTransparent": false,
-      "locale": "en"
-    }
-    </script>
-</div>
-</section>
-<section>
-<h2>⏰ Market Ticker – Metals, Energy, Indeks, Crypto</h2>
-<div class="tradingview-widget-container">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js" type="text/javascript">
-    {
-      "symbols": [
-        {"proName": "OANDA:XAUUSD","title": "Gold"},
-        {"proName": "OANDA:XAGUSD","title": "Silver"},
-        {"proName": "OANDA:WTICOUSD","title": "WTI Oil"},
-        {"proName": "FOREXCOM:SPXUSD","title": "S&P 500"},
-        {"proName": "FOREXCOM:NSXUSD","title": "Nasdaq 100"},
-        {"proName": "FOREXCOM:DJI","title": "Dow Jones"},
-        {"proName": "BINANCE:BTCUSDT","title": "BTC/USDT"},
-        {"proName": "BINANCE:ETHUSDT","title": "ETH/USDT"}
-      ],
-      "colorTheme": "dark",
-      "isTransparent": false,
-      "locale": "en"
-    }
-    </script>
-</div>
-</section>
-<section>
-<h2>📰 Breaking News</h2>
-<div class="tradingview-widget-container">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" type="text/javascript">
-    {
-      "feedMode": "market",
-      "colorTheme": "dark",
-      "isTransparent": false,
-      "displayMode": "regular",
-      "width": "100%",
-      "height": "500",
-      "locale": "en"
-    }
-    </script>
-</div>
-</section>
-<section>
-<h2>📅 Kalender Ekonomi</h2>
-<div class="tradingview-widget-container">
-<script async="" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" type="text/javascript">
-    {
-      "colorTheme": "dark",
-      "isTransparent": false,
-      "width": "100%",
-      "height": "600",
-      "locale": "en"
-    }
-    </script>
-</div>
-</section>
 
+<!-- ===== Secondary: Trading Dashboard Full (kept visually, embedded cleanly) ===== -->
+<div class="tvfull">
+  <header>📊 Trading Dashboard Full</header>
+
+  <section>
+    <h2>⏰ Market Ticker</h2>
+    <div class="tradingview-widget-container">
+      <script type="text/javascript" async src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
+      {
+        "symbols": [
+          {"proName": "FX_IDC:EURUSD","title": "EUR/USD"},
+          {"proName": "OANDA:XAUUSD","title": "Gold"},
+          {"proName": "BINANCE:BTCUSDT","title": "BTC/USDT"},
+          {"proName": "FOREXCOM:SPXUSD","title": "S&P 500"},
+          {"proName": "FOREXCOM:NSXUSD","title": "Nasdaq 100"}
+        ],
+        "colorTheme": "dark",
+        "isTransparent": false,
+        "locale": "en"
+      }
+      </script>
+    </div>
+  </section>
+
+  <section>
+    <h2>⏰ Market Ticker – Forex Majors</h2>
+    <div class="tradingview-widget-container">
+      <script type="text/javascript" async src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
+      {
+        "symbols": [
+          {"proName": "FX_IDC:EURUSD","title": "EUR/USD"},
+          {"proName": "FX_IDC:GBPUSD","title": "GBP/USD"},
+          {"proName": "FX_IDC:USDJPY","title": "USD/JPY"},
+          {"proName": "FX_IDC:USDCHF","title": "USD/CHF"},
+          {"proName": "FX_IDC:AUDUSD","title": "AUD/USD"},
+          {"proName": "FX_IDC:NZDUSD","title": "NZD/USD"},
+          {"proName": "FX_IDC:USDCAD","title": "USD/CAD"}
+        ],
+        "colorTheme": "dark",
+        "isTransparent": false,
+        "locale": "en"
+      }
+      </script>
+    </div>
+  </section>
+
+  <section>
+    <h2>⏰ Market Ticker – Metals, Energy, Indeks, Crypto</h2>
+    <div class="tradingview-widget-container">
+      <script type="text/javascript" async src="https://s3.tradingview.com/external-embedding/embed-widget-tickers.js">
+      {
+        "symbols": [
+          {"proName": "OANDA:XAUUSD","title": "Gold"},
+          {"proName": "OANDA:XAGUSD","title": "Silver"},
+          {"proName": "OANDA:WTICOUSD","title": "WTI Oil"},
+          {"proName": "FOREXCOM:SPXUSD","title": "S&P 500"},
+          {"proName": "FOREXCOM:NSXUSD","title": "Nasdaq 100"},
+          {"proName": "FOREXCOM:DJI","title": "Dow Jones"},
+          {"proName": "BINANCE:BTCUSDT","title": "BTC/USDT"},
+          {"proName": "BINANCE:ETHUSDT","title": "ETH/USDT"}
+        ],
+        "colorTheme": "dark",
+        "isTransparent": false,
+        "locale": "en"
+      }
+      </script>
+    </div>
+  </section>
+
+  <section>
+    <h2>📰 Breaking News</h2>
+    <div class="tradingview-widget-container">
+      <script type="text/javascript" async src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js">
+      {
+        "feedMode": "market",
+        "colorTheme": "dark",
+        "isTransparent": false,
+        "displayMode": "regular",
+        "width": "100%",
+        "height": "500",
+        "locale": "en"
+      }
+      </script>
+    </div>
+  </section>
+
+  <section>
+    <h2>📅 Kalender Ekonomi</h2>
+    <div class="tradingview-widget-container">
+      <script type="text/javascript" async src="https://s3.tradingview.com/external-embedding/embed-widget-events.js">
+      {
+        "colorTheme": "dark",
+        "isTransparent": false,
+        "width": "100%",
+        "height": "600",
+        "locale": "en"
+      }
+      </script>
+    </div>
+  </section>
+</div>
+
+</body>
+</html>
