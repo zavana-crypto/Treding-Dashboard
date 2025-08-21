@@ -137,8 +137,8 @@
    TIMEFRAMES & MARKETS
    ========================= */
 const TIMEFRAMES=[
-  { key:"scalp", label:"Scalping", tv:"1", bin:"1m", refresh:2500 },
-  { key:"swing", label:"Swing",    tv:"30", bin:"30m", refresh:8000 },
+  { key:"scalp", label:"Scalping", tv:"1", bin:"1m", refresh:3000 },
+  { key:"swing", label:"Swing",    tv:"15", bin:"15m", refresh:8000 },
   { key:"hold",  label:"Hold",     tv:"1H", bin:"1H", refresh:20000 },
 ];
 
@@ -211,44 +211,44 @@ function detectReversalPatterns(ohlc, i, closes){
   };
 
   // Single-candle
-  if (!a0.doji && a0.lower > a0.body*2 && a0.body <= a0.range*0.35) add("BULL","HAMMER",18);
-  if (!a0.doji && a0.upper > a0.body*2 && a0.body <= a0.range*0.35 && ctx<=0) add("BULL","INVERTED_HAMMER",12);
-  if (!a0.doji && a0.upper > a0.body*2 && a0.body <= a0.range*0.35 && ctx>=0) add("BEAR","SHOOTING_STAR",18);
-  if (a0.doji && a0.lower > a0.range*0.6 && a0.upper <= a0.range*0.1) add("BULL","DRAGONFLY_DOJI",15);
-  if (a0.doji && a0.upper > a0.range*0.6 && a0.lower <= a0.range*0.1) add("BEAR","GRAVESTONE_DOJI",15);
+  if (!a0.doji && a0.lower > a0.body*2 && a0.body <= a0.range*0.35) add("HAMMER",18);
+  if (!a0.doji && a0.upper > a0.body*2 && a0.body <= a0.range*0.35 && ctx<=0) add("HAMMER",12);
+  if (!a0.doji && a0.upper > a0.body*2 && a0.body <= a0.range*0.35 && ctx>=0) add("STAR",18);
+  if (a0.doji && a0.lower > a0.range*0.6 && a0.upper <= a0.range*0.1) add("DOJI",15);
+  if (a0.doji && a0.upper > a0.range*0.6 && a0.lower <= a0.range*0.1) add("DOJI",15);
   if (a0.doji && a0.upper > a0.range*0.3 && a0.lower > a0.range*0.3) { scoreBull*=0.9; scoreBear*=0.9; }
 
   // Two-candle
-  if (a1.bear && a0.bull && c0.close>c1.open && c0.open<c1.close) add("BULL","BULL_ENGULF",22);
-  if (a1.bull && a0.bear && c0.close<c1.open && c0.open>c1.close) add("BEAR","BEAR_ENGULF",22);
+  if (a1.bear && a0.bull && c0.close>c1.open && c0.open<c1.close) add("BULL",22);
+  if (a1.bull && a0.bear && c0.close<c1.open && c0.open>c1.close) add("BEAR",22);
 
   const mid1 = mid(c1.open, c1.close);
-  if (a1.bear && a0.bull && c0.close>mid1 && c0.open<c1.low) add("BULL","PIERCING",16);
-  if (a1.bull && a0.bear && c0.close<mid1 && c0.open>c1.high) add("BEAR","DARK_CLOUD",16);
+  if (a1.bear && a0.bull && c0.close>mid1 && c0.open<c1.low) add("BULL",16);
+  if (a1.bull && a0.bear && c0.close<mid1 && c0.open>c1.high) add("BEAR",16);
 
   const bodyHigh1 = Math.max(c1.open, c1.close), bodyLow1 = Math.min(c1.open, c1.close);
   const inside0 = Math.max(c0.open,c0.close) <= bodyHigh1 && Math.min(c0.open,c0.close) >= bodyLow1 && a0.body <= a1.body*0.7;
-  if (inside0 && a1.bear && a0.bull) add("BULL","BULL_HARAMI",12);
-  if (inside0 && a1.bull && a0.bear) add("BEAR","BEAR_HARAMI",12);
+  if (inside0 && a1.bear && a0.bull) add("BULL",12);
+  if (inside0 && a1.bull && a0.bear) add("BEAR",12);
 
   const tol = (c1.high - c1.low) * 0.15;
-  if (near(c0.low, c1.low, tol) && a0.bull && a1.bear) add("BULL","TWEEZER_BOTTOM",12);
-  if (near(c0.high, c1.high, tol) && a0.bear && a1.bull) add("BEAR","TWEEZER_TOP",12);
+  if (near(c0.low, c1.low, tol) && a0.bull && a1.bear) add("BULL",12);
+  if (near(c0.high, c1.high, tol) && a0.bear && a1.bull) add("BEAR",12);
 
   // Three-candle
   const smallBody2 = a1.body <= Math.max(a0.body,a2.body)*0.6;
-  if (a2.bear && smallBody2 && a0.bull && c0.close >= mid(c2.open,c2.close)) add("BULL","MORNING_STAR",24);
-  if (a2.bull && smallBody2 && a0.bear && c0.close <= mid(c2.open,c2.close)) add("BEAR","EVENING_STAR",24);
+  if (a2.bear && smallBody2 && a0.bull && c0.close >= mid(c2.open,c2.close)) add("MORNING_STAR",24);
+  if (a2.bull && smallBody2 && a0.bear && c0.close <= mid(c2.open,c2.close)) add("EVENING_STAR",24);
 
   const longBull0 = a0.bull && a0.body >= a0.range*0.5;
   const longBull1 = a1.bull && a1.body >= a1.range*0.45;
   const longBull2 = a2.bull && a2.body >= a2.range*0.4;
-  if (longBull0 && longBull1 && longBull2 && ctx<=0) add("BULL","THREE_WHITE_SOLDIERS",20);
+  if (longBull0 && longBull1 && longBull2 && ctx<=0) add("SOLDIERS",20);
 
   const longBear0 = a0.bear && a0.body >= a0.range*0.5;
   const longBear1 = a1.bear && a1.body >= a1.range*0.45;
   const longBear2 = a2.bear && a2.body >= a2.range*0.4;
-  if (longBear0 && longBear1 && longBear2 && ctx>=0) add("BEAR","THREE_BLACK_CROWS",20);
+  if (longBear0 && longBear1 && longBear2 && ctx>=0) add("CROWS",20);
 
   if (ctx<0) scoreBull *= 1.1;
   if (ctx>0) scoreBear *= 1.1;
@@ -283,8 +283,8 @@ function matchEvent(symbol, group, padMin){
    STRATEGI (Fixed) + REVERSAL PARAMS
    ========================= */
 const FIXED_PARAMS = {
-  rsiBuyMax: 65,
-  rsiSellMin: 35,
+  rsiBuyMax: 45,
+  rsiSellMin: 30,
   maLen: 14,
   tpATR: 1.5,
   slATR: 1.0,
