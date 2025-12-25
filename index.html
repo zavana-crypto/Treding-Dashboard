@@ -2,20 +2,26 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA Ockhand Tage ACCESS</title>
+<title>ZAVANA V13 Cloud & Multi-TF</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 <!-- EmailJS SDK -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
+<!-- FIREBASE SDK (COMPAT MODE FOR SIMPLICITY IN SINGLE FILE) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <style>
-  :root{ --bg-base: #0b0e11; --bg-card: #151a1f; --bg-hover: #2b3139; --text-primary: #eaecef; --text-secondary: #848e9c; --gold: #FFD700; --binance-green: #0ECB81; --binance-red: #F6465D; --border: #2b3139; --neon-blue: #00f0ff; }
+  :root{ --bg-base: #0b0e11; --bg-card: #151a1f; --bg-hover: #2b3139; --text-primary: #eaecef; --text-secondary: #848e9c; --gold: #FFD700; --binance-green: #0ECB81; --binance-red: #F6465D; --border: #2b3139; --neon-blue: #00f0ff; --cloud-color: #3b82f6; }
   body{background:var(--bg-base); color:var(--text-primary); font-family:'IBM Plex Sans', sans-serif; margin:0; padding-bottom:60px;}
   .app-container { max-width:1600px; margin:0 auto; padding:16px; }
   .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:16px; }
   .brand { font-size:24px; font-weight:800; color:var(--text-primary); letter-spacing:1px; display:flex; align-items:center; gap:10px; }
   .brand span { color:var(--gold); font-size:12px; font-weight:500; background:rgba(255, 215, 0, 0.1); padding:2px 8px; border-radius:4px; border:1px solid rgba(255,215,0,0.3); }
+  
   .status-group { display: flex; gap: 10px; align-items: center; }
   .conn-status { font-size:12px; font-weight:500; color:var(--text-secondary); display:flex; align-items:center; gap:6px; background:var(--bg-card); padding:6px 12px; border-radius:4px; border:1px solid var(--border); }
   .dot { width:8px; height:8px; border-radius:50%; background:var(--text-secondary); }
@@ -23,6 +29,12 @@
   .latency { font-family: monospace; font-size: 11px; color: var(--text-secondary); }
   .latency.good { color: var(--binance-green); }
   .latency.bad { color: var(--binance-red); }
+
+  /* Cloud Status */
+  .cloud-status { cursor:pointer; border:1px solid var(--cloud-color); color:var(--cloud-color); background:rgba(59, 130, 246, 0.1); }
+  .cloud-status:hover { background:rgba(59, 130, 246, 0.2); }
+  .cloud-status.synced { background:var(--cloud-color); color:white; }
+
   .toolbar-wrapper { display: flex; justify-content: space-between; align-items: center; border-bottom:1px solid var(--border); margin-bottom: 16px; padding-bottom: 8px; }
   .toolbar { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
   .tf-btn { background:transparent; color:var(--text-secondary); border:none; padding:6px 14px; cursor:pointer; font-weight:600; font-size:13px; border-radius:4px; transition:0.2s; white-space:nowrap; }
@@ -31,20 +43,29 @@
   .btn-group { display: flex; gap: 8px; }
   .edit-btn { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
   .edit-btn:hover { border-color: var(--text-secondary); }
+  
   .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); gap:16px; }
   .card { background:var(--bg-card); border-radius:10px; padding:14px; position:relative; display:flex; flex-direction:column; gap:10px; border:1px solid transparent; transition:0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
   .card:hover { border-color:var(--border); transform: translateY(-2px); }
   .card.gold-pair { border: 1px solid rgba(255, 215, 0, 0.2); background: linear-gradient(180deg, #151a1f 0%, #1f1b0f 100%); }
   .card.sniper-active { border: 1px solid var(--neon-blue); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+  
   .c-head { display:flex; justify-content:space-between; align-items:center; }
   .pair-info { display:flex; align-items:center; gap:10px; }
   .pair-icon { width:28px; height:28px; border-radius:50%; background:#222; }
   .pair-link { text-decoration: none; display: flex; align-items: center; gap: 8px; cursor: pointer; }
   .pair-name { font-size:16px; font-weight:700; color:var(--text-primary); transition: 0.2s; }
   .pair-link:hover .pair-name { color: var(--gold); text-decoration: underline; }
+  
   .trend-badge { font-size:11px; padding:3px 8px; border-radius:4px; background:var(--bg-hover); color:var(--text-secondary); font-weight:600; }
   .trend-badge.bull { color:#000; background:var(--binance-green); }
   .trend-badge.bear { color:#fff; background:var(--binance-red); }
+  
+  /* NEW HTF Badge */
+  .htf-badge { font-size: 10px; padding: 2px 6px; border-radius: 3px; border: 1px solid var(--border); color: var(--text-secondary); margin-left: auto; margin-right: 10px;}
+  .htf-badge.bull { color: var(--binance-green); border-color: var(--binance-green); }
+  .htf-badge.bear { color: var(--binance-red); border-color: var(--binance-red); }
+
   .price-box { text-align:right; }
   .live-price { font-size:18px; font-weight:600; font-family:'IBM Plex Sans', monospace; }
   .candle-timer { font-size: 11px; color: var(--text-secondary); font-family: monospace; margin-top: 2px; }
@@ -92,8 +113,12 @@
 
 <div class="app-container">
   <div class="header">
-    <div class="brand">ZAVANA <span>V12 Notification</span></div>
+    <div class="brand">ZAVANA <span>V13 CLOUD</span></div>
     <div class="status-group">
+      <!-- CLOUD SYNC BUTTON -->
+      <div class="conn-status cloud-status" id="cloudBtn" onclick="toggleCloudSync()">
+          <span>☁ SYNC</span>
+      </div>
       <span class="latency" id="pingDisplay">Ping: --ms</span>
       <div class="conn-status">
         <div class="dot" id="wsDot"></div>
@@ -134,7 +159,7 @@
         <h3>Notification Settings</h3>
         <p style="font-size:11px; color:var(--text-secondary); margin-bottom:10px;">
            1. <b>Desktop:</b> Klik 'Request Permission' agar notif muncul di layar.<br>
-           2. <b>Email:</b> Daftar di <a href="https://www.emailjs.com" target="_blank" style="color:var(--neon-blue)">EmailJS.com</a> (Gratis). Masukkan ID di bawah ini untuk mengaktifkan alert ke oskartage91@gmail.com
+           2. <b>Email:</b> Daftar di <a href="https://www.emailjs.com" target="_blank" style="color:var(--neon-blue)">EmailJS.com</a> (Gratis).
         </p>
 
         <button class="edit-btn" style="width:100%; justify-content:center; margin-bottom:15px; padding:10px;" onclick="reqNotifPermission()">
@@ -157,9 +182,129 @@
     </div>
 </div>
 
-<audio id="alertSound" src="data:audio/wav;base64,UklGRl9vT1BXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"></audio>
-
 <script>
+/* =========================================
+   FIREBASE CLOUD STORAGE SETUP
+   ========================================= */
+let db, auth, currentUser;
+let isCloudEnabled = false;
+let APP_ID = 'zavana-v13'; 
+
+// Use environment config if available, otherwise requires user config
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+function initFirebase() {
+    if(!firebaseConfig) {
+        console.warn("Firebase config not found. Cloud features disabled.");
+        return;
+    }
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    auth = firebase.auth();
+    console.log("Firebase Initialized");
+}
+
+async function toggleCloudSync() {
+    if(!auth) { alert("Firebase Config Missing in Environment."); return; }
+    
+    const btn = document.getElementById('cloudBtn');
+    btn.innerHTML = `<span>↻ ...</span>`;
+
+    if(currentUser) {
+        // Already logged in, maybe show status or logout (for now just confirm)
+        alert(`Cloud Active. User ID: ${currentUser.uid.substring(0,6)}...`);
+        btn.innerHTML = `<span>☁ ON</span>`;
+        btn.classList.add('synced');
+    } else {
+        // Try login
+        try {
+            // Check for custom token or anonymous
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await auth.signInWithCustomToken(__initial_auth_token);
+            } else {
+                await auth.signInAnonymously();
+            }
+        } catch(e) {
+            console.error("Auth Error:", e);
+            btn.innerHTML = `<span>⚠ ERR</span>`;
+            alert("Login Failed: " + e.message);
+        }
+    }
+}
+
+// Auth Listener
+if(typeof firebase !== 'undefined' && firebaseConfig) {
+    initFirebase();
+    auth.onAuthStateChanged(async (user) => {
+        const btn = document.getElementById('cloudBtn');
+        if(user) {
+            currentUser = user;
+            isCloudEnabled = true;
+            btn.innerHTML = `<span>☁ ON</span>`;
+            btn.classList.add('synced');
+            console.log("Logged In:", user.uid);
+            await loadUserData(); // Load data from cloud
+        } else {
+            currentUser = null;
+            isCloudEnabled = false;
+            btn.innerHTML = `<span>☁ SYNC</span>`;
+            btn.classList.remove('synced');
+        }
+    });
+}
+
+// Cloud Data Handlers
+async function loadUserData() {
+    if(!currentUser || !db) return;
+    try {
+        const docRef = db.collection('artifacts').doc(APP_ID).collection('users').doc(currentUser.uid).collection('settings').doc('config');
+        const docSnap = await docRef.get();
+        if(docSnap.exists) {
+            const data = docSnap.data();
+            if(data.coins) {
+                COINS = data.coins;
+                localStorage.setItem('zavana_coins', JSON.stringify(COINS));
+            }
+            if(data.emailConfig) {
+                EMAIL_CONFIG = data.emailConfig;
+                localStorage.setItem('zavana_email_config', JSON.stringify(EMAIL_CONFIG));
+                if(EMAIL_CONFIG.publicKey) emailjs.init(EMAIL_CONFIG.publicKey);
+            }
+            console.log("Data Loaded from Cloud");
+            renderGrid(); // Refresh UI with cloud data
+            changeTimeframe(CURRENT_TF);
+        }
+    } catch(e) { console.error("Load Data Error:", e); }
+}
+
+async function saveUserData() {
+    if(!currentUser || !db) return; // Fallback to local storage logic only
+    try {
+        const docRef = db.collection('artifacts').doc(APP_ID).collection('users').doc(currentUser.uid).collection('settings').doc('config');
+        await docRef.set({
+            coins: COINS,
+            emailConfig: EMAIL_CONFIG,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        console.log("Data Saved to Cloud");
+    } catch(e) { console.error("Save Data Error:", e); }
+}
+
+/* =========================================
+   MULTI-TIMEFRAME LOGIC (NEW)
+   ========================================= */
+// Map LTF (Lower Timeframe) to HTF (Higher Timeframe)
+const HTF_MAP = {
+    '1m': { label: '1H', cc: 'histohour', seconds: 3600 },
+    '5m': { label: '4H', cc: 'histohour', seconds: 14400 },
+    '15m': { label: '4H', cc: 'histohour', seconds: 14400 },
+    '1H': { label: '1D', cc: 'histoday', seconds: 86400 },
+    '4H': { label: '1D', cc: 'histoday', seconds: 86400 },
+    '1D': { label: 'W', cc: 'histoday', seconds: 604800 } // Daily uses Weekly logic roughly or just Daily trend
+};
+
+const htfMarketData = new Map();
+
 /* =========================================
    CONFIGURATION
    ========================================= */
@@ -189,14 +334,12 @@ const emailCooldown = new Map();
    INIT
    ========================================= */
 function startApp() {
-  console.log("App Started - V12 Notification");
+  console.log("App Started - V13");
   renderToolbar();
   renderGrid();
   
-  // Init EmailJS if config exists
   if(EMAIL_CONFIG.publicKey) {
       emailjs.init(EMAIL_CONFIG.publicKey);
-      console.log("EmailJS Initialized");
   }
 
   // Audio Context Fix
@@ -213,32 +356,13 @@ function startApp() {
   setInterval(updateTimers, 1000);
 }
 
-/* =========================================
-   NOTIFICATION SYSTEM (NEW)
-   ========================================= */
-
-// 1. Desktop Notification Request
-function reqNotifPermission() {
-    if (!("Notification" in window)) {
-        alert("Browser ini tidak mendukung notifikasi desktop.");
-    } else {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                new Notification("ZAVANA System", { body: "Notifikasi Desktop Aktif!" });
-            }
-        });
-    }
-}
-
-// 2. Alert Logic (Audio + Desktop + Email)
+// Alert Logic (Same as before)
 function triggerAlert(sym, type, score, price) {
     const now = Date.now();
     const lastAudio = audioCooldown.get(sym) || 0;
     const lastEmail = emailCooldown.get(sym) || 0;
 
-    // A. Audio & Desktop Alert (Cooldown 1 menit)
     if (now - lastAudio > 60000) {
-        // Play Sound
         if (window.audioCtx && window.audioCtx.state === 'running') {
             const osc = window.audioCtx.createOscillator();
             const gain = window.audioCtx.createGain();
@@ -251,7 +375,6 @@ function triggerAlert(sym, type, score, price) {
             osc.stop(window.audioCtx.currentTime + 0.3); 
         }
 
-        // Desktop Notification
         if (Notification.permission === "granted") {
             new Notification(`SNIPER ALERT: ${sym}`, {
                 body: `Signal: ${type} | Score: ${score} | Price: ${price}`,
@@ -263,7 +386,6 @@ function triggerAlert(sym, type, score, price) {
         console.log(`ALERT TRIGGERED: ${sym}`);
     }
 
-    // B. Email Alert (Cooldown 15 menit agar tidak spam)
     if (EMAIL_CONFIG.serviceId && (now - lastEmail > 900000)) {
         sendEmail(sym, type, score, price);
         emailCooldown.set(sym, now);
@@ -271,19 +393,19 @@ function triggerAlert(sym, type, score, price) {
 }
 
 function sendEmail(sym, type, score, price) {
-    console.log("Sending Email...");
     const params = {
-        to_email: "oskartage91@gmail.com", // Target Email Anda
+        to_email: "oskartage91@gmail.com", 
         symbol: sym,
         signal_type: type,
         score: score,
         price: price,
         time: new Date().toLocaleTimeString()
     };
+    emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, params).catch((err) => console.error("Email Fail:", err));
+}
 
-    emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, params)
-        .then(() => console.log("Email Sent!"))
-        .catch((err) => console.error("Email Fail:", err));
+function reqNotifPermission() {
+    if ("Notification" in window) Notification.requestPermission();
 }
 
 /* =========================================
@@ -323,9 +445,10 @@ function renderGrid() {
           <img src="${iconUrl}" class="pair-icon" onerror="this.style.display='none'">
           <a href="${tradeLink}" target="_blank" class="pair-link" title="Open in Binance">
              <div class="pair-name" style="${isGold ? 'color:var(--gold)' : ''}">${isGold ? 'GOLD' : base} / USDT</div>
-             <span style="font-size:10px; opacity:0.5;">↗</span>
           </a>
-          <div class="trend-badge" id="trend-${sym}">SCANNING</div>
+          <!-- HTF BADGE INDICATOR -->
+          <div class="htf-badge" id="htf-${sym}">HTF: -</div>
+          <div class="trend-badge" id="trend-${sym}">SCAN</div>
         </div>
         <div class="price-box">
           <div class="live-price" id="price-${sym}" style="${isGold ? 'color:var(--gold)' : ''}">---</div>
@@ -333,7 +456,7 @@ function renderGrid() {
         </div>
       </div>
       <div class="chart-wrapper" style="${isGold ? 'border-color:rgba(255,215,0,0.2)' : ''}">
-        <div class="loading-overlay" id="load-${sym}">Loading Data...</div>
+        <div class="loading-overlay" id="load-${sym}">Loading...</div>
         <div id="chart-${sym}" style="width:100%; height:100%"></div>
       </div>
       <div class="ai-panel" id="ai-${sym}">
@@ -388,7 +511,7 @@ function updateTimers() {
 }
 
 /* =========================================
-   DATA ENGINE
+   DATA ENGINE (MULTI-TF UPDATE)
    ========================================= */
 async function changeTimeframe(newTf) {
   CURRENT_TF = newTf;
@@ -397,10 +520,22 @@ async function changeTimeframe(newTf) {
   document.getElementById('wsDot').className = 'dot';
   document.getElementById('wsText').textContent = 'Connecting...';
 
+  // Determine Higher Timeframe (HTF)
+  const htfConfig = HTF_MAP[newTf.label] || { cc: 'histoday' }; // fallback
+
   for (const sym of COINS) {
     document.getElementById(`load-${sym}`).style.display = 'flex';
     marketData.set(sym, []);
-    const hist = await fetchHistory(sym, newTf);
+    
+    // 1. Fetch MAIN Timeframe Data
+    const hist = await fetchHistory(sym, newTf.cc, 200);
+    
+    // 2. Fetch HIGHER Timeframe Data (For Trend Filter)
+    const htfHist = await fetchHistory(sym, htfConfig.cc, 100);
+    if(htfHist.length > 0) {
+        htfMarketData.set(sym, htfHist);
+    }
+
     if(hist.length > 0) {
       marketData.set(sym, hist);
       const cObj = charts.get(sym);
@@ -415,10 +550,10 @@ async function changeTimeframe(newTf) {
   startWS(newTf.ws);
 }
 
-async function fetchHistory(sym, tf) {
+async function fetchHistory(sym, endpoint, limit) {
   const base = sym.replace('USDT','');
   try {
-    const res = await fetch(`https://min-api.cryptocompare.com/data/v2/${tf.cc}?fsym=${base}&tsym=USDT&limit=200`);
+    const res = await fetch(`https://min-api.cryptocompare.com/data/v2/${endpoint}?fsym=${base}&tsym=USDT&limit=${limit}`);
     const json = await res.json();
     if(json.Response === 'Success') return json.Data.Data.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volumeto }));
   } catch(e) {}
@@ -478,7 +613,7 @@ function updatePriceUI(sym, candle) {
 }
 
 /* =========================================
-   ANALYTICS & ALERT LOGIC
+   ANALYTICS & ALERT LOGIC (UPDATED WITH HTF)
    ========================================= */
 function analyze(sym, data, cObj) {
   if (!data || data.length < 200) return; 
@@ -492,10 +627,24 @@ function analyze(sym, data, cObj) {
   const macd = calcMACD(data, 12, 26, 9); 
   const adx = calcADX(data, 14);          
 
+  // 1. Current Timeframe Trend
   let trend = "SIDEWAYS";
   if (ema200 && last.close > ema200) trend = "BULLISH";
   if (ema200 && last.close < ema200) trend = "BEARISH";
   
+  // 2. Higher Timeframe Trend (FILTER)
+  let htfTrend = "NEUTRAL";
+  const htfData = htfMarketData.get(sym);
+  if(htfData && htfData.length > 50) {
+      const htfEma = calcEMA(htfData, 200); // 200 EMA on HTF
+      if(htfEma) {
+          const htfLast = htfData[htfData.length-1];
+          // Use latest known HTF close (might lag slightly vs WS but good for filter)
+          if(htfLast.close > htfEma) htfTrend = "BULL";
+          else htfTrend = "BEAR";
+      }
+  }
+
   const volumeRatio = last.volume / (avgVol || 1); 
   const isHighVol = volumeRatio > 1.5;
   const momentumUp = macd && macd.histogram > 0 && macd.histogram > macd.prevHistogram;
@@ -503,6 +652,8 @@ function analyze(sym, data, cObj) {
   const isTrendStrong = adx > 20; 
 
   let buyScore = 0, sellScore = 0;
+  
+  // Logic Scoring
   if (trend === "BULLISH") buyScore += 2;
   if (trend === "BULLISH" && rsi < 45) buyScore += 2; 
   if (last.close < bb.lower) buyScore += 2; 
@@ -519,8 +670,14 @@ function analyze(sym, data, cObj) {
   if (isHighVol && last.close < last.open) sellScore += 1.5;
   if (isTrendStrong && trend === "BEARISH") sellScore += 1;
 
-  buyScore = Math.min(10, buyScore);
-  sellScore = Math.min(10, sellScore);
+  // 3. APPLY HTF FILTER (Penalize counter-trend signals)
+  // If HTF is Bearish, reduce BUY score significantly
+  if(htfTrend === "BEAR" && buyScore > 0) buyScore -= 4.0;
+  // If HTF is Bullish, reduce SELL score significantly
+  if(htfTrend === "BULL" && sellScore > 0) sellScore -= 4.0;
+
+  buyScore = Math.max(0, Math.min(10, buyScore));
+  sellScore = Math.max(0, Math.min(10, sellScore));
   
   let signal = "WAIT";
   if (buyScore >= 7.0 && buyScore > sellScore) signal = "BUY"; 
@@ -543,7 +700,7 @@ function analyze(sym, data, cObj) {
       triggerAlert(sym, signal, Math.max(buyScore, sellScore), last.close);
   }
 
-  updateSignalUI(sym, signal, buyScore, sellScore, trend, isSniper, aiData);
+  updateSignalUI(sym, signal, buyScore, sellScore, trend, isSniper, aiData, htfTrend);
   updateMeter(sym, rsi);
   
   if(cObj) {
@@ -554,13 +711,13 @@ function analyze(sym, data, cObj) {
   }
 }
 
-// UI Updates & Math Helpers same as V11...
-function updateSignalUI(sym, signal, bScore, sScore, trend, isSniper, aiData) {
+function updateSignalUI(sym, signal, bScore, sScore, trend, isSniper, aiData, htfTrend) {
     const btnBuy = document.getElementById(`btn-buy-${sym}`);
     const btnSell = document.getElementById(`btn-sell-${sym}`);
     const scBuy = document.getElementById(`sc-buy-${sym}`);
     const scSell = document.getElementById(`sc-sell-${sym}`);
     const trendBadge = document.getElementById(`trend-${sym}`);
+    const htfBadge = document.getElementById(`htf-${sym}`); // NEW UI Element
     const aiPanel = document.getElementById(`ai-${sym}`);
     const card = document.getElementById(`card-${sym}`);
 
@@ -569,8 +726,16 @@ function updateSignalUI(sym, signal, bScore, sScore, trend, isSniper, aiData) {
     btnSell.className = 'signal-btn sell';
     scBuy.textContent = bScore.toFixed(1);
     scSell.textContent = sScore.toFixed(1);
+    
     trendBadge.textContent = trend;
     trendBadge.className = `trend-badge ${trend === "BULLISH" ? "bull" : (trend === "BEARISH" ? "bear" : "")}`;
+    
+    // Update HTF Badge
+    if(htfBadge) {
+        htfBadge.textContent = `HTF: ${htfTrend}`;
+        htfBadge.className = `htf-badge ${htfTrend === "BULL" ? "bull" : (htfTrend === "BEAR" ? "bear" : "")}`;
+    }
+
     document.getElementById(`val-entry-${sym}`).textContent = aiData.entry;
     document.getElementById(`val-sl-${sym}`).textContent = aiData.sl;
     document.getElementById(`val-tp-${sym}`).textContent = aiData.tp;
@@ -617,7 +782,12 @@ function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function saveCoins() {
     const raw = document.getElementById('coinInput').value;
     const newCoins = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-    if(newCoins.length > 0) { COINS = newCoins; localStorage.setItem('zavana_coins', JSON.stringify(COINS)); closeModal('coinModal'); renderGrid(); changeTimeframe(CURRENT_TF); }
+    if(newCoins.length > 0) { 
+        COINS = newCoins; 
+        localStorage.setItem('zavana_coins', JSON.stringify(COINS));
+        if(isCloudEnabled) saveUserData(); // SAVE TO CLOUD
+        closeModal('coinModal'); renderGrid(); changeTimeframe(CURRENT_TF); 
+    }
 }
 
 function saveEmailSettings() {
@@ -626,9 +796,10 @@ function saveEmailSettings() {
     EMAIL_CONFIG.publicKey = document.getElementById('emailPublicKey').value.trim();
     
     localStorage.setItem('zavana_email_config', JSON.stringify(EMAIL_CONFIG));
+    if(isCloudEnabled) saveUserData(); // SAVE TO CLOUD
     
     if(EMAIL_CONFIG.publicKey) emailjs.init(EMAIL_CONFIG.publicKey);
-    alert("Konfigurasi Tersimpan! Cek Console Log untuk test status.");
+    alert("Konfigurasi Tersimpan!");
     closeModal('emailModal');
 }
 
