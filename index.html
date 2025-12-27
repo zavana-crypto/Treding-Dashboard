@@ -517,73 +517,101 @@ function handleStream(sym, candle) {
     
     const now = Date.now();
     const lastRun = lastAnalysisTime.get(sym) || 0;
+    // Debounce analysis to 1 second to save resources
     if (now - lastRun > 1000) {
         analyze(sym, arr);
         lastAnalysisTime.set(sym, now);
     }
 }
 
-// TUNED STRATEGY: "LONGGAR TAPI AKURAT" (LOOSE BUT ACCURATE)
+// TUNED STRATEGY: "SMART CONFIRMATION" (Akurasi Tinggi)
 function getStrategyParams(type) {
     if(type === 'HYPER') {
-        // 1M: AGGRESSIVE SCALPING
-        // Threshold 3.5: Cukup Stoch Cross + Trend (3.5 + 2.0 = 5.5) -> BUY
-        // StochBuy 40: Tidak perlu menunggu sampai < 20. Di < 40 sudah siap sikat.
-        return { threshold: 3.5, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, htfPenalty: 0.0, stochWeight: 3.5, trendWeight: 2.0 };
+        // 1M: SCALPING CEPAT
+        // Threshold 6.5: Butuh Trend + Stoch + Warna Candle yg Sesuai
+        // RSI 55/45: Zona aman momentum
+        return { threshold: 6.5, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, stochWeight: 3.5, trendWeight: 2.0 };
     } else if(type === 'SCALP') {
-        // 5M: MODERATE SCALPING
-        // Threshold 4.5: Sedikit lebih ketat dari 1m, tapi lebih longgar dari sebelumnya.
-        return { threshold: 4.5, rsiBuy: 45, rsiSell: 55, stochBuy: 30, stochSell: 70, htfPenalty: 1.0, stochWeight: 3.5, trendWeight: 2.5 };
+        // 5M: KONFIRMASI LEBIH KUAT
+        return { threshold: 7.0, rsiBuy: 45, rsiSell: 55, stochBuy: 30, stochSell: 70, stochWeight: 3.5, trendWeight: 2.5 };
     } else if(type === 'DAY') {
-        // 15M/1H: BALANCED
-        return { threshold: 6.0, rsiBuy: 35, rsiSell: 65, stochBuy: 25, stochSell: 75, htfPenalty: 2.5, stochWeight: 3.0, trendWeight: 3.0 };
-    } else if(type === 'SWING') {
-        // 4H: TREND FOLLOWER
-        return { threshold: 7.0, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, htfPenalty: 5.0, stochWeight: 2.0, trendWeight: 4.0 };
+        // 15M/1H: SWING SANTAI
+        return { threshold: 7.5, rsiBuy: 35, rsiSell: 65, stochBuy: 25, stochSell: 75, stochWeight: 3.0, trendWeight: 3.0 };
     } else { 
-        // INVEST: STRICT
-        return { threshold: 8.0, rsiBuy: 30, rsiSell: 70, stochBuy: 15, stochSell: 85, htfPenalty: 0.0, stochWeight: 2.0, trendWeight: 5.0 };
+        // INVEST: STRICT TREND FOLLOWER
+        return { threshold: 8.5, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 2.0, trendWeight: 4.0 };
     }
 }
 
 function analyze(sym, data, force = false) {
-    if(data.length < 50) return; // Safety check
+    if(data.length < 50) return; 
 
     const last = data[data.length-1];
+    const prev = data[data.length-2];
     const strat = getStrategyParams(CURRENT_TF.type);
     
+    // Indicators
     const rsi = calcRSI(data, 14);
     const stoch = calcStochRSI(data, 14, 14, 3, 3);
-    // Safety: Fallback if not enough data for EMA200
-    const ema200Raw = calcEMA(data, 200);
-    const ema200 = ema200Raw !== null ? ema200Raw : data[0].close; 
-    
+    const ema200 = calcEMA(data, 200) || data[0].close;
+    const ema50 = calcEMA(data, 50) || data[0].close; // New Short-term Trend
     const bb = calcBB(data, 20, 2);
-    const trend = last.close > ema200 ? 'BULLISH' : 'BEARISH';
+    
+    // Context
+    const mainTrend = last.close > ema200 ? 'BULLISH' : 'BEARISH';
+    const shortTrend = last.close > ema50 ? 'BULLISH' : 'BEARISH';
+    
+    // Price Action (Color Confirmation)
+    const isGreen = last.close >= last.open;
+    const isRed = last.close < last.open;
     
     let bScore = 0, sScore = 0;
 
-    // 1. TREND IS FRIEND (Bobot ditingkatkan agar akurat)
-    if(trend === 'BULLISH') bScore += strat.trendWeight; else sScore += strat.trendWeight;
+    // 1. TREND ALIGNMENT (Bobot besar jika EMA 50 & 200 searah)
+    if(mainTrend === 'BULLISH') bScore += strat.trendWeight; 
+    else sScore += strat.trendWeight;
     
-    // 2. STOCHASTIC (Pemicu Utama Scalping)
+    if(shortTrend === 'BULLISH') bScore += 1.0; 
+    else sScore += 1.0;
+
+    // 2. STOCHASTIC (Trigger Utama)
+    // Cross yang valid: K < BuyZone DAN K > D (sedang menanjak)
     if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += strat.stochWeight;
     if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += strat.stochWeight;
     
-    // 3. RSI (Konfirmasi Tambahan)
-    if(rsi < strat.rsiBuy) bScore += 1.5; // Bobot RSI sedikit dikurangi agar tidak menghalangi Stoch
+    // 3. RSI MOMENTUM
+    // Oversold reversal atau Bullish Momentum support
+    if(rsi < strat.rsiBuy) bScore += 1.5;
+    else if(rsi > 50 && rsi < 70 && mainTrend === 'BULLISH') bScore += 1.0; // Bullish push
+
     if(rsi > strat.rsiSell) sScore += 1.5;
+    else if(rsi < 50 && rsi > 30 && mainTrend === 'BEARISH') sScore += 1.0; // Bearish push
     
-    // 4. BOLLINGER BANDS (Reversal)
+    // 4. PRICE ACTION (KUNCI AKURASI)
+    // Buy hanya jika candle hijau (konfirmasi buyer masuk), Sell jika merah
+    if(isGreen) bScore += 1.5;
+    if(isRed) sScore += 1.5;
+    
+    // 5. BOLLINGER BANDS (Rejection)
     if(last.close < bb.lower) bScore += 2.0;
     if(last.close > bb.upper) sScore += 2.0;
     
+    // FINAL LOGIC
     let signal = 'WAIT';
-    // Logic: Score > Threshold DAN Score Lawan tidak dominan
-    if(bScore >= strat.threshold && bScore > sScore) signal = 'BUY';
-    if(sScore >= strat.threshold && sScore > bScore) signal = 'SELL';
     
-    const res = { signal, bScore, sScore, trend, rsi, price: last.close };
+    // Kondisi Khusus: Reversal Ekstrem (Bisa lawan arah candle)
+    const extremeBuy = stoch.k < 15 && rsi < 30;
+    const extremeSell = stoch.k > 85 && rsi > 70;
+
+    // RULE: Score harus tinggi DAN (Warna Candle Sesuai ATAU Reversal Ekstrem)
+    if(bScore >= strat.threshold && bScore > sScore) {
+        if(isGreen || extremeBuy) signal = 'BUY';
+    }
+    if(sScore >= strat.threshold && sScore > bScore) {
+        if(isRed || extremeSell) signal = 'SELL';
+    }
+    
+    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close };
     analysisResults.set(sym, res);
     MTF_MATRIX.set(`${sym}_${CURRENT_TF.label}`, signal);
     
@@ -592,14 +620,12 @@ function analyze(sym, data, force = false) {
     // Visual Markers
     const cObj = charts.get(sym);
     if(cObj) {
-        // Clear old markers first
         cObj.series.setMarkers([]); 
-        
         if(signal === 'BUY') {
-             cObj.series.setMarkers([{ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'BUY' }]);
+             cObj.series.setMarkers([{ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'B' }]);
         }
         else if(signal === 'SELL') {
-             cObj.series.setMarkers([{ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'SELL' }]);
+             cObj.series.setMarkers([{ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'S' }]);
         }
     }
     
