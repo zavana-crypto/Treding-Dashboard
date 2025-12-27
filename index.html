@@ -112,14 +112,14 @@
   .d-val { font-size: 12px; font-weight: 600; color: var(--text-primary); transition: color 0.2s; }
   
   /* NEW: ALARM ANIMATIONS */
-  @keyframes blink-slow { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-  @keyframes blink-fast { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes blink-slow { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+  @keyframes blink-fast { 0% { opacity: 1; transform: scale(1); } 25% { opacity: 0.5; transform: scale(1.1); } 50% { opacity: 1; transform: scale(1.2); filter: brightness(1.5); } 100% { opacity: 1; transform: scale(1); } }
   
   .alarm-icon { margin-left: 6px; font-size: 14px; display: none; } /* Hidden by default */
   .alarm-active-slow { display: inline-block; color: var(--binance-green); animation: blink-slow 2s infinite ease-in-out; }
-  .alarm-active-fast { display: inline-block; color: var(--accent); text-shadow: 0 0 8px var(--accent); animation: blink-fast 0.5s infinite; }
+  .alarm-active-fast { display: inline-block; color: var(--accent); text-shadow: 0 0 12px var(--accent); animation: blink-fast 0.25s infinite; }
   .alarm-sell-slow { display: inline-block; color: var(--binance-red); animation: blink-slow 2s infinite ease-in-out; }
-  .alarm-sell-fast { display: inline-block; color: #ff0000; text-shadow: 0 0 8px #ff0000; animation: blink-fast 0.5s infinite; }
+  .alarm-sell-fast { display: inline-block; color: #ff0000; text-shadow: 0 0 12px #ff0000; animation: blink-fast 0.25s infinite; }
 
   /* Action Footer */
   .card-footer { padding: 12px 16px; display: flex; gap: 10px; background: var(--bg-card); }
@@ -313,6 +313,21 @@ function showToast(message) {
         el.classList.remove('show');
         setTimeout(() => el.remove(), 300);
     }, 3000);
+}
+
+// Helper: Copy Text to Clipboard
+function copyText(text) {
+    if(!text || text === '--') return;
+    
+    // Create temporary textarea to handle copy
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy'); // Legacy command works in more contexts than navigator.clipboard
+    document.body.removeChild(el);
+    
+    showToast(`Copied: ${text}`);
 }
 
 window.showPage = function(pageId, el) {
@@ -542,17 +557,24 @@ function handleStream(sym, candle) {
     }
 }
 
-// TUNED STRATEGY: "LINEAR ALIGNMENT"
+// TUNED STRATEGY: "UNIVERSAL SIGNAL" (Works on 5m, 1H, 4H)
 function getStrategyParams(type) {
     if(type === 'HYPER') {
-        // 1M: Sangat Sensitif (Cepat)
+        // 1M: AGGRESSIVE SCALPING (Keep as is, user likes it)
         return { threshold: 3.0, rsiBuy: 60, rsiSell: 40, stochBuy: 45, stochSell: 55, stochWeight: 4.0, trendWeight: 1.0 };
     } else if(type === 'SCALP') {
-        // 5M: PENYESUAIAN (Agar sinkron dengan 15m)
-        return { threshold: 5.0, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, stochWeight: 3.5, trendWeight: 3.0 };
+        // 5M: RELAXED ENTRY (Bridge Gap)
+        // Lower threshold to 4.5. Widen StochBuy to 55 (Allows slight momentum buy).
+        return { threshold: 4.5, rsiBuy: 55, rsiSell: 45, stochBuy: 55, stochSell: 45, stochWeight: 3.5, trendWeight: 2.0 };
     } else if(type === 'DAY') {
-        // 15M/1H: THE SNIPER (Trend King)
-        return { threshold: 7.5, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 3.0, trendWeight: 4.0 };
+        // 15M/1H: BALANCED SWING
+        // Threshold lowered to 6.0 to allow more signals on pullbacks.
+        // StochBuy 35: Allows entry when market is just "cooling off", not crashing.
+        return { threshold: 6.0, rsiBuy: 40, rsiSell: 60, stochBuy: 35, stochSell: 65, stochWeight: 3.0, trendWeight: 3.5 };
+    } else if(type === 'SWING') {
+        // 4H: TREND PULLBACK
+        // Threshold 6.5. Trend is King, but Stoch allows entry on dips.
+        return { threshold: 6.5, rsiBuy: 40, rsiSell: 60, stochBuy: 30, stochSell: 70, stochWeight: 2.5, trendWeight: 4.5 };
     } else { 
         // INVEST: STRICT
         return { threshold: 8.0, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 2.0, trendWeight: 5.0 };
@@ -584,20 +606,35 @@ function analyze(sym, data, force = false) {
     
     let bScore = 0, sScore = 0;
 
-    // 1. TREND ALIGNMENT
-    if(mainTrend === 'BULLISH') bScore += strat.trendWeight; 
-    else sScore += strat.trendWeight;
+    // 1. TREND ALIGNMENT & BIAS ENFORCEMENT
+    // Logic: Kalau Trend Utama Bullish, persulit Sell. Kalau Bearish, persulit Buy.
+    // Ini mencegah counter-trend entry yang berisiko floating loss.
+    if(mainTrend === 'BULLISH') {
+        bScore += strat.trendWeight;
+        // Penalti untuk Sell di pasar Bullish (Mencegah lawan arus)
+        sScore -= 2.0; 
+    } else {
+        sScore += strat.trendWeight;
+        // Penalti untuk Buy di pasar Bearish (Mencegah tangkap pisau jatuh)
+        bScore -= 2.0;
+    }
     
     if(shortTrend === 'BULLISH') bScore += 1.0; 
     else sScore += 1.0;
 
-    // 2. STOCHASTIC
-    if (CURRENT_TF.type === 'HYPER' || CURRENT_TF.type === 'SCALP') {
+    // 2. STOCHASTIC (Dynamic Zone)
+    // For Higher TF (5m+), be less strict about "crossing" and more about "zone".
+    if (CURRENT_TF.type === 'HYPER') {
          if((stoch.k < strat.stochBuy && stoch.k > stoch.d) || stoch.k < 10) bScore += strat.stochWeight;
          if((stoch.k > strat.stochSell && stoch.k < stoch.d) || stoch.k > 90) sScore += strat.stochWeight;
     } else {
-         if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += strat.stochWeight;
-         if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += strat.stochWeight;
+         // Higher TF: Just being in the buy zone is good enough for a point
+         if(stoch.k < strat.stochBuy) bScore += (strat.stochWeight * 0.8);
+         // Bonus if actually crossing up
+         if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += (strat.stochWeight * 0.2);
+
+         if(stoch.k > strat.stochSell) sScore += (strat.stochWeight * 0.8);
+         if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += (strat.stochWeight * 0.2);
     }
     
     // 3. RSI MOMENTUM
@@ -627,9 +664,14 @@ function analyze(sym, data, force = false) {
         tp = last.close - (atr * 3);
     }
 
-    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, tp, sl, stochK: stoch.k }; // Store StochK for alarm intensity
+    // Pass data needed for Alarm
+    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, open: last.open, tp, sl, stochK: stoch.k, atr };
     analysisResults.set(sym, res);
     MTF_MATRIX.set(`${sym}_${CURRENT_TF.label}`, signal);
+    
+    // Dynamic Browser Title based on Signal
+    if(signal === 'BUY') document.title = `🚨 BUY ${sym.replace('USDT','')}`;
+    else if(signal === 'SELL') document.title = `🚨 SELL ${sym.replace('USDT','')}`;
     
     // Visual Markers
     const cObj = charts.get(sym);
@@ -697,31 +739,39 @@ function updateCardUI(sym, res) {
         elTP.textContent = res.tp.toFixed(res.price<1?4:2);
         elSL.textContent = res.sl.toFixed(res.price<1?4:2);
         
-        // --- ALARM LOGIC (NEW: ENTRY URGENCY) ---
-        // Fast Blink = STRONG ENTRY (Super Cheap/Expensive)
-        // Slow Pulse = STANDARD ENTRY
-        let isUrgent = false;
+        // --- SMART ALARM LOGIC (MOMENTUM SURGE) ---
+        // Surge = Price move > 1.2x ATR from Open Price
+        // Slow Pulse = Price positive but small move
+        let isSurge = false;
+        const range = res.atr || 1; 
+        const candleSize = Math.abs(res.price - res.open);
+        
+        // Adjust surge sensitivity based on Timeframe (Higher TF = Bigger moves needed)
+        // 1m: 1.2x ATR, 1H: 1.5x ATR, 4H: 2.0x ATR
+        let surgeMultiplier = 1.2;
+        if(CURRENT_TF.label === '1H') surgeMultiplier = 1.5;
+        if(CURRENT_TF.label === '4H') surgeMultiplier = 2.0;
+
+        if (candleSize > (range * surgeMultiplier)) isSurge = true;
         
         if (res.signal === 'BUY') {
-            // Urgent BUY if extreme oversold
-            if (res.rsi < 30 || res.stochK < 20) isUrgent = true;
-            
             if (alarmEl) {
-                if (isUrgent) {
-                    alarmEl.className = 'alarm-icon alarm-active-fast'; // Fast Green Blink (HURRY BUY!)
+                // If Candle is GREEN (Winning)
+                if (res.price > res.open) {
+                    if (isSurge) alarmEl.className = 'alarm-icon alarm-active-fast'; // Fast Blink (SURGE!)
+                    else alarmEl.className = 'alarm-icon alarm-active-slow'; // Slow Pulse (Steady Gain)
                 } else {
-                    alarmEl.className = 'alarm-icon alarm-active-slow'; // Slow Green Pulse
+                    alarmEl.className = 'alarm-icon alarm-active-slow'; // Slow Pulse (Pullback/Hold)
                 }
             }
         } else if (res.signal === 'SELL') {
-            // Urgent SELL if extreme overbought
-            if (res.rsi > 70 || res.stochK > 80) isUrgent = true;
-            
             if (alarmEl) {
-                if (isUrgent) {
-                    alarmEl.className = 'alarm-icon alarm-sell-fast'; // Fast Red Blink (HURRY SELL!)
+                // If Candle is RED (Winning)
+                if (res.price < res.open) {
+                    if (isSurge) alarmEl.className = 'alarm-icon alarm-sell-fast'; // Fast Blink (DUMP!)
+                    else alarmEl.className = 'alarm-icon alarm-sell-slow'; // Slow Pulse (Steady Drop)
                 } else {
-                    alarmEl.className = 'alarm-icon alarm-sell-slow'; // Slow Red Pulse
+                    alarmEl.className = 'alarm-icon alarm-sell-slow'; // Slow Pulse (Pullback/Hold)
                 }
             }
         }
@@ -734,7 +784,6 @@ function updateCardUI(sym, res) {
         elSL.style.color = 'var(--binance-red)';
         
     } else {
-        // Reset styles when no signal (Momen Habis -> Alarm Mati)
         if(alarmEl) alarmEl.className = 'alarm-icon'; // Hidden
         elTP.style.fontWeight = '600';
         elTP.style.fontSize = '12px';
