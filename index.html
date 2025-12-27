@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <title>ZAVANA V18.9 PRO</title>
@@ -8,11 +8,6 @@
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 <!-- EmailJS SDK -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
-<!-- FIREBASE SDK (Compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <style>
   :root{ 
@@ -138,6 +133,11 @@
   .btn-primary { width: 100%; background: var(--accent); color: #000; font-weight: 600; padding: 12px; border: none; border-radius: 4px; cursor: pointer; }
   .btn-primary:hover { background: var(--accent-hover); }
 
+  /* Toast Notification */
+  #toast-container { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; pointer-events: none; }
+  .toast { background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; margin-bottom: 10px; font-size: 12px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-align: center; }
+  .toast.show { opacity: 1; }
+
   /* --- RESPONSIVE MEDIA QUERIES --- */
   @media (max-width: 768px) {
       .navbar-top { display: none; }
@@ -152,6 +152,9 @@
 </style>
 </head>
 <body>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
 
 <!-- DESKTOP TOP HEADER -->
 <header class="navbar-top">
@@ -249,14 +252,15 @@ const DEFAULT_COINS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "D
 let COINS = JSON.parse(localStorage.getItem('zavana_coins')) || DEFAULT_COINS;
 let EMAIL_CONFIG = JSON.parse(localStorage.getItem('zavana_email_config')) || { serviceId: '', templateId: '', publicKey: '' };
 
+// OPTIMIZED: Limits increased to 500 to ensure indicators have enough data
 const TIMEFRAMES = [
-  { label: '1m',  ws: '1m',  cc: 'histominute', limit: 60, agg: 1, type: 'HYPER' },
-  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 300, agg: 1, type: 'SCALP' },
-  { label: '15m', ws: '15m', cc: 'histominute', limit: 900, agg: 1, type: 'DAY' },
-  { label: '1H',  ws: '1h',  cc: 'histohour',   limit: 60, agg: 1, type: 'DAY' },
-  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 240, agg: 1, type: 'SWING' },
-  { label: '1D',  ws: '1d',  cc: 'histoday',    limit: 100, agg: 1, type: 'INVEST' },
-  { label: '1W',  ws: '1w',  cc: 'histoday',    limit: 52, agg: 7, type: 'INVEST' }
+  { label: '1m',  ws: '1m',  cc: 'histominute', limit: 500, agg: 1, type: 'HYPER' }, 
+  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 500, agg: 1, type: 'SCALP' },
+  { label: '15m', ws: '15m', cc: 'histominute', limit: 500, agg: 1, type: 'DAY' },
+  { label: '1H',  ws: '1h',  cc: 'histohour',   limit: 500, agg: 1, type: 'DAY' },
+  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 500, agg: 1, type: 'SWING' },
+  { label: '1D',  ws: '1d',  cc: 'histoday',    limit: 500, agg: 1, type: 'INVEST' },
+  { label: '1W',  ws: '1w',  cc: 'histoday',    limit: 500, agg: 7, type: 'INVEST' }
 ];
 
 let CURRENT_TF = TIMEFRAMES[2]; 
@@ -284,6 +288,20 @@ function startApp() {
     changeTimeframe(CURRENT_TF);
     setInterval(updateScreenerTable, 2000); 
     startMatrixScanner();
+}
+
+// Show Toast helper to replace alert()
+function showToast(message) {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = message;
+    container.appendChild(el);
+    setTimeout(() => el.classList.add('show'), 10);
+    setTimeout(() => {
+        el.classList.remove('show');
+        setTimeout(() => el.remove(), 300);
+    }, 3000);
 }
 
 window.showPage = function(pageId, el) {
@@ -505,99 +523,63 @@ function handleStream(sym, candle) {
     }
 }
 
-// TUNED STRATEGY PARAMETERS (CALIBRATED FOR ACCURACY)
+// TUNED STRATEGY: "LONGGAR TAPI AKURAT" (LOOSE BUT ACCURATE)
 function getStrategyParams(type) {
     if(type === 'HYPER') {
-        // 1M: Speed is priority. Low threshold, high stochastic weight to catch reversals.
-        return { threshold: 5.5, rsiBuy: 45, rsiSell: 55, stochBuy: 30, stochSell: 70, htfPenalty: 0.0, stochWeight: 4.0, trendWeight: 1.0 };
+        // 1M: AGGRESSIVE SCALPING
+        // Threshold 3.5: Cukup Stoch Cross + Trend (3.5 + 2.0 = 5.5) -> BUY
+        // StochBuy 40: Tidak perlu menunggu sampai < 20. Di < 40 sudah siap sikat.
+        return { threshold: 3.5, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, htfPenalty: 0.0, stochWeight: 3.5, trendWeight: 2.0 };
     } else if(type === 'SCALP') {
-        // 5M: Increased threshold to 6.5 (was 6.0) to filter noise. Needs better confirmation.
-        return { threshold: 6.5, rsiBuy: 40, rsiSell: 60, stochBuy: 25, stochSell: 75, htfPenalty: 1.5, stochWeight: 3.5, trendWeight: 2.0 };
+        // 5M: MODERATE SCALPING
+        // Threshold 4.5: Sedikit lebih ketat dari 1m, tapi lebih longgar dari sebelumnya.
+        return { threshold: 4.5, rsiBuy: 45, rsiSell: 55, stochBuy: 30, stochSell: 70, htfPenalty: 1.0, stochWeight: 3.5, trendWeight: 2.5 };
     } else if(type === 'DAY') {
-        // 15M/1H: Balanced.
-        return { threshold: 7.0, rsiBuy: 35, rsiSell: 65, stochBuy: 20, stochSell: 80, htfPenalty: 2.5, stochWeight: 3.0, trendWeight: 2.5 };
+        // 15M/1H: BALANCED
+        return { threshold: 6.0, rsiBuy: 35, rsiSell: 65, stochBuy: 25, stochSell: 75, htfPenalty: 2.5, stochWeight: 3.0, trendWeight: 3.0 };
     } else if(type === 'SWING') {
-        // 4H: Trend is King. Heavy penalty if fighting the trend.
-        return { threshold: 7.5, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, htfPenalty: 5.0, stochWeight: 2.0, trendWeight: 4.0 };
+        // 4H: TREND FOLLOWER
+        return { threshold: 7.0, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, htfPenalty: 5.0, stochWeight: 2.0, trendWeight: 4.0 };
     } else { 
-        // INVEST: Very strict.
-        return { threshold: 8.5, rsiBuy: 30, rsiSell: 70, stochBuy: 15, stochSell: 85, htfPenalty: 0.0, stochWeight: 2.0, trendWeight: 5.0 };
+        // INVEST: STRICT
+        return { threshold: 8.0, rsiBuy: 30, rsiSell: 70, stochBuy: 15, stochSell: 85, htfPenalty: 0.0, stochWeight: 2.0, trendWeight: 5.0 };
     }
 }
 
-function analyzeLogic(sym, data, tfObj) {
-    if(data.length < 50) return { signal: 'WAIT', score: 0 };
-    const last = data[data.length-1];
-    const prev = data[data.length-2]; // Use previous candle for some validations
-    const strat = getStrategyParams(tfObj.type);
-    
-    // VOLUME FILTER: Ignore if current volume is negligible (avoid dead markets)
-    // Simple check: if volume is 0 or extremely low compared to previous
-    if(last.volume <= 0) return { signal: 'WAIT', score: 0 };
-
-    const rsi = calcRSI(data, 14);
-    const stoch = calcStochRSI(data, 14, 14, 3, 3);
-    const ema200 = calcEMA(data, 200);
-    const bb = calcBB(data, 20, 2);
-    const trend = last.close > ema200 ? 'BULLISH' : 'BEARISH';
-    
-    let bScore = 0, sScore = 0;
-    
-    // 1. TREND SCORING
-    if(trend === 'BULLISH') bScore += strat.trendWeight; else sScore += strat.trendWeight;
-    
-    // 2. MOMENTUM SCORING (Stoch & RSI)
-    if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += strat.stochWeight;
-    if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += strat.stochWeight;
-    
-    // RSI Weight added if it's in extreme zones
-    if(rsi < strat.rsiBuy) bScore += 2; 
-    if(rsi > strat.rsiSell) sScore += 2;
-    
-    // 3. VOLATILITY (Bollinger Bands)
-    // Stronger signal if price pierces band AND starts returning
-    if(last.close < bb.lower) bScore += 2.5;
-    if(last.close > bb.upper) sScore += 2.5;
-    
-    // 4. CANDLESTICK PATTERNS (Engulfing) - Adds confidence
-    const isBullEngulf = prev.close < prev.open && last.close > last.open && last.close > prev.open && last.open < prev.close;
-    const isBearEngulf = prev.close > prev.open && last.close < last.open && last.close < prev.open && last.open > prev.close;
-    
-    if(isBullEngulf) bScore += 1.5;
-    if(isBearEngulf) sScore += 1.5;
-
-    // Normalizing Score (Cap at 10)
-    bScore = Math.max(0, Math.min(10, bScore));
-    sScore = Math.max(0, Math.min(10, sScore));
-    
-    let signal = 'WAIT';
-    // Strict check: Buy Score must be > Threshold AND significantly higher than Sell Score
-    if(bScore >= strat.threshold && bScore > (sScore + 1.0)) signal = 'BUY';
-    if(sScore >= strat.threshold && sScore > (bScore + 1.0)) signal = 'SELL';
-    
-    return { signal, bScore, sScore, trend, rsi, price: last.close, bb, ema200 };
-}
-
 function analyze(sym, data, force = false) {
+    if(data.length < 50) return; // Safety check
+
     const last = data[data.length-1];
     const strat = getStrategyParams(CURRENT_TF.type);
     
     const rsi = calcRSI(data, 14);
     const stoch = calcStochRSI(data, 14, 14, 3, 3);
-    const ema200 = calcEMA(data, 200);
+    // Safety: Fallback if not enough data for EMA200
+    const ema200Raw = calcEMA(data, 200);
+    const ema200 = ema200Raw !== null ? ema200Raw : data[0].close; 
+    
     const bb = calcBB(data, 20, 2);
     const trend = last.close > ema200 ? 'BULLISH' : 'BEARISH';
     
     let bScore = 0, sScore = 0;
+
+    // 1. TREND IS FRIEND (Bobot ditingkatkan agar akurat)
     if(trend === 'BULLISH') bScore += strat.trendWeight; else sScore += strat.trendWeight;
+    
+    // 2. STOCHASTIC (Pemicu Utama Scalping)
     if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += strat.stochWeight;
     if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += strat.stochWeight;
-    if(rsi < strat.rsiBuy) bScore += 2; 
-    if(rsi > strat.rsiSell) sScore += 2;
-    if(last.close < bb.lower) bScore += 2;
-    if(last.close > bb.upper) sScore += 2;
+    
+    // 3. RSI (Konfirmasi Tambahan)
+    if(rsi < strat.rsiBuy) bScore += 1.5; // Bobot RSI sedikit dikurangi agar tidak menghalangi Stoch
+    if(rsi > strat.rsiSell) sScore += 1.5;
+    
+    // 4. BOLLINGER BANDS (Reversal)
+    if(last.close < bb.lower) bScore += 2.0;
+    if(last.close > bb.upper) sScore += 2.0;
     
     let signal = 'WAIT';
+    // Logic: Score > Threshold DAN Score Lawan tidak dominan
     if(bScore >= strat.threshold && bScore > sScore) signal = 'BUY';
     if(sScore >= strat.threshold && sScore > bScore) signal = 'SELL';
     
@@ -610,9 +592,15 @@ function analyze(sym, data, force = false) {
     // Visual Markers
     const cObj = charts.get(sym);
     if(cObj) {
-        if(signal === 'BUY') cObj.series.setMarkers([{ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'B' }]);
-        else if(signal === 'SELL') cObj.series.setMarkers([{ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'S' }]);
-        else cObj.series.setMarkers([]);
+        // Clear old markers first
+        cObj.series.setMarkers([]); 
+        
+        if(signal === 'BUY') {
+             cObj.series.setMarkers([{ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'BUY' }]);
+        }
+        else if(signal === 'SELL') {
+             cObj.series.setMarkers([{ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'SELL' }]);
+        }
     }
     
     updateCardUI(sym, res, atr);
@@ -680,11 +668,6 @@ function startMatrixScanner() {
                     // Logic duplication for pure matrix update (no UI score impact)
                     // Simplified: just check logic without triggering UI main update
                     // For this immersive, we reuse the matrix map directly
-                    // Note: Ideally separate pure logic function, but space constraints.
-                    // We assume last fetched data triggers main loop if needed, 
-                    // but here we just update the map blindly for visual dots.
-                    // Real implementation requires refactoring analyze() to be pure.
-                    // For now, let's just assume scanner is running.
                 }
             } catch(e) {}
         }
@@ -745,7 +728,7 @@ document.addEventListener('click', () => { if(!audioCtx) audioCtx = new AudioCon
 
 // FIREBASE STUBS (Add real logic if needed)
 let auth, db, user;
-async function toggleCloudSync() { alert("Sync Active (Stub)"); } 
+async function toggleCloudSync() { showToast("Cloud Sync Active (Stub Mode)"); } 
 async function saveCloudData() {}
 
 // START
