@@ -350,7 +350,10 @@ function renderGrid() {
                 <div class="coin-meta">
                     <img src="${icon}" class="coin-icon" onerror="this.style.display='none'">
                     <div>
-                        <div class="coin-title" style="${isGold?'color:var(--gold)':''}">${base}/USDT</div>
+                        <!-- UPDATED: Added Trend Arrow Span -->
+                        <div class="coin-title" style="${isGold?'color:var(--gold)':''}">
+                            ${base}/USDT <span id="trend-arrow-${s}" style="font-weight:bold; font-size:14px; margin-left:4px;"></span>
+                        </div>
                         <div class="coin-vol">Vol: <span id="vol-${s}">--</span></div>
                     </div>
                 </div>
@@ -526,18 +529,18 @@ function handleStream(sym, candle) {
 }
 
 // TUNED STRATEGY: "HIGH ACCURACY 15M"
+// TUNED STRATEGY: "LINEAR ALIGNMENT"
 function getStrategyParams(type) {
     if(type === 'HYPER') {
-        // 1M: AGGRESSIVE (Tetap agresif untuk scalping cepat)
+        // 1M: Sangat Sensitif (Cepat)
         return { threshold: 3.0, rsiBuy: 60, rsiSell: 40, stochBuy: 45, stochSell: 55, stochWeight: 4.0, trendWeight: 1.0 };
     } else if(type === 'SCALP') {
-        // 5M: MODERATE
-        return { threshold: 4.0, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, stochWeight: 3.5, trendWeight: 1.5 };
+        // 5M: PENYESUAIAN (Agar sinkron dengan 15m)
+        // TrendWeight dinaikkan dari 1.5 ke 3.0 agar lebih menghormati tren besar.
+        // Threshold naik sedikit ke 5.0 untuk kompensasi.
+        return { threshold: 5.0, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, stochWeight: 3.5, trendWeight: 3.0 };
     } else if(type === 'DAY') {
-        // 15M/1H: "THE SNIPER" (AKURASI TINGGI)
-        // Threshold 7.5: Sangat Ketat. Harus Tren + Stoch + RSI setuju.
-        // TrendWeight 4.0: Sinyal hampir mustahil muncul kalau lawan tren.
-        // Stoch 20/80: Menunggu harga benar-benar murah.
+        // 15M/1H: THE SNIPER (Trend King)
         return { threshold: 7.5, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 3.0, trendWeight: 4.0 };
     } else { 
         // INVEST: STRICT
@@ -643,6 +646,18 @@ function updateCardUI(sym, res, atr) {
     
     if(isSniper && (CURRENT_TF.label === '1m' || CURRENT_TF.label === '5m')) card.classList.add('sniper-mode');
     else card.classList.remove('sniper-mode');
+
+    // NEW: Update Trend Arrow next to Name based on EMA 200 Trend
+    const arrowEl = document.getElementById(`trend-arrow-${sym}`);
+    if(arrowEl) {
+        if(res.trend === 'BULLISH') {
+            arrowEl.innerHTML = '&#8599;'; // North East Arrow
+            arrowEl.style.color = 'var(--binance-green)';
+        } else {
+            arrowEl.innerHTML = '&#8600;'; // South East Arrow
+            arrowEl.style.color = 'var(--binance-red)';
+        }
+    }
 
     // Update Buttons with SCORE
     const btnBuy = document.getElementById(`btn-buy-${sym}`);
