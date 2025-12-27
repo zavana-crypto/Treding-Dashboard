@@ -256,10 +256,10 @@ let EMAIL_CONFIG = JSON.parse(localStorage.getItem('zavana_email_config')) || { 
 // agg: 5 means "combine 5 minutes into 1 candle" for history fetch
 const TIMEFRAMES = [
   { label: '1m',  ws: '1m',  cc: 'histominute', limit: 500, agg: 1, type: 'HYPER' }, 
-  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 500, agg: 5, type: 'SCALP' }, // Fixed: Agg 5
-  { label: '15m', ws: '15m', cc: 'histominute', limit: 500, agg: 15, type: 'DAY' },   // Fixed: Agg 15
+  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 500, agg: 5, type: 'SCALP' },
+  { label: '15m', ws: '15m', cc: 'histominute', limit: 500, agg: 15, type: 'DAY' },
   { label: '1H',  ws: '1h',  cc: 'histohour',   limit: 500, agg: 1, type: 'DAY' },
-  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 500, agg: 4, type: 'SWING' },  // Fixed: Agg 4
+  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 500, agg: 4, type: 'SWING' },
   { label: '1D',  ws: '1d',  cc: 'histoday',    limit: 500, agg: 1, type: 'INVEST' },
   { label: '1W',  ws: '1w',  cc: 'histoday',    limit: 500, agg: 7, type: 'INVEST' }
 ];
@@ -525,23 +525,23 @@ function handleStream(sym, candle) {
     }
 }
 
-// TUNED STRATEGY: "HIGH SENSITIVITY" (Sinyal Banyak)
+// TUNED STRATEGY: "HIGH ACCURACY 15M"
 function getStrategyParams(type) {
     if(type === 'HYPER') {
-        // 1M: AGGRESSIVE SCALPING
-        // Threshold 3.0: SANGAT RENDAH. Cukup Stoch Cross langsung Buy.
-        // StochWeight 4.0: Ini bobot terbesar.
+        // 1M: AGGRESSIVE (Tetap agresif untuk scalping cepat)
         return { threshold: 3.0, rsiBuy: 60, rsiSell: 40, stochBuy: 45, stochSell: 55, stochWeight: 4.0, trendWeight: 1.0 };
     } else if(type === 'SCALP') {
-        // 5M: MODERATE SCALPING
-        // Threshold 4.0: Cukup longgar.
+        // 5M: MODERATE
         return { threshold: 4.0, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, stochWeight: 3.5, trendWeight: 1.5 };
     } else if(type === 'DAY') {
-        // 15M/1H: SWING SANTAI
-        return { threshold: 6.0, rsiBuy: 35, rsiSell: 65, stochBuy: 25, stochSell: 75, stochWeight: 3.0, trendWeight: 3.0 };
+        // 15M/1H: "THE SNIPER" (AKURASI TINGGI)
+        // Threshold 7.5: Sangat Ketat. Harus Tren + Stoch + RSI setuju.
+        // TrendWeight 4.0: Sinyal hampir mustahil muncul kalau lawan tren.
+        // Stoch 20/80: Menunggu harga benar-benar murah.
+        return { threshold: 7.5, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 3.0, trendWeight: 4.0 };
     } else { 
-        // INVEST: STRICT TREND FOLLOWER
-        return { threshold: 8.0, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 2.0, trendWeight: 4.0 };
+        // INVEST: STRICT
+        return { threshold: 8.0, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 2.0, trendWeight: 5.0 };
     }
 }
 
@@ -550,7 +550,7 @@ function analyze(sym, data, force = false) {
 
     const last = data[data.length-1];
     const prev = data[data.length-2];
-    const strat = getStrategyParams(CURRENT_TF.type);
+    const strat = getStrategyParams(CURRENT_TF.type); // <--- First declaration
     
     // Indicators
     const rsi = calcRSI(data, 14);
@@ -578,8 +578,17 @@ function analyze(sym, data, force = false) {
 
     // 2. STOCHASTIC (Trigger Utama - WIDE ZONE)
     // Syarat: Di zona beli DAN k sedang menanjak (k>d) ATAU k sangat rendah
-    if((stoch.k < strat.stochBuy && stoch.k > stoch.d) || stoch.k < 10) bScore += strat.stochWeight;
-    if((stoch.k > strat.stochSell && stoch.k < stoch.d) || stoch.k > 90) sScore += strat.stochWeight;
+    // UPDATE: Untuk 15m (DAY), kita paksa cek 'k < stochBuy' agar akurat
+    
+    // Logic Stoch Agresif untuk Scalping, Logic Ketat untuk Day/Swing
+    if (CURRENT_TF.type === 'HYPER' || CURRENT_TF.type === 'SCALP') {
+         if((stoch.k < strat.stochBuy && stoch.k > stoch.d) || stoch.k < 10) bScore += strat.stochWeight;
+         if((stoch.k > strat.stochSell && stoch.k < stoch.d) || stoch.k > 90) sScore += strat.stochWeight;
+    } else {
+         // Logic 15m ke atas (Lebih Disiplin)
+         if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += strat.stochWeight;
+         if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += strat.stochWeight;
+    }
     
     // 3. RSI MOMENTUM
     if(rsi < strat.rsiBuy) bScore += 1.5;
