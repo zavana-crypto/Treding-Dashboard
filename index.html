@@ -252,13 +252,14 @@ const DEFAULT_COINS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "D
 let COINS = JSON.parse(localStorage.getItem('zavana_coins')) || DEFAULT_COINS;
 let EMAIL_CONFIG = JSON.parse(localStorage.getItem('zavana_email_config')) || { serviceId: '', templateId: '', publicKey: '' };
 
-// OPTIMIZED: Limits increased to 500 to ensure indicators have enough data
+// OPTIMIZED: AGGREGATION FIXED
+// agg: 5 means "combine 5 minutes into 1 candle" for history fetch
 const TIMEFRAMES = [
   { label: '1m',  ws: '1m',  cc: 'histominute', limit: 500, agg: 1, type: 'HYPER' }, 
-  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 500, agg: 1, type: 'SCALP' },
-  { label: '15m', ws: '15m', cc: 'histominute', limit: 500, agg: 1, type: 'DAY' },
+  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 500, agg: 5, type: 'SCALP' }, // Fixed: Agg 5
+  { label: '15m', ws: '15m', cc: 'histominute', limit: 500, agg: 15, type: 'DAY' },   // Fixed: Agg 15
   { label: '1H',  ws: '1h',  cc: 'histohour',   limit: 500, agg: 1, type: 'DAY' },
-  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 500, agg: 1, type: 'SWING' },
+  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 500, agg: 4, type: 'SWING' },  // Fixed: Agg 4
   { label: '1D',  ws: '1d',  cc: 'histoday',    limit: 500, agg: 1, type: 'INVEST' },
   { label: '1W',  ws: '1w',  cc: 'histoday',    limit: 500, agg: 7, type: 'INVEST' }
 ];
@@ -524,22 +525,23 @@ function handleStream(sym, candle) {
     }
 }
 
-// TUNED STRATEGY: "SMART CONFIRMATION" (Akurasi Tinggi)
+// TUNED STRATEGY: "HIGH SENSITIVITY" (Sinyal Banyak)
 function getStrategyParams(type) {
     if(type === 'HYPER') {
-        // 1M: SCALPING CEPAT
-        // Threshold 6.5: Butuh Trend + Stoch + Warna Candle yg Sesuai
-        // RSI 55/45: Zona aman momentum
-        return { threshold: 6.5, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, stochWeight: 3.5, trendWeight: 2.0 };
+        // 1M: AGGRESSIVE SCALPING
+        // Threshold 3.0: SANGAT RENDAH. Cukup Stoch Cross langsung Buy.
+        // StochWeight 4.0: Ini bobot terbesar.
+        return { threshold: 3.0, rsiBuy: 60, rsiSell: 40, stochBuy: 45, stochSell: 55, stochWeight: 4.0, trendWeight: 1.0 };
     } else if(type === 'SCALP') {
-        // 5M: KONFIRMASI LEBIH KUAT
-        return { threshold: 7.0, rsiBuy: 45, rsiSell: 55, stochBuy: 30, stochSell: 70, stochWeight: 3.5, trendWeight: 2.5 };
+        // 5M: MODERATE SCALPING
+        // Threshold 4.0: Cukup longgar.
+        return { threshold: 4.0, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, stochWeight: 3.5, trendWeight: 1.5 };
     } else if(type === 'DAY') {
         // 15M/1H: SWING SANTAI
-        return { threshold: 7.5, rsiBuy: 35, rsiSell: 65, stochBuy: 25, stochSell: 75, stochWeight: 3.0, trendWeight: 3.0 };
+        return { threshold: 6.0, rsiBuy: 35, rsiSell: 65, stochBuy: 25, stochSell: 75, stochWeight: 3.0, trendWeight: 3.0 };
     } else { 
         // INVEST: STRICT TREND FOLLOWER
-        return { threshold: 8.5, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 2.0, trendWeight: 4.0 };
+        return { threshold: 8.0, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 2.0, trendWeight: 4.0 };
     }
 }
 
@@ -567,30 +569,25 @@ function analyze(sym, data, force = false) {
     
     let bScore = 0, sScore = 0;
 
-    // 1. TREND ALIGNMENT (Bobot besar jika EMA 50 & 200 searah)
+    // 1. TREND ALIGNMENT
     if(mainTrend === 'BULLISH') bScore += strat.trendWeight; 
     else sScore += strat.trendWeight;
     
     if(shortTrend === 'BULLISH') bScore += 1.0; 
     else sScore += 1.0;
 
-    // 2. STOCHASTIC (Trigger Utama)
-    // Cross yang valid: K < BuyZone DAN K > D (sedang menanjak)
-    if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += strat.stochWeight;
-    if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += strat.stochWeight;
+    // 2. STOCHASTIC (Trigger Utama - WIDE ZONE)
+    // Syarat: Di zona beli DAN k sedang menanjak (k>d) ATAU k sangat rendah
+    if((stoch.k < strat.stochBuy && stoch.k > stoch.d) || stoch.k < 10) bScore += strat.stochWeight;
+    if((stoch.k > strat.stochSell && stoch.k < stoch.d) || stoch.k > 90) sScore += strat.stochWeight;
     
     // 3. RSI MOMENTUM
-    // Oversold reversal atau Bullish Momentum support
     if(rsi < strat.rsiBuy) bScore += 1.5;
-    else if(rsi > 50 && rsi < 70 && mainTrend === 'BULLISH') bScore += 1.0; // Bullish push
-
     if(rsi > strat.rsiSell) sScore += 1.5;
-    else if(rsi < 50 && rsi > 30 && mainTrend === 'BEARISH') sScore += 1.0; // Bearish push
     
-    // 4. PRICE ACTION (KUNCI AKURASI)
-    // Buy hanya jika candle hijau (konfirmasi buyer masuk), Sell jika merah
-    if(isGreen) bScore += 1.5;
-    if(isRed) sScore += 1.5;
+    // 4. PRICE ACTION (BONUS SCORE ONLY - NOT BLOCKER)
+    if(isGreen) bScore += 1.0;
+    if(isRed) sScore += 1.0;
     
     // 5. BOLLINGER BANDS (Rejection)
     if(last.close < bb.lower) bScore += 2.0;
@@ -599,17 +596,9 @@ function analyze(sym, data, force = false) {
     // FINAL LOGIC
     let signal = 'WAIT';
     
-    // Kondisi Khusus: Reversal Ekstrem (Bisa lawan arah candle)
-    const extremeBuy = stoch.k < 15 && rsi < 30;
-    const extremeSell = stoch.k > 85 && rsi > 70;
-
-    // RULE: Score harus tinggi DAN (Warna Candle Sesuai ATAU Reversal Ekstrem)
-    if(bScore >= strat.threshold && bScore > sScore) {
-        if(isGreen || extremeBuy) signal = 'BUY';
-    }
-    if(sScore >= strat.threshold && sScore > bScore) {
-        if(isRed || extremeSell) signal = 'SELL';
-    }
+    // Logic: Score > Threshold. No strict Color Gate anymore.
+    if(bScore >= strat.threshold && bScore > sScore) signal = 'BUY';
+    if(sScore >= strat.threshold && sScore > bScore) signal = 'SELL';
     
     const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close };
     analysisResults.set(sym, res);
@@ -646,11 +635,14 @@ function updateCardUI(sym, res, atr) {
     if(isSniper && (CURRENT_TF.label === '1m' || CURRENT_TF.label === '5m')) card.classList.add('sniper-mode');
     else card.classList.remove('sniper-mode');
 
-    // Update Buttons
+    // Update Buttons with SCORE
     const btnBuy = document.getElementById(`btn-buy-${sym}`);
     const btnSell = document.getElementById(`btn-sell-${sym}`);
+    
     btnBuy.className = `btn-trade buy ${res.signal==='BUY'?'active':''}`;
     btnSell.className = `btn-trade sell ${res.signal==='SELL'?'active':''}`;
+    
+    // Show Score in Button
     document.getElementById(`sc-buy-${sym}`).textContent = res.bScore.toFixed(1);
     document.getElementById(`sc-sell-${sym}`).textContent = res.sScore.toFixed(1);
 
