@@ -109,8 +109,18 @@
   .data-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 10px 16px; gap: 10px; font-family: 'JetBrains Mono'; }
   .data-item { display: flex; flex-direction: column; gap: 2px; }
   .d-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
-  .d-val { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+  .d-val { font-size: 12px; font-weight: 600; color: var(--text-primary); transition: color 0.2s; }
   
+  /* NEW: ALARM ANIMATIONS */
+  @keyframes blink-slow { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+  @keyframes blink-fast { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+  
+  .alarm-icon { margin-left: 6px; font-size: 14px; display: none; } /* Hidden by default */
+  .alarm-active-slow { display: inline-block; color: var(--binance-green); animation: blink-slow 2s infinite ease-in-out; }
+  .alarm-active-fast { display: inline-block; color: var(--accent); text-shadow: 0 0 8px var(--accent); animation: blink-fast 0.5s infinite; }
+  .alarm-sell-slow { display: inline-block; color: var(--binance-red); animation: blink-slow 2s infinite ease-in-out; }
+  .alarm-sell-fast { display: inline-block; color: #ff0000; text-shadow: 0 0 8px #ff0000; animation: blink-fast 0.5s infinite; }
+
   /* Action Footer */
   .card-footer { padding: 12px 16px; display: flex; gap: 10px; background: var(--bg-card); }
   .btn-trade { flex: 1; border: none; border-radius: 4px; padding: 10px 0; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; color: white; transition: 0.2s; opacity: 0.3; }
@@ -239,7 +249,7 @@
         <span>Markets</span>
     </div>
     <div class="mobile-nav-item" onclick="showPage('settings', this)">
-        <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
         <span>Config</span>
     </div>
 </nav>
@@ -383,7 +393,10 @@ function renderGrid() {
                 </div>
                 <div class="data-item" style="text-align:right;">
                     <span class="d-label">Take Profit</span>
-                    <span class="d-val" id="tp-${s}" style="color:var(--binance-green);">--</span>
+                    <div>
+                        <span class="d-val" id="tp-${s}" style="color:var(--binance-green);">--</span>
+                        <span id="alarm-${s}" class="alarm-icon">🔔</span>
+                    </div>
                 </div>
             </div>
 
@@ -409,8 +422,7 @@ function renderGrid() {
         
         new ResizeObserver(e => { if(e[0]) chart.applyOptions({ width: e[0].contentRect.width, height: e[0].contentRect.height }); }).observe(cont);
         
-        // UPDATED: Initialize with placeholders for price lines
-        charts.set(s, { chart, series, ema, tpLine: null, slLine: null, entryLine: null });
+        charts.set(s, { chart, series, ema });
         marketData.set(s, []);
     });
 }
@@ -615,7 +627,7 @@ function analyze(sym, data, force = false) {
         tp = last.close - (atr * 3);
     }
 
-    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, tp, sl };
+    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, tp, sl, stochK: stoch.k }; // Store StochK for alarm intensity
     analysisResults.set(sym, res);
     MTF_MATRIX.set(`${sym}_${CURRENT_TF.label}`, signal);
     
@@ -631,53 +643,9 @@ function analyze(sym, data, force = false) {
         }
     }
     
-    updateChartLines(sym, res); // New visual line updater
     updateCardUI(sym, res);
     updateMatrixUI(sym);
     if(signal !== 'WAIT') triggerAlert(sym, signal);
-}
-
-// NEW FUNCTION: Draws TP/SL lines on chart
-function updateChartLines(sym, res) {
-    const cObj = charts.get(sym);
-    if (!cObj) return;
-    
-    // Clear old lines first
-    if (cObj.tpLine) { cObj.series.removePriceLine(cObj.tpLine); cObj.tpLine = null; }
-    if (cObj.slLine) { cObj.series.removePriceLine(cObj.slLine); cObj.slLine = null; }
-    if (cObj.entryLine) { cObj.series.removePriceLine(cObj.entryLine); cObj.entryLine = null; }
-
-    if (res.signal === 'WAIT') return;
-
-    // Create Entry Line
-    cObj.entryLine = cObj.series.createPriceLine({
-        price: res.price,
-        color: '#eaecef',
-        lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dotted,
-        axisLabelVisible: true,
-        title: 'ENTRY',
-    });
-
-    // Create TP Line
-    cObj.tpLine = cObj.series.createPriceLine({
-        price: res.tp,
-        color: '#0ecb81', // Binance Green
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: 'TP (3R)',
-    });
-
-    // Create SL Line
-    cObj.slLine = cObj.series.createPriceLine({
-        price: res.sl,
-        color: '#f6465d', // Binance Red
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: 'SL (2R)',
-    });
 }
 
 function updateCardUI(sym, res) {
@@ -719,11 +687,60 @@ function updateCardUI(sym, res) {
     else if(res.signal === 'SELL') { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
     else { visualEl.className = 'visual-arrow'; }
     
-    // AI Panel (Use Calculated TP/SL)
+    // AI Panel & Profit Alarm Logic
+    const alarmEl = document.getElementById(`alarm-${sym}`);
+    const elTP = document.getElementById(`tp-${sym}`);
+    const elSL = document.getElementById(`sl-${sym}`);
+    
     if(res.signal !== 'WAIT') {
         document.getElementById(`e-${sym}`).textContent = res.price.toFixed(res.price<1?4:2);
-        document.getElementById(`tp-${sym}`).textContent = res.tp.toFixed(res.price<1?4:2);
-        document.getElementById(`sl-${sym}`).textContent = res.sl.toFixed(res.price<1?4:2);
+        elTP.textContent = res.tp.toFixed(res.price<1?4:2);
+        elSL.textContent = res.sl.toFixed(res.price<1?4:2);
+        
+        // --- ALARM LOGIC (NEW: ENTRY URGENCY) ---
+        // Fast Blink = STRONG ENTRY (Super Cheap/Expensive)
+        // Slow Pulse = STANDARD ENTRY
+        let isUrgent = false;
+        
+        if (res.signal === 'BUY') {
+            // Urgent BUY if extreme oversold
+            if (res.rsi < 30 || res.stochK < 20) isUrgent = true;
+            
+            if (alarmEl) {
+                if (isUrgent) {
+                    alarmEl.className = 'alarm-icon alarm-active-fast'; // Fast Green Blink (HURRY BUY!)
+                } else {
+                    alarmEl.className = 'alarm-icon alarm-active-slow'; // Slow Green Pulse
+                }
+            }
+        } else if (res.signal === 'SELL') {
+            // Urgent SELL if extreme overbought
+            if (res.rsi > 70 || res.stochK > 80) isUrgent = true;
+            
+            if (alarmEl) {
+                if (isUrgent) {
+                    alarmEl.className = 'alarm-icon alarm-sell-fast'; // Fast Red Blink (HURRY SELL!)
+                } else {
+                    alarmEl.className = 'alarm-icon alarm-sell-slow'; // Slow Red Pulse
+                }
+            }
+        }
+
+        // Highlight Values
+        elTP.style.fontWeight = '700';
+        elTP.style.fontSize = '14px';
+        elSL.style.fontWeight = '700';
+        elSL.style.fontSize = '14px';
+        elSL.style.color = 'var(--binance-red)';
+        
+    } else {
+        // Reset styles when no signal (Momen Habis -> Alarm Mati)
+        if(alarmEl) alarmEl.className = 'alarm-icon'; // Hidden
+        elTP.style.fontWeight = '600';
+        elTP.style.fontSize = '12px';
+        elSL.style.fontWeight = '600';
+        elSL.style.fontSize = '12px';
+        elSL.style.color = 'var(--text-primary)';
     }
 }
 
