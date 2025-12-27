@@ -408,7 +408,9 @@ function renderGrid() {
         const ema = chart.addLineSeries({ color: '#FCD535', lineWidth:1, crosshairMarkerVisible: false }); // EMA is Binance Yellow
         
         new ResizeObserver(e => { if(e[0]) chart.applyOptions({ width: e[0].contentRect.width, height: e[0].contentRect.height }); }).observe(cont);
-        charts.set(s, { chart, series, ema });
+        
+        // UPDATED: Initialize with placeholders for price lines
+        charts.set(s, { chart, series, ema, tpLine: null, slLine: null, entryLine: null });
         marketData.set(s, []);
     });
 }
@@ -528,7 +530,6 @@ function handleStream(sym, candle) {
     }
 }
 
-// TUNED STRATEGY: "HIGH ACCURACY 15M"
 // TUNED STRATEGY: "LINEAR ALIGNMENT"
 function getStrategyParams(type) {
     if(type === 'HYPER') {
@@ -536,8 +537,6 @@ function getStrategyParams(type) {
         return { threshold: 3.0, rsiBuy: 60, rsiSell: 40, stochBuy: 45, stochSell: 55, stochWeight: 4.0, trendWeight: 1.0 };
     } else if(type === 'SCALP') {
         // 5M: PENYESUAIAN (Agar sinkron dengan 15m)
-        // TrendWeight dinaikkan dari 1.5 ke 3.0 agar lebih menghormati tren besar.
-        // Threshold naik sedikit ke 5.0 untuk kompensasi.
         return { threshold: 5.0, rsiBuy: 55, rsiSell: 45, stochBuy: 40, stochSell: 60, stochWeight: 3.5, trendWeight: 3.0 };
     } else if(type === 'DAY') {
         // 15M/1H: THE SNIPER (Trend King)
@@ -553,7 +552,7 @@ function analyze(sym, data, force = false) {
 
     const last = data[data.length-1];
     const prev = data[data.length-2];
-    const strat = getStrategyParams(CURRENT_TF.type); // <--- First declaration
+    const strat = getStrategyParams(CURRENT_TF.type); 
     
     // Indicators
     const rsi = calcRSI(data, 14);
@@ -561,7 +560,8 @@ function analyze(sym, data, force = false) {
     const ema200 = calcEMA(data, 200) || data[0].close;
     const ema50 = calcEMA(data, 50) || data[0].close; // New Short-term Trend
     const bb = calcBB(data, 20, 2);
-    
+    const atr = calcATR(data, 14); // Move ATR calculation up for TP/SL logic
+
     // Context
     const mainTrend = last.close > ema200 ? 'BULLISH' : 'BEARISH';
     const shortTrend = last.close > ema50 ? 'BULLISH' : 'BEARISH';
@@ -579,16 +579,11 @@ function analyze(sym, data, force = false) {
     if(shortTrend === 'BULLISH') bScore += 1.0; 
     else sScore += 1.0;
 
-    // 2. STOCHASTIC (Trigger Utama - WIDE ZONE)
-    // Syarat: Di zona beli DAN k sedang menanjak (k>d) ATAU k sangat rendah
-    // UPDATE: Untuk 15m (DAY), kita paksa cek 'k < stochBuy' agar akurat
-    
-    // Logic Stoch Agresif untuk Scalping, Logic Ketat untuk Day/Swing
+    // 2. STOCHASTIC
     if (CURRENT_TF.type === 'HYPER' || CURRENT_TF.type === 'SCALP') {
          if((stoch.k < strat.stochBuy && stoch.k > stoch.d) || stoch.k < 10) bScore += strat.stochWeight;
          if((stoch.k > strat.stochSell && stoch.k < stoch.d) || stoch.k > 90) sScore += strat.stochWeight;
     } else {
-         // Logic 15m ke atas (Lebih Disiplin)
          if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += strat.stochWeight;
          if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += strat.stochWeight;
     }
@@ -597,26 +592,32 @@ function analyze(sym, data, force = false) {
     if(rsi < strat.rsiBuy) bScore += 1.5;
     if(rsi > strat.rsiSell) sScore += 1.5;
     
-    // 4. PRICE ACTION (BONUS SCORE ONLY - NOT BLOCKER)
+    // 4. PRICE ACTION
     if(isGreen) bScore += 1.0;
     if(isRed) sScore += 1.0;
     
-    // 5. BOLLINGER BANDS (Rejection)
+    // 5. BOLLINGER BANDS
     if(last.close < bb.lower) bScore += 2.0;
     if(last.close > bb.upper) sScore += 2.0;
     
     // FINAL LOGIC
     let signal = 'WAIT';
-    
-    // Logic: Score > Threshold. No strict Color Gate anymore.
     if(bScore >= strat.threshold && bScore > sScore) signal = 'BUY';
     if(sScore >= strat.threshold && sScore > bScore) signal = 'SELL';
     
-    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close };
+    // Calculate TP/SL for visualization
+    let tp = 0, sl = 0;
+    if(signal === 'BUY') {
+        sl = last.close - (atr * 2);
+        tp = last.close + (atr * 3);
+    } else if(signal === 'SELL') {
+        sl = last.close + (atr * 2);
+        tp = last.close - (atr * 3);
+    }
+
+    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, tp, sl };
     analysisResults.set(sym, res);
     MTF_MATRIX.set(`${sym}_${CURRENT_TF.label}`, signal);
-    
-    const atr = calcATR(data, 14);
     
     // Visual Markers
     const cObj = charts.get(sym);
@@ -630,12 +631,56 @@ function analyze(sym, data, force = false) {
         }
     }
     
-    updateCardUI(sym, res, atr);
+    updateChartLines(sym, res); // New visual line updater
+    updateCardUI(sym, res);
     updateMatrixUI(sym);
     if(signal !== 'WAIT') triggerAlert(sym, signal);
 }
 
-function updateCardUI(sym, res, atr) {
+// NEW FUNCTION: Draws TP/SL lines on chart
+function updateChartLines(sym, res) {
+    const cObj = charts.get(sym);
+    if (!cObj) return;
+    
+    // Clear old lines first
+    if (cObj.tpLine) { cObj.series.removePriceLine(cObj.tpLine); cObj.tpLine = null; }
+    if (cObj.slLine) { cObj.series.removePriceLine(cObj.slLine); cObj.slLine = null; }
+    if (cObj.entryLine) { cObj.series.removePriceLine(cObj.entryLine); cObj.entryLine = null; }
+
+    if (res.signal === 'WAIT') return;
+
+    // Create Entry Line
+    cObj.entryLine = cObj.series.createPriceLine({
+        price: res.price,
+        color: '#eaecef',
+        lineWidth: 1,
+        lineStyle: LightweightCharts.LineStyle.Dotted,
+        axisLabelVisible: true,
+        title: 'ENTRY',
+    });
+
+    // Create TP Line
+    cObj.tpLine = cObj.series.createPriceLine({
+        price: res.tp,
+        color: '#0ecb81', // Binance Green
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: 'TP (3R)',
+    });
+
+    // Create SL Line
+    cObj.slLine = cObj.series.createPriceLine({
+        price: res.sl,
+        color: '#f6465d', // Binance Red
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: 'SL (2R)',
+    });
+}
+
+function updateCardUI(sym, res) {
     const card = document.getElementById(`card-${sym}`);
     if(!card) return;
 
@@ -647,7 +692,7 @@ function updateCardUI(sym, res, atr) {
     if(isSniper && (CURRENT_TF.label === '1m' || CURRENT_TF.label === '5m')) card.classList.add('sniper-mode');
     else card.classList.remove('sniper-mode');
 
-    // NEW: Update Trend Arrow next to Name based on EMA 200 Trend
+    // Trend Arrow
     const arrowEl = document.getElementById(`trend-arrow-${sym}`);
     if(arrowEl) {
         if(res.trend === 'BULLISH') {
@@ -659,14 +704,12 @@ function updateCardUI(sym, res, atr) {
         }
     }
 
-    // Update Buttons with SCORE
+    // Update Buttons
     const btnBuy = document.getElementById(`btn-buy-${sym}`);
     const btnSell = document.getElementById(`btn-sell-${sym}`);
-    
     btnBuy.className = `btn-trade buy ${res.signal==='BUY'?'active':''}`;
     btnSell.className = `btn-trade sell ${res.signal==='SELL'?'active':''}`;
     
-    // Show Score in Button
     document.getElementById(`sc-buy-${sym}`).textContent = res.bScore.toFixed(1);
     document.getElementById(`sc-sell-${sym}`).textContent = res.sScore.toFixed(1);
 
@@ -676,13 +719,11 @@ function updateCardUI(sym, res, atr) {
     else if(res.signal === 'SELL') { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
     else { visualEl.className = 'visual-arrow'; }
     
-    // AI Panel
+    // AI Panel (Use Calculated TP/SL)
     if(res.signal !== 'WAIT') {
-        const sl = res.signal==='BUY' ? res.price - (atr*2) : res.price + (atr*2);
-        const tp = res.signal==='BUY' ? res.price + (atr*3) : res.price - (atr*3);
         document.getElementById(`e-${sym}`).textContent = res.price.toFixed(res.price<1?4:2);
-        document.getElementById(`tp-${sym}`).textContent = tp.toFixed(res.price<1?4:2);
-        document.getElementById(`sl-${sym}`).textContent = sl.toFixed(res.price<1?4:2);
+        document.getElementById(`tp-${sym}`).textContent = res.tp.toFixed(res.price<1?4:2);
+        document.getElementById(`sl-${sym}`).textContent = res.sl.toFixed(res.price<1?4:2);
     }
 }
 
