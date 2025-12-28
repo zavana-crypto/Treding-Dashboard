@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V18.9.5 INSTANT</title>
+<title>ZAVANA V18.9 PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<!-- CDN Reliable -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lightweight-charts/3.8.0/lightweight-charts.standalone.production.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 <!-- EmailJS SDK -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
@@ -23,7 +22,6 @@
       --binance-green: #0ecb81;
       --binance-red: #f6465d;
       --gold: #FFD700; /* Gold Color */
-      --guard-blue: #3b82f6; /* New Guard Color */
       --border: #2b3139; 
       --card-radius: 6px; 
   }
@@ -79,31 +77,23 @@
       gap: 20px; 
   }
   
-  .card { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid transparent; position: relative; content-visibility: auto; /* Optimizes Rendering */ }
+  .card { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid transparent; position: relative; }
   .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); border-color: var(--border); }
   
-  /* Guard Mode Border */
-  .card.guard-active { border: 1px solid var(--guard-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
   .card.sniper-mode { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(252, 213, 53, 0.2); }
   
-  /* TAGS & BUTTONS */
+  /* TAGS */
   .sniper-tag { position: absolute; top: 0; right: 0; font-size: 10px; font-weight: 800; padding: 4px 10px; border-bottom-left-radius: 8px; z-index: 10; display: block; letter-spacing: 0.5px; }
   
-  /* Guard Toggle Button */
-  .guard-toggle { position: absolute; top: 10px; right: 10px; z-index: 20; background: var(--bg-base); border: 1px solid var(--border); color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
-  .guard-toggle:hover { color: var(--text-primary); border-color: var(--text-primary); }
-  .guard-toggle.active { background: var(--guard-blue); color: white; border-color: var(--guard-blue); box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
-
   .tag-wait-bull { background: var(--accent); color: #000; } 
   .tag-wait-bear { background: #474d57; color: #fff; } 
   .tag-buy { background: var(--binance-green); color: #fff; animation: pulse-green 1s infinite; }
   .tag-sell { background: var(--binance-red); color: #fff; animation: pulse-red 1s infinite; }
-  .tag-exit { background: #f6465d; color: #fff; animation: pulse-red 0.5s infinite; font-weight: 900; }
 
   @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(14, 203, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0); } }
   @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(246, 70, 93, 0); } 100% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0); } }
 
-  .card-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--bg-base); margin-top: 20px; /* Space for guard button */ }
+  .card-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--bg-base); }
   .coin-meta { display: flex; align-items: center; gap: 12px; }
   .coin-icon { width: 36px; height: 36px; border-radius: 50%; }
   .coin-title { font-size: 18px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
@@ -117,18 +107,18 @@
   /* Matrix Bar */
   .matrix-strip { display: flex; gap: 3px; padding: 6px 20px; background: var(--bg-base); }
   .m-dot { flex: 1; height: 5px; border-radius: 2px; background: var(--bg-hover); transition: 0.3s; }
+  
+  /* UPDATED: Matrix Dot States */
   .m-dot.bull { background: var(--binance-green); box-shadow: 0 0 5px var(--binance-green); }
   .m-dot.bear { background: var(--binance-red); box-shadow: 0 0 5px var(--binance-red); }
   .m-dot.active { height: 7px; margin-top: -1px; border: 1px solid #fff; }
   
+  /* NEW: Blinking States for Take Profit / Surge */
   .m-dot.blink-green { background: var(--binance-green); box-shadow: 0 0 8px var(--binance-green); animation: blink-fast 0.5s infinite; }
   .m-dot.blink-red { background: var(--binance-red); box-shadow: 0 0 8px var(--binance-red); animation: blink-fast 0.5s infinite; }
 
   /* Chart Area (TALLER) */
   .chart-container { height: 240px; width: 100%; position: relative; background: var(--bg-base); border-bottom: 1px solid var(--bg-base); }
-  /* Loading text placeholder */
-  .chart-loading { position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); color: var(--text-secondary); font-size:10px; font-weight:600; z-index:0; }
-  
   .visual-arrow { position: absolute; top: 15px; right: 15px; font-size: 24px; z-index: 5; opacity: 0; pointer-events: none; font-weight: 900; }
   .visual-arrow.buy { color: var(--binance-green); opacity: 1; animation: bounceUp 1s infinite; }
   .visual-arrow.sell { color: var(--binance-red); opacity: 1; animation: bounceDown 1s infinite; }
@@ -151,10 +141,6 @@
   .alarm-sell-slow { display: inline-block; color: var(--binance-red); animation: blink-slow 2s infinite ease-in-out; }
   .alarm-sell-fast { display: inline-block; color: #ff0000; text-shadow: 0 0 12px #ff0000; animation: blink-fast 0.25s infinite; }
 
-  /* GUARD MODE ALARM OVERRIDE */
-  .alarm-guard-exit { display: inline-block; color: #f6465d; text-shadow: 0 0 15px #f6465d; animation: blink-fast 0.2s infinite; font-size: 18px; }
-  .alarm-guard-safe { display: inline-block; color: var(--guard-blue); opacity: 0.5; }
-
   /* Action Footer */
   .card-footer { padding: 16px 20px; display: flex; gap: 15px; background: var(--bg-card); }
   .btn-trade { flex: 1; border: none; border-radius: 4px; padding: 12px 0; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; color: white; transition: 0.2s; opacity: 0.3; letter-spacing: 0.5px; }
@@ -164,10 +150,9 @@
   .btn-trade:hover { opacity: 0.9; }
 
   /* Loading Overlay */
-  #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s; pointer-events: none; }
+  #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
   .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  #loading-overlay.hidden { opacity: 0; }
 
   /* --- TABLE & SETTINGS --- */
   .table-wrapper { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
@@ -314,13 +299,6 @@ try {
     localStorage.setItem('zavana_coins', JSON.stringify(DEFAULT_COINS));
 }
 
-// GUARD STORAGE
-let ACTIVE_GUARDS = new Set();
-try {
-    const stored = JSON.parse(localStorage.getItem('zavana_guards'));
-    if(Array.isArray(stored)) ACTIVE_GUARDS = new Set(stored);
-} catch(e) {}
-
 let EMAIL_CONFIG;
 try {
     EMAIL_CONFIG = JSON.parse(localStorage.getItem('zavana_email_config')) || { serviceId: '', templateId: '', publicKey: '' };
@@ -328,15 +306,15 @@ try {
     EMAIL_CONFIG = { serviceId: '', templateId: '', publicKey: '' };
 }
 
-// TIMEFRAMES CONFIG - INCREASED TO 1000 FOR MAX ACCURACY
+// TIMEFRAMES CONFIG
 const TIMEFRAMES = [
-  { label: '1m',  ws: '1m',  cc: 'histominute', limit: 1000, agg: 1, type: 'HYPER' }, 
-  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 1000, agg: 5, type: 'SCALP' },
-  { label: '15m', ws: '15m', cc: 'histominute', limit: 1000, agg: 15, type: 'DAY' },
-  { label: '1H',  ws: '1h',  cc: 'histohour',   limit: 1000, agg: 1, type: 'DAY' },
-  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 1000, agg: 4, type: 'SWING' },
-  { label: '1D',  ws: '1d',  cc: 'histoday',    limit: 1000, agg: 1, type: 'INVEST' },
-  { label: '1W',  ws: '1w',  cc: 'histoday',    limit: 1000, agg: 7, type: 'INVEST' }
+  { label: '1m',  ws: '1m',  cc: 'histominute', limit: 500, agg: 1, type: 'HYPER' }, 
+  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 500, agg: 5, type: 'SCALP' },
+  { label: '15m', ws: '15m', cc: 'histominute', limit: 500, agg: 15, type: 'DAY' },
+  { label: '1H',  ws: '1h',  cc: 'histohour',   limit: 500, agg: 1, type: 'DAY' },
+  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 500, agg: 4, type: 'SWING' },
+  { label: '1D',  ws: '1d',  cc: 'histoday',    limit: 500, agg: 1, type: 'INVEST' },
+  { label: '1W',  ws: '1w',  cc: 'histoday',    limit: 500, agg: 7, type: 'INVEST' }
 ];
 
 let CURRENT_TF = TIMEFRAMES[2]; 
@@ -348,22 +326,6 @@ const analysisResults = new Map();
 const audioCooldown = new Map(); 
 const lastAnalysisTime = new Map(); 
 let wakeLock = null;
-
-// PERFORMANCE: VISIBILITY TRACKER
-const visibleCards = new Set();
-const cardObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        const sym = entry.target.id.replace('card-', '');
-        if(entry.isIntersecting) {
-            visibleCards.add(sym);
-            // Optional: force resize check when becoming visible
-            const cObj = charts.get(sym);
-            if(cObj) cObj.chart.timeScale().fitContent();
-        } else {
-            visibleCards.delete(sym);
-        }
-    });
-}, { threshold: 0.1 });
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
@@ -379,18 +341,12 @@ function startApp() {
         if(typeof emailjs !== 'undefined' && EMAIL_CONFIG.publicKey) {
             emailjs.init(EMAIL_CONFIG.publicKey);
         }
-        
-        // FIX: Force hide loader immediately to prevent "stuck" feeling
-        const loader = document.getElementById('loading-overlay');
-        loader.classList.add('hidden');
-        setTimeout(() => loader.style.display = 'none', 500);
-
-        // Fetch Data in Background (Async)
         changeTimeframe(CURRENT_TF);
-        
-        // Start Loops
         setInterval(updateScreenerTable, 2000); 
         startMatrixScanner();
+        setTimeout(() => {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }, 1000);
     } catch(e) {
         console.error("App Crash:", e);
         document.getElementById('loading-overlay').style.display = 'none';
@@ -444,23 +400,6 @@ function renderToolbar() {
     });
 }
 
-// GUARD LOGIC
-window.toggleGuard = function(sym) {
-    const btn = document.getElementById(`guard-${sym}`);
-    if(ACTIVE_GUARDS.has(sym)) {
-        ACTIVE_GUARDS.delete(sym);
-        btn.classList.remove('active');
-        btn.innerHTML = '🛡️ GUARD';
-        document.getElementById(`card-${sym}`).classList.remove('guard-active');
-    } else {
-        ACTIVE_GUARDS.add(sym);
-        btn.classList.add('active');
-        btn.innerHTML = '🛡️ ACTIVE';
-        document.getElementById(`card-${sym}`).classList.add('guard-active');
-    }
-    localStorage.setItem('zavana_guards', JSON.stringify([...ACTIVE_GUARDS]));
-}
-
 function renderGrid() {
     const grid = document.getElementById('grid');
     grid.innerHTML = ''; 
@@ -468,22 +407,15 @@ function renderGrid() {
         const s = sym.trim().toUpperCase();
         const base = s.replace('USDT','');
         const isGold = s === "PAXGUSDT" || s === "XAUTUSDT";
-        const isGuarded = ACTIVE_GUARDS.has(s);
-
         let icon = `https://assets.coincap.io/assets/icons/${base.toLowerCase()}@2x.png`;
         if (s === "PAXGUSDT") icon = "https://assets.coincap.io/assets/icons/paxg@2x.png";
         if (s === "XAUTUSDT") icon = "https://s2.coinmarketcap.com/static/img/coins/64x64/5186.png"; 
         
         const card = document.createElement('div');
-        card.className = `card ${isGuarded?'guard-active':''}`;
+        card.className = 'card';
         card.id = `card-${s}`;
-        
-        // ADDED GUARD BUTTON AND GUARD ACTIVE CLASS
         card.innerHTML = `
             <div class="sniper-tag" id="tag-${s}">INIT...</div>
-            <button id="guard-${s}" class="guard-toggle ${isGuarded?'active':''}" onclick="toggleGuard('${s}')">
-                ${isGuarded ? '🛡️ ACTIVE' : '🛡️ GUARD'}
-            </button>
             <div class="card-header">
                 <div class="coin-meta">
                     <img src="${icon}" class="coin-icon" onerror="this.style.display='none'">
@@ -506,7 +438,6 @@ function renderGrid() {
             </div>
 
             <div class="chart-container">
-                <div class="chart-loading">LOADING DATA...</div>
                 <div id="chart-${s}" style="width:100%; height:100%"></div>
                 <div id="visual-${s}" class="visual-arrow">➤</div>
             </div>
@@ -536,14 +467,8 @@ function renderGrid() {
         `;
         grid.appendChild(card);
         
-        // Start Observing Visibility
-        cardObserver.observe(card);
-        
         // Chart Setup
         const cont = document.getElementById(`chart-${s}`);
-        // Ensure container has size before init
-        if(cont.clientWidth === 0) cont.style.width = '100%';
-        
         const chart = LightweightCharts.createChart(cont, {
             layout: { backgroundColor: '#0b0e11', textColor: '#848e9c', fontSize: 11, fontFamily: 'JetBrains Mono' }, 
             grid: { vertLines: { color: '#1e2329' }, horzLines: { color: '#1e2329' } },
@@ -556,12 +481,7 @@ function renderGrid() {
         const series = chart.addCandlestickSeries({ upColor: candleColorUp, downColor: '#F6465D', borderVisible: false, wickVisible: true });
         const ema = chart.addLineSeries({ color: '#FCD535', lineWidth:1, crosshairMarkerVisible: false }); 
         
-        new ResizeObserver(e => { 
-            if(e[0] && e[0].contentRect.width > 0) {
-                chart.applyOptions({ width: e[0].contentRect.width, height: e[0].contentRect.height });
-                chart.timeScale().fitContent();
-            }
-        }).observe(cont);
+        new ResizeObserver(e => { if(e[0]) chart.applyOptions({ width: e[0].contentRect.width, height: e[0].contentRect.height }); }).observe(cont);
         
         charts.set(s, { chart, series, ema });
         marketData.set(s, []);
@@ -614,28 +534,17 @@ async function changeTimeframe(tf) {
     if(ws) ws.close();
     
     for (const sym of COINS) {
-        // Use Promse.then() to handle each coin asynchronously without blocking the loop entirely
-        // This is a "Fast Boot" approach
-        fetchHistory(sym, tf).then(hist => {
-            if(hist.length) {
-                marketData.set(sym, hist);
-                const cObj = charts.get(sym);
-                if(cObj) {
-                    cObj.series.setData(hist);
-                    cObj.ema.setData(calcEMAData(hist, 200));
-                    // Force fit content to ensure visibility
-                    cObj.chart.timeScale().fitContent();
-                    // Remove loading text
-                    const loader = document.querySelector(`#card-${sym} .chart-loading`);
-                    if(loader) loader.style.display = 'none';
-                    
-                    analyze(sym, hist, tf);
-                }
-            } else {
-                 const loader = document.querySelector(`#card-${sym} .chart-loading`);
-                 if(loader) loader.textContent = "DATA ERROR";
+        await new Promise(r => setTimeout(r, 50)); 
+        const hist = await fetchHistory(sym, tf.cc, tf.limit, tf.agg);
+        if(hist.length) {
+            marketData.set(sym, hist);
+            const cObj = charts.get(sym);
+            if(cObj) {
+                cObj.series.setData(hist);
+                cObj.ema.setData(calcEMAData(hist, 200));
+                analyze(sym, hist, tf);
             }
-        });
+        }
     }
     
     const streams = COINS.map(c => `${c.toLowerCase()}@kline_${tf.ws}`).join('/');
@@ -650,36 +559,13 @@ async function changeTimeframe(tf) {
     };
 }
 
-// UPDATED: SWAPPED PRIORITY (CRYPTOCOMPARE FIRST -> BINANCE FALLBACK)
-async function fetchHistory(s, tf) {
-    // 1. Try CryptoCompare API first (FAST & RELIABLE)
+async function fetchHistory(s, ep, lim, agg = 1) {
     try {
-        const res = await fetch(`https://min-api.cryptocompare.com/data/v2/${tf.cc}?fsym=${s.replace('USDT','')}&tsym=USDT&limit=${tf.limit}&aggregate=${tf.agg}`);
+        const res = await fetch(`https://min-api.cryptocompare.com/data/v2/${ep}?fsym=${s.replace('USDT','')}&tsym=USDT&limit=${lim}&aggregate=${agg}`);
         const j = await res.json();
-        if(j.Response === "Error") throw new Error("CC Error");
+        if(j.Response === "Error") return [];
         return j.Data.Data.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close,volume:d.volumeto}));
-    } catch(e) {
-        // 2. Fallback to Binance (If CC fails)
-        try {
-            const intervalMap = { '1m':'1m', '5m':'5m', '15m':'15m', '1H':'1h', '4H':'4h', '1D':'1d', '1W':'1w' };
-            const binanceInterval = intervalMap[tf.label];
-            const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${binanceInterval}&limit=${tf.limit}`);
-            if (!res.ok) throw new Error("Binance Blocked");
-            const data = await res.json();
-            
-            return data.map(d => ({
-                time: d[0] / 1000,
-                open: parseFloat(d[1]),
-                high: parseFloat(d[2]),
-                low: parseFloat(d[3]),
-                close: parseFloat(d[4]),
-                volume: parseFloat(d[5])
-            }));
-        } catch(err) {
-            console.warn("All Data APIs Failed for", s);
-            return [];
-        }
-    }
+    } catch(e) { return []; }
 }
 
 function handleStream(sym, candle) {
@@ -704,11 +590,8 @@ function handleStream(sym, candle) {
         }
     }
 
-    // LAZY RENDERING CHECK: Only update chart if visible
-    if(visibleCards.has(sym)) {
-        const cObj = charts.get(sym);
-        if(cObj) cObj.series.update(candle);
-    }
+    const cObj = charts.get(sym);
+    if(cObj) cObj.series.update(candle);
     
     const now = Date.now();
     const lastRun = lastAnalysisTime.get(sym) || 0;
@@ -732,7 +615,7 @@ function getStrategyParams(type) {
     }
 }
 
-// MODIFIED: UPDATED ANALYZE FUNCTION WITH GUARD LOGIC
+// MODIFIED: UPDATED ANALYZE FUNCTION TO HANDLE BACKGROUND TASKS
 function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     if(data.length < 50) return; 
 
@@ -824,34 +707,18 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         return; 
     }
 
-    // --- GUARD LOGIC DETECTORS (Price vs Limits) ---
-    // Detect if we hit projected TP or SL/Reversal
-    // "Guard Hit" means: Price went TOO FAR (Profit) or TOO WRONG (Loss)
-    let hitTP = false;
-    let hitSL = false;
-    
-    // Simple logic: If price is outside Bollinger Bands = Extreme (TP area)
-    if (last.close > bb.upper || last.close < bb.lower) hitTP = true;
-    
-    // Simple logic: If price crosses EMA200 against trend = Reversal (SL area)
-    if (mainTrend === 'BULLISH' && last.close < ema200) hitSL = true;
-    if (mainTrend === 'BEARISH' && last.close > ema200) hitSL = true;
-
     // --- MAIN UI UPDATES (Only for Current Timeframe) ---
-    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, open: last.open, tp, sl, stochK: stoch.k, atr, hitTP, hitSL };
+    const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, open: last.open, tp, sl, stochK: stoch.k, atr };
     analysisResults.set(sym, res);
     
     if(signal === 'BUY') document.title = `🚨 BUY ${sym.replace('USDT','')}`;
     else if(signal === 'SELL') document.title = `🚨 SELL ${sym.replace('USDT','')}`;
     
-    // LAZY CHART UPDATE
-    if(visibleCards.has(sym)) {
-        const cObj = charts.get(sym);
-        if(cObj) {
-            cObj.series.setMarkers([]); 
-            if(signal === 'BUY') cObj.series.setMarkers([{ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'B' }]);
-            else if(signal === 'SELL') cObj.series.setMarkers([{ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'S' }]);
-        }
+    const cObj = charts.get(sym);
+    if(cObj) {
+        cObj.series.setMarkers([]); 
+        if(signal === 'BUY') cObj.series.setMarkers([{ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'B' }]);
+        else if(signal === 'SELL') cObj.series.setMarkers([{ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'S' }]);
     }
     
     updateCardUI(sym, res, isUrgent);
@@ -874,41 +741,19 @@ function updateCardUI(sym, res, isSurge) {
     const tag = card.querySelector('.sniper-tag');
     tag.className = 'sniper-tag'; 
 
-    // GUARD OVERRIDE LOGIC
-    const isGuarded = ACTIVE_GUARDS.has(sym);
-    
-    if(isGuarded) {
-        // --- GUARD MODE ACTIVE ---
-        // Only show alarm if Urgent (TP/SL Hit)
-        if (res.hitTP) {
-             tag.textContent = 'TAKE PROFIT!';
-             tag.className = 'sniper-tag tag-exit'; // Flashing Red/Exit
-        } else if (res.hitSL) {
-             tag.textContent = 'STOP LOSS / REVERSAL!';
-             tag.className = 'sniper-tag tag-exit'; // Flashing Red/Exit
-        } else {
-             // Safe / Running / Correction
-             tag.textContent = 'GUARDING...';
-             tag.className = 'sniper-tag';
-             tag.style.background = 'var(--guard-blue)';
-             tag.style.color = 'white';
-        }
+    if (res.signal === 'BUY') {
+        tag.textContent = 'EXECUTE BUY';
+        tag.classList.add('tag-buy');
+    } else if (res.signal === 'SELL') {
+        tag.textContent = 'EXECUTE SELL';
+        tag.classList.add('tag-sell');
     } else {
-        // --- NORMAL MODE ---
-        if (res.signal === 'BUY') {
-            tag.textContent = 'EXECUTE BUY';
-            tag.classList.add('tag-buy');
-        } else if (res.signal === 'SELL') {
-            tag.textContent = 'EXECUTE SELL';
-            tag.classList.add('tag-sell');
+        if (res.trend === 'BULLISH') {
+            tag.textContent = 'TUNGGU KOREKSI';
+            tag.classList.add('tag-wait-bull');
         } else {
-            if (res.trend === 'BULLISH') {
-                tag.textContent = 'TUNGGU KOREKSI';
-                tag.classList.add('tag-wait-bull');
-            } else {
-                tag.textContent = 'TUNGGU PANTULAN';
-                tag.classList.add('tag-wait-bear');
-            }
+            tag.textContent = 'TUNGGU PANTULAN';
+            tag.classList.add('tag-wait-bear');
         }
     }
 
@@ -940,40 +785,30 @@ function updateCardUI(sym, res, isSurge) {
     const elTP = document.getElementById(`tp-${sym}`);
     const elSL = document.getElementById(`sl-${sym}`);
     
-    if(res.signal !== 'WAIT' || isGuarded) {
+    if(res.signal !== 'WAIT') {
         document.getElementById(`e-${sym}`).textContent = res.price.toFixed(res.price<1?4:2);
         elTP.textContent = res.tp.toFixed(res.price<1?4:2);
         elSL.textContent = res.sl.toFixed(res.price<1?4:2);
         
-        // ALARM LOGIC WITH GUARD
-        if (alarmEl) {
-            if (isGuarded) {
-                // If Guarded, ONLY flash on Critical Events
-                if (res.hitTP || res.hitSL) {
-                    alarmEl.className = 'alarm-icon alarm-guard-exit'; // URGENT FLASH
+        if (res.signal === 'BUY') {
+            if (alarmEl) {
+                if (res.price > res.open) {
+                    if (isSurge) alarmEl.className = 'alarm-icon alarm-active-fast'; 
+                    else alarmEl.className = 'alarm-icon alarm-active-slow'; 
                 } else {
-                    alarmEl.className = 'alarm-icon alarm-guard-safe'; // Steady Blue (Safe)
+                    alarmEl.className = 'alarm-icon alarm-active-slow'; 
                 }
-            } else {
-                // Normal Logic
-                if (res.signal === 'BUY') {
-                    if (res.price > res.open) {
-                        alarmEl.className = isSurge ? 'alarm-icon alarm-active-fast' : 'alarm-icon alarm-active-slow'; 
-                    } else {
-                        alarmEl.className = 'alarm-icon alarm-active-slow'; 
-                    }
-                } else if (res.signal === 'SELL') {
-                    if (res.price < res.open) {
-                        alarmEl.className = isSurge ? 'alarm-icon alarm-sell-fast' : 'alarm-icon alarm-sell-slow'; 
-                    } else {
-                        alarmEl.className = 'alarm-icon alarm-sell-slow'; 
-                    }
+            }
+        } else if (res.signal === 'SELL') {
+            if (alarmEl) {
+                if (res.price < res.open) {
+                    if (isSurge) alarmEl.className = 'alarm-icon alarm-sell-fast'; 
+                    else alarmEl.className = 'alarm-icon alarm-sell-slow'; 
                 } else {
-                    alarmEl.className = 'alarm-icon'; // Hidden if WAIT and not guarded
+                    alarmEl.className = 'alarm-icon alarm-sell-slow'; 
                 }
             }
         }
-
         elTP.style.fontWeight = '700';
         elTP.style.fontSize = '14px';
         elSL.style.fontWeight = '700';
@@ -1037,7 +872,7 @@ function startMatrixScanner() {
             coinIdx++; 
             if(coinIdx >= COINS.length) coinIdx = 0; 
         }
-    }, 3000); // SLOWER: Scans 1 asset/timeframe per 3 seconds (was 1s)
+    }, 1000); // Scans 1 asset/timeframe per second
 }
 
 // Math Helpers
@@ -1095,12 +930,6 @@ async function toggleCloudSync() { showToast("Cloud Sync Active (Stub Mode)"); }
 async function saveCloudData() {}
 
 const checkLib = setInterval(() => { if (typeof LightweightCharts !== 'undefined') { clearInterval(checkLib); startApp(); } }, 200);
-
-// FAILSAFE: Force hide loader after 5 seconds no matter what
-setTimeout(() => {
-    const l = document.getElementById('loading-overlay');
-    if(l && l.style.display !== 'none') l.style.display = 'none';
-}, 5000);
 </script>
 </body>
 </html>
