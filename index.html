@@ -107,9 +107,15 @@
   /* Matrix Bar */
   .matrix-strip { display: flex; gap: 3px; padding: 6px 20px; background: var(--bg-base); }
   .m-dot { flex: 1; height: 5px; border-radius: 2px; background: var(--bg-hover); transition: 0.3s; }
+  
+  /* UPDATED: Matrix Dot States */
   .m-dot.bull { background: var(--binance-green); box-shadow: 0 0 5px var(--binance-green); }
   .m-dot.bear { background: var(--binance-red); box-shadow: 0 0 5px var(--binance-red); }
-  .m-dot.active { height: 7px; margin-top: -1px; }
+  .m-dot.active { height: 7px; margin-top: -1px; border: 1px solid #fff; }
+  
+  /* NEW: Blinking States for Take Profit / Surge */
+  .m-dot.blink-green { background: var(--binance-green); box-shadow: 0 0 8px var(--binance-green); animation: blink-fast 0.5s infinite; }
+  .m-dot.blink-red { background: var(--binance-red); box-shadow: 0 0 8px var(--binance-red); animation: blink-fast 0.5s infinite; }
 
   /* Chart Area (TALLER) */
   .chart-container { height: 240px; width: 100%; position: relative; background: var(--bg-base); border-bottom: 1px solid var(--bg-base); }
@@ -283,7 +289,7 @@
 /* =========================================
    CORE CONFIG
    ========================================= */
-const DEFAULT_COINS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "XAUTUSDT", "PAXGUSDT"]; // Added XAUTUSDT
+const DEFAULT_COINS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "XAUTUSDT", "PAXGUSDT"]; 
 let COINS;
 try {
     COINS = JSON.parse(localStorage.getItem('zavana_coins'));
@@ -300,8 +306,7 @@ try {
     EMAIL_CONFIG = { serviceId: '', templateId: '', publicKey: '' };
 }
 
-// OPTIMIZED: AGGREGATION FIXED
-// agg: 5 means "combine 5 minutes into 1 candle" for history fetch
+// TIMEFRAMES CONFIG
 const TIMEFRAMES = [
   { label: '1m',  ws: '1m',  cc: 'histominute', limit: 500, agg: 1, type: 'HYPER' }, 
   { label: '5m',  ws: '5m',  cc: 'histominute', limit: 500, agg: 5, type: 'SCALP' },
@@ -322,7 +327,6 @@ const audioCooldown = new Map();
 const lastAnalysisTime = new Map(); 
 let wakeLock = null;
 
-// FIX: Declare Audio Context at Global Scope
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 
@@ -340,19 +344,16 @@ function startApp() {
         changeTimeframe(CURRENT_TF);
         setInterval(updateScreenerTable, 2000); 
         startMatrixScanner();
-        // Hide loader after safe init
         setTimeout(() => {
             document.getElementById('loading-overlay').style.display = 'none';
         }, 1000);
     } catch(e) {
         console.error("App Crash:", e);
-        // Force hide loader even on error so user can see what's happened
         document.getElementById('loading-overlay').style.display = 'none';
         showToast("System Init Warning: Check Console");
     }
 }
 
-// Show Toast helper to replace alert()
 function showToast(message) {
     const container = document.getElementById('toast-container');
     const el = document.createElement('div');
@@ -366,33 +367,24 @@ function showToast(message) {
     }, 3000);
 }
 
-// Helper: Copy Text to Clipboard
 function copyText(text) {
     if(!text || text === '--') return;
-    
-    // Create temporary textarea to handle copy
     const el = document.createElement('textarea');
     el.value = text;
     document.body.appendChild(el);
     el.select();
-    document.execCommand('copy'); // Legacy command works in more contexts than navigator.clipboard
+    document.execCommand('copy');
     document.body.removeChild(el);
-    
     showToast(`Copied: ${text}`);
 }
 
 window.showPage = function(pageId, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${pageId}`).classList.add('active');
-    
-    // Update Desktop Nav
     document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
     if(el && el.classList.contains('nav-link')) el.classList.add('active');
-    
-    // Update Mobile Nav
     document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
     if(el && el.classList.contains('mobile-nav-item')) el.classList.add('active');
-    
     if(pageId === 'screener') updateScreenerTable();
 }
 
@@ -415,10 +407,9 @@ function renderGrid() {
         const s = sym.trim().toUpperCase();
         const base = s.replace('USDT','');
         const isGold = s === "PAXGUSDT" || s === "XAUTUSDT";
-        // Logic for icon: PAXG or use generic gold for XAUT
         let icon = `https://assets.coincap.io/assets/icons/${base.toLowerCase()}@2x.png`;
         if (s === "PAXGUSDT") icon = "https://assets.coincap.io/assets/icons/paxg@2x.png";
-        if (s === "XAUTUSDT") icon = "https://s2.coinmarketcap.com/static/img/coins/64x64/5186.png"; // XAUT Icon
+        if (s === "XAUTUSDT") icon = "https://s2.coinmarketcap.com/static/img/coins/64x64/5186.png"; 
         
         const card = document.createElement('div');
         card.className = 'card';
@@ -429,7 +420,6 @@ function renderGrid() {
                 <div class="coin-meta">
                     <img src="${icon}" class="coin-icon" onerror="this.style.display='none'">
                     <div>
-                        <!-- UPDATED: Added Trend Arrow Span -->
                         <div class="coin-title" style="${isGold?'color:var(--gold)':''}">
                             ${base}/USDT <span id="trend-arrow-${s}" style="font-weight:bold; font-size:14px; margin-left:4px;"></span>
                             ${isGold ? '<span style="font-size:10px; background:#FFD700; color:black; padding:1px 3px; border-radius:2px; margin-left:4px;">GOLD</span>' : ''}
@@ -480,16 +470,16 @@ function renderGrid() {
         // Chart Setup
         const cont = document.getElementById(`chart-${s}`);
         const chart = LightweightCharts.createChart(cont, {
-            layout: { backgroundColor: '#0b0e11', textColor: '#848e9c', fontSize: 11, fontFamily: 'JetBrains Mono' }, // Larger Font
+            layout: { backgroundColor: '#0b0e11', textColor: '#848e9c', fontSize: 11, fontFamily: 'JetBrains Mono' }, 
             grid: { vertLines: { color: '#1e2329' }, horzLines: { color: '#1e2329' } },
             rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } },
             timeScale: { visible: false, borderVisible: false },
             crosshair: { vertLine: { visible: false }, horzLine: { visible: false } },
             handleScroll: false, handleScale: false
         });
-        const candleColorUp = isGold ? '#FFD700' : '#0ECB81'; // Gold candles for Gold pairs
+        const candleColorUp = isGold ? '#FFD700' : '#0ECB81'; 
         const series = chart.addCandlestickSeries({ upColor: candleColorUp, downColor: '#F6465D', borderVisible: false, wickVisible: true });
-        const ema = chart.addLineSeries({ color: '#FCD535', lineWidth:1, crosshairMarkerVisible: false }); // EMA is Binance Yellow
+        const ema = chart.addLineSeries({ color: '#FCD535', lineWidth:1, crosshairMarkerVisible: false }); 
         
         new ResizeObserver(e => { if(e[0]) chart.applyOptions({ width: e[0].contentRect.width, height: e[0].contentRect.height }); }).observe(cont);
         
@@ -508,7 +498,8 @@ function updateScreenerTable() {
         const base = sym.replace('USDT','');
         const trendClass = res.trend === 'BULLISH' ? 'c-up' : 'c-down';
         const getMtxColor = (tf) => {
-            const sig = MTF_MATRIX.get(`${sym}_${tf}`) || 'WAIT';
+            const rawSig = MTF_MATRIX.get(`${sym}_${tf}`) || 'WAIT';
+            const sig = rawSig.replace('_SURGE', '');
             return sig === 'BUY' ? 'color:var(--binance-green); font-weight:bold;' : (sig === 'SELL' ? 'color:var(--binance-red); font-weight:bold;' : 'color:var(--text-secondary); opacity:0.3;');
         };
 
@@ -530,7 +521,7 @@ function updateScreenerTable() {
 }
 
 /* =========================================
-   DATA & STRATEGY (UNCHANGED CORE LOGIC)
+   DATA & STRATEGY
    ========================================= */
 async function changeTimeframe(tf) {
     CURRENT_TF = tf;
@@ -551,7 +542,7 @@ async function changeTimeframe(tf) {
             if(cObj) {
                 cObj.series.setData(hist);
                 cObj.ema.setData(calcEMAData(hist, 200));
-                analyze(sym, hist, true);
+                analyze(sym, hist, tf);
             }
         }
     }
@@ -582,15 +573,13 @@ function handleStream(sym, candle) {
     if(!arr) return;
     const last = arr[arr.length-1];
     
-    // UPDATE: Handle candle transition correctly to avoid data corruption
     if (candle.time === last.time) {
-        arr[arr.length-1] = candle; // Update current forming candle
+        arr[arr.length-1] = candle; 
     } else if (candle.time > last.time) {
-        arr.push(candle); // New candle started
+        arr.push(candle); 
         if(arr.length > 500) arr.shift();
     }
     
-    // UI Update Price
     const pEl = document.getElementById(`price-${sym}`);
     if(pEl) {
         const prev = parseFloat(pEl.getAttribute('data-p')||0);
@@ -606,111 +595,83 @@ function handleStream(sym, candle) {
     
     const now = Date.now();
     const lastRun = lastAnalysisTime.get(sym) || 0;
-    // Debounce analysis to 1 second to save resources
     if (now - lastRun > 1000) {
-        analyze(sym, arr);
+        analyze(sym, arr, CURRENT_TF);
         lastAnalysisTime.set(sym, now);
     }
 }
 
-// TUNED STRATEGY: "UNIVERSAL SIGNAL" (Works on 5m, 1H, 4H)
 function getStrategyParams(type) {
     if(type === 'HYPER') {
-        // 1M: AGGRESSIVE SCALPING (Keep as is, user likes it)
         return { threshold: 3.0, rsiBuy: 60, rsiSell: 40, stochBuy: 45, stochSell: 55, stochWeight: 4.0, trendWeight: 1.0 };
     } else if(type === 'SCALP') {
-        // 5M: RELAXED ENTRY (Bridge Gap)
-        // Lower threshold to 4.5. Widen StochBuy to 55 (Allows slight momentum buy).
         return { threshold: 4.5, rsiBuy: 55, rsiSell: 45, stochBuy: 55, stochSell: 45, stochWeight: 3.5, trendWeight: 2.0 };
     } else if(type === 'DAY') {
-        // 15M/1H: BALANCED SWING
-        // Threshold lowered to 6.0 to allow more signals on pullbacks.
-        // StochBuy 35: Allows entry when market is just "cooling off", not crashing.
         return { threshold: 6.0, rsiBuy: 40, rsiSell: 60, stochBuy: 35, stochSell: 65, stochWeight: 3.0, trendWeight: 3.5 };
     } else if(type === 'SWING') {
-        // 4H: TREND PULLBACK
-        // Threshold 6.5. Trend is King, but Stoch allows entry on dips.
         return { threshold: 6.5, rsiBuy: 40, rsiSell: 60, stochBuy: 30, stochSell: 70, stochWeight: 2.5, trendWeight: 4.5 };
     } else { 
-        // INVEST: STRICT
         return { threshold: 8.0, rsiBuy: 30, rsiSell: 70, stochBuy: 20, stochSell: 80, stochWeight: 2.0, trendWeight: 5.0 };
     }
 }
 
-function analyze(sym, data, force = false) {
+// MODIFIED: UPDATED ANALYZE FUNCTION TO HANDLE BACKGROUND TASKS
+function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     if(data.length < 50) return; 
 
     const last = data[data.length-1];
     const prev = data[data.length-2];
-    const strat = getStrategyParams(CURRENT_TF.type); 
+    const strat = getStrategyParams(tf.type); 
     
-    // Indicators
     const rsi = calcRSI(data, 14);
     const stoch = calcStochRSI(data, 14, 14, 3, 3);
     const ema200 = calcEMA(data, 200) || data[0].close;
-    const ema50 = calcEMA(data, 50) || data[0].close; // New Short-term Trend
+    const ema50 = calcEMA(data, 50) || data[0].close; 
     const bb = calcBB(data, 20, 2);
-    const atr = calcATR(data, 14); // Move ATR calculation up for TP/SL logic
+    const atr = calcATR(data, 14); 
 
-    // Context
     const mainTrend = last.close > ema200 ? 'BULLISH' : 'BEARISH';
     const shortTrend = last.close > ema50 ? 'BULLISH' : 'BEARISH';
     
-    // Price Action (Color Confirmation)
     const isGreen = last.close >= last.open;
     const isRed = last.close < last.open;
     
     let bScore = 0, sScore = 0;
 
-    // 1. TREND ALIGNMENT & BIAS ENFORCEMENT
-    // Logic: Kalau Trend Utama Bullish, persulit Sell. Kalau Bearish, persulit Buy.
-    // Ini mencegah counter-trend entry yang berisiko floating loss.
     if(mainTrend === 'BULLISH') {
         bScore += strat.trendWeight;
-        // Penalti untuk Sell di pasar Bullish (Mencegah lawan arus)
         sScore -= 2.0; 
     } else {
         sScore += strat.trendWeight;
-        // Penalti untuk Buy di pasar Bearish (Mencegah tangkap pisau jatuh)
         bScore -= 2.0;
     }
     
     if(shortTrend === 'BULLISH') bScore += 1.0; 
     else sScore += 1.0;
 
-    // 2. STOCHASTIC (Dynamic Zone)
-    // For Higher TF (5m+), be less strict about "crossing" and more about "zone".
-    if (CURRENT_TF.type === 'HYPER') {
+    if (tf.type === 'HYPER') {
          if((stoch.k < strat.stochBuy && stoch.k > stoch.d) || stoch.k < 10) bScore += strat.stochWeight;
          if((stoch.k > strat.stochSell && stoch.k < stoch.d) || stoch.k > 90) sScore += strat.stochWeight;
     } else {
-         // Higher TF: Just being in the buy zone is good enough for a point
          if(stoch.k < strat.stochBuy) bScore += (strat.stochWeight * 0.8);
-         // Bonus if actually crossing up
          if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += (strat.stochWeight * 0.2);
-
          if(stoch.k > strat.stochSell) sScore += (strat.stochWeight * 0.8);
          if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += (strat.stochWeight * 0.2);
     }
     
-    // 3. RSI MOMENTUM
     if(rsi < strat.rsiBuy) bScore += 1.5;
     if(rsi > strat.rsiSell) sScore += 1.5;
     
-    // 4. PRICE ACTION
     if(isGreen) bScore += 1.0;
     if(isRed) sScore += 1.0;
     
-    // 5. BOLLINGER BANDS
     if(last.close < bb.lower) bScore += 2.0;
     if(last.close > bb.upper) sScore += 2.0;
     
-    // FINAL LOGIC
     let signal = 'WAIT';
     if(bScore >= strat.threshold && bScore > sScore) signal = 'BUY';
     if(sScore >= strat.threshold && sScore > bScore) signal = 'SELL';
     
-    // Calculate TP/SL for visualization
     let tp = 0, sl = 0;
     if(signal === 'BUY') {
         sl = last.close - (atr * 2);
@@ -720,48 +681,65 @@ function analyze(sym, data, force = false) {
         tp = last.close - (atr * 3);
     }
 
-    // Pass data needed for Alarm
+    // --- URGENT / TAKE PROFIT CHECK FOR MATRIX ---
+    // If we have a signal AND price hits extreme levels or TP
+    let isUrgent = false;
+    // 1. Check Surge
+    let surgeMultiplier = 1.2;
+    if(tf.label === '1H') surgeMultiplier = 1.5;
+    if(tf.label === '4H') surgeMultiplier = 2.0;
+    const candleSize = Math.abs(last.close - last.open);
+    if (candleSize > (atr * surgeMultiplier)) isUrgent = true;
+    
+    // 2. Check TP Hit
+    // Note: Since we calculate dynamic TP every tick, "hitting TP" in this context
+    // means price is extending far beyond standard deviation (BB)
+    if (signal === 'BUY' && last.close > bb.upper) isUrgent = true;
+    if (signal === 'SELL' && last.close < bb.lower) isUrgent = true;
+
+    // Store Simple Signal + Urgent Status in Matrix
+    const matrixSig = isUrgent ? signal + '_SURGE' : signal;
+    MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig);
+    
+    // If running in background scanner, STOP HERE (Update Matrix Only)
+    if (isBackground) {
+        updateMatrixUI(sym);
+        return; 
+    }
+
+    // --- MAIN UI UPDATES (Only for Current Timeframe) ---
     const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, open: last.open, tp, sl, stochK: stoch.k, atr };
     analysisResults.set(sym, res);
-    MTF_MATRIX.set(`${sym}_${CURRENT_TF.label}`, signal);
     
-    // Dynamic Browser Title based on Signal
     if(signal === 'BUY') document.title = `🚨 BUY ${sym.replace('USDT','')}`;
     else if(signal === 'SELL') document.title = `🚨 SELL ${sym.replace('USDT','')}`;
     
-    // Visual Markers
     const cObj = charts.get(sym);
     if(cObj) {
         cObj.series.setMarkers([]); 
-        if(signal === 'BUY') {
-             cObj.series.setMarkers([{ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'B' }]);
-        }
-        else if(signal === 'SELL') {
-             cObj.series.setMarkers([{ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'S' }]);
-        }
+        if(signal === 'BUY') cObj.series.setMarkers([{ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'B' }]);
+        else if(signal === 'SELL') cObj.series.setMarkers([{ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'S' }]);
     }
     
-    updateCardUI(sym, res);
+    updateCardUI(sym, res, isUrgent);
     updateMatrixUI(sym);
     if(signal !== 'WAIT') triggerAlert(sym, signal);
 }
 
-function updateCardUI(sym, res) {
+function updateCardUI(sym, res, isSurge) {
     const card = document.getElementById(`card-${sym}`);
     if(!card) return;
 
-    // Sniper Mode Logic (Border Glow)
-    const s1 = MTF_MATRIX.get(`${sym}_1m`);
-    const s5 = MTF_MATRIX.get(`${sym}_5m`);
+    // Sniper Mode Logic
+    const s1 = (MTF_MATRIX.get(`${sym}_1m`)||'').replace('_SURGE','');
+    const s5 = (MTF_MATRIX.get(`${sym}_5m`)||'').replace('_SURGE','');
     const isSniper = (s1 === 'BUY' && s5 === 'BUY') || (s1 === 'SELL' && s5 === 'SELL');
     
     if(isSniper && (CURRENT_TF.label === '1m' || CURRENT_TF.label === '5m')) card.classList.add('sniper-mode');
     else card.classList.remove('sniper-mode');
 
-    // --- STATUS TAG LOGIC (NEW) ---
-    // Visualizing the "Waiting for Correction" state
     const tag = card.querySelector('.sniper-tag');
-    tag.className = 'sniper-tag'; // Reset class
+    tag.className = 'sniper-tag'; 
 
     if (res.signal === 'BUY') {
         tag.textContent = 'EXECUTE BUY';
@@ -770,7 +748,6 @@ function updateCardUI(sym, res) {
         tag.textContent = 'EXECUTE SELL';
         tag.classList.add('tag-sell');
     } else {
-        // WAIT STATE - Tell user what we are waiting for
         if (res.trend === 'BULLISH') {
             tag.textContent = 'TUNGGU KOREKSI';
             tag.classList.add('tag-wait-bull');
@@ -780,19 +757,17 @@ function updateCardUI(sym, res) {
         }
     }
 
-    // Trend Arrow
     const arrowEl = document.getElementById(`trend-arrow-${sym}`);
     if(arrowEl) {
         if(res.trend === 'BULLISH') {
-            arrowEl.innerHTML = '&#8599;'; // North East Arrow
+            arrowEl.innerHTML = '&#8599;'; 
             arrowEl.style.color = 'var(--binance-green)';
         } else {
-            arrowEl.innerHTML = '&#8600;'; // South East Arrow
+            arrowEl.innerHTML = '&#8600;'; 
             arrowEl.style.color = 'var(--binance-red)';
         }
     }
 
-    // Update Buttons
     const btnBuy = document.getElementById(`btn-buy-${sym}`);
     const btnSell = document.getElementById(`btn-sell-${sym}`);
     btnBuy.className = `btn-trade buy ${res.signal==='BUY'?'active':''}`;
@@ -801,13 +776,11 @@ function updateCardUI(sym, res) {
     document.getElementById(`sc-buy-${sym}`).textContent = res.bScore.toFixed(1);
     document.getElementById(`sc-sell-${sym}`).textContent = res.sScore.toFixed(1);
 
-    // Visual Overlay
     const visualEl = document.getElementById(`visual-${sym}`);
     if(res.signal === 'BUY') { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
     else if(res.signal === 'SELL') { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
     else { visualEl.className = 'visual-arrow'; }
     
-    // AI Panel & Profit Alarm Logic
     const alarmEl = document.getElementById(`alarm-${sym}`);
     const elTP = document.getElementById(`tp-${sym}`);
     const elSL = document.getElementById(`sl-${sym}`);
@@ -817,49 +790,32 @@ function updateCardUI(sym, res) {
         elTP.textContent = res.tp.toFixed(res.price<1?4:2);
         elSL.textContent = res.sl.toFixed(res.price<1?4:2);
         
-        // --- SMART ALARM LOGIC (MOMENTUM SURGE) ---
-        let isSurge = false;
-        const range = res.atr || 1; 
-        const candleSize = Math.abs(res.price - res.open);
-        
-        // Adjust surge sensitivity based on Timeframe
-        let surgeMultiplier = 1.2;
-        if(CURRENT_TF.label === '1H') surgeMultiplier = 1.5;
-        if(CURRENT_TF.label === '4H') surgeMultiplier = 2.0;
-
-        if (candleSize > (range * surgeMultiplier)) isSurge = true;
-        
         if (res.signal === 'BUY') {
             if (alarmEl) {
-                // If Candle is GREEN (Winning)
                 if (res.price > res.open) {
-                    if (isSurge) alarmEl.className = 'alarm-icon alarm-active-fast'; // Fast Blink (SURGE!)
-                    else alarmEl.className = 'alarm-icon alarm-active-slow'; // Slow Pulse (Steady Gain)
+                    if (isSurge) alarmEl.className = 'alarm-icon alarm-active-fast'; 
+                    else alarmEl.className = 'alarm-icon alarm-active-slow'; 
                 } else {
-                    alarmEl.className = 'alarm-icon alarm-active-slow'; // Slow Pulse (Pullback/Hold)
+                    alarmEl.className = 'alarm-icon alarm-active-slow'; 
                 }
             }
         } else if (res.signal === 'SELL') {
             if (alarmEl) {
-                // If Candle is RED (Winning)
                 if (res.price < res.open) {
-                    if (isSurge) alarmEl.className = 'alarm-icon alarm-sell-fast'; // Fast Blink (DUMP!)
-                    else alarmEl.className = 'alarm-icon alarm-sell-slow'; // Slow Pulse (Steady Drop)
+                    if (isSurge) alarmEl.className = 'alarm-icon alarm-sell-fast'; 
+                    else alarmEl.className = 'alarm-icon alarm-sell-slow'; 
                 } else {
-                    alarmEl.className = 'alarm-icon alarm-sell-slow'; // Slow Pulse (Pullback/Hold)
+                    alarmEl.className = 'alarm-icon alarm-sell-slow'; 
                 }
             }
         }
-
-        // Highlight Values
         elTP.style.fontWeight = '700';
         elTP.style.fontSize = '14px';
         elSL.style.fontWeight = '700';
         elSL.style.fontSize = '14px';
         elSL.style.color = 'var(--binance-red)';
-        
     } else {
-        if(alarmEl) alarmEl.className = 'alarm-icon'; // Hidden
+        if(alarmEl) alarmEl.className = 'alarm-icon'; 
         elTP.style.fontWeight = '600';
         elTP.style.fontSize = '12px';
         elSL.style.fontWeight = '600';
@@ -872,8 +828,19 @@ function updateMatrixUI(sym) {
     TIMEFRAMES.forEach(tf => {
         const el = document.getElementById(`mtx-${sym}-${tf.label}`);
         if(el) {
-            const sig = MTF_MATRIX.get(`${sym}_${tf.label}`) || 'WAIT';
-            el.className = `m-dot ${sig === 'BUY' ? 'bull' : (sig === 'SELL' ? 'bear' : '')}`;
+            const rawSig = MTF_MATRIX.get(`${sym}_${tf.label}`) || 'WAIT';
+            // Parse Surge Status
+            const isSurge = rawSig.includes('_SURGE');
+            const sig = rawSig.replace('_SURGE', '');
+
+            if (sig === 'BUY') {
+                el.className = isSurge ? 'm-dot blink-green' : 'm-dot bull';
+            } else if (sig === 'SELL') {
+                el.className = isSurge ? 'm-dot blink-red' : 'm-dot bear';
+            } else {
+                el.className = 'm-dot';
+            }
+            
             if(tf.label === CURRENT_TF.label) el.classList.add('active');
         }
     });
@@ -885,19 +852,27 @@ function startMatrixScanner() {
         if(COINS.length === 0) return;
         const sym = COINS[coinIdx];
         const tf = TIMEFRAMES[tfIdx];
+        
+        // Scan other timeframes
         if(tf.label !== CURRENT_TF.label) {
             try {
+                // Fetch small chunk of history for efficient scanning
                 const hist = await fetchHistory(sym, tf.cc, 60, tf.agg);
                 if(hist.length > 50) {
-                    // Logic duplication for pure matrix update (no UI score impact)
-                    // Simplified: just check logic without triggering UI main update
-                    // For this immersive, we reuse the matrix map directly
+                    // RUN ANALYSIS IN BACKGROUND MODE (isBackground = true)
+                    analyze(sym, hist, tf, true);
                 }
             } catch(e) {}
         }
+        
+        // Cycle through coins and timeframes
         tfIdx++;
-        if(tfIdx >= TIMEFRAMES.length) { tfIdx = 0; coinIdx++; if(coinIdx >= COINS.length) coinIdx = 0; }
-    }, 1000);
+        if(tfIdx >= TIMEFRAMES.length) { 
+            tfIdx = 0; 
+            coinIdx++; 
+            if(coinIdx >= COINS.length) coinIdx = 0; 
+        }
+    }, 1000); // Scans 1 asset/timeframe per second
 }
 
 // Math Helpers
@@ -906,7 +881,7 @@ function calcEMAData(d,p){let r=[];if(d.length<p)return r;const k=2/(p+1);let e=
 function calcRSI(d,p){if(d.length<p+1)return 50;let g=0,l=0;for(let i=1;i<=p;i++){let x=d[i].close-d[i-1].close;if(x>=0)g+=x;else l-=x;}let ag=g/p,al=l/p;for(let i=p+1;i<d.length;i++){let x=d[i].close-d[i-1].close;ag=((ag*(p-1))+(x>0?x:0))/p;al=((al*(p-1))+(x<0?-x:0))/p;}return al===0?100:100-(100/(1+(ag/al)));}
 function calcATR(d,p){if(d.length<p+1)return 0;let s=0;for(let i=d.length-p;i<d.length;i++)s+=Math.max(d[i].high-d[i].low,Math.abs(d[i].high-d[i-1].close),Math.abs(d[i].low-d[i-1].close));return s/p;}
 function calcBB(d,p,m){if(d.length<p)return{upper:0,lower:0};const s=d.slice(-p),avg=s.reduce((a,b)=>a+b.close,0)/p,sd=Math.sqrt(s.map(x=>Math.pow(x.close-avg,2)).reduce((a,b)=>a+b,0)/p);return{upper:avg+(sd*m),lower:avg-(sd*m)};}
-function calcStochRSI(d,r,s,kP,dP){if(d.length<(r+s+kP))return{k:50,d:50};let rsi=[],stoch=[];for(let i=0;i<d.length;i++){if(i<r){rsi.push(50);continue;}let g=0,l=0;for(let j=i-r+1;j<=i;j++){let x=d[j].close-d[j-1].close;if(x>=0)g+=x;else l-=x;}rsi.push(l===0?100:100-(100/(1+(g/l))));}for(let i=0;i<rsi.length;i++){if(i<r+s){stoch.push(0);continue;}let sl=rsi.slice(i-s+1,i+1),mn=Math.min(...sl),mx=Math.max(...sl);stoch.push(mx===mn?0:(rsi[i]-mn)/(mx-mn));}let k=0;if(stoch.length>0)k=stoch[stoch.length-1]*100;return{k,d:k};} // Simplified for space
+function calcStochRSI(d,r,s,kP,dP){if(d.length<(r+s+kP))return{k:50,d:50};let rsi=[],stoch=[];for(let i=0;i<d.length;i++){if(i<r){rsi.push(50);continue;}let g=0,l=0;for(let j=i-r+1;j<=i;j++){let x=d[j].close-d[j-1].close;if(x>=0)g+=x;else l-=x;}rsi.push(l===0?100:100-(100/(1+(g/l))));}for(let i=0;i<rsi.length;i++){if(i<r+s){stoch.push(0);continue;}let sl=rsi.slice(i-s+1,i+1),mn=Math.min(...sl),mx=Math.max(...sl);stoch.push(mx===mn?0:(rsi[i]-mn)/(mx-mn));}let k=0;if(stoch.length>0)k=stoch[stoch.length-1]*100;return{k,d:k};} 
 
 /* =========================================
    SETTINGS & UTILS
@@ -950,12 +925,10 @@ async function playBeep() {
 }
 document.addEventListener('click', () => { if(!audioCtx) audioCtx = new AudioContext(); });
 
-// FIREBASE STUBS (Add real logic if needed)
 let auth, db, user;
 async function toggleCloudSync() { showToast("Cloud Sync Active (Stub Mode)"); } 
 async function saveCloudData() {}
 
-// START
 const checkLib = setInterval(() => { if (typeof LightweightCharts !== 'undefined') { clearInterval(checkLib); startApp(); } }, 200);
 </script>
 </body>
