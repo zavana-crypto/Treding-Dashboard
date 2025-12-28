@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V18.9.4 MAX ACCURACY</title>
+<title>ZAVANA V18.9.5 INSTANT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <!-- CDN Reliable -->
@@ -650,31 +650,31 @@ async function changeTimeframe(tf) {
     };
 }
 
-// UPDATED: ROBUST DATA FETCHING (BINANCE -> CRYPTOCOMPARE)
+// UPDATED: SWAPPED PRIORITY (CRYPTOCOMPARE FIRST -> BINANCE FALLBACK)
 async function fetchHistory(s, tf) {
-    // 1. Try Binance API first (Matches WebSocket better)
+    // 1. Try CryptoCompare API first (FAST & RELIABLE)
     try {
-        const intervalMap = { '1m':'1m', '5m':'5m', '15m':'15m', '1H':'1h', '4H':'4h', '1D':'1d', '1W':'1w' };
-        const binanceInterval = intervalMap[tf.label];
-        const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${binanceInterval}&limit=${tf.limit}`);
-        if (!res.ok) throw new Error("Binance Blocked");
-        const data = await res.json();
-        
-        return data.map(d => ({
-            time: d[0] / 1000,
-            open: parseFloat(d[1]),
-            high: parseFloat(d[2]),
-            low: parseFloat(d[3]),
-            close: parseFloat(d[4]),
-            volume: parseFloat(d[5])
-        }));
+        const res = await fetch(`https://min-api.cryptocompare.com/data/v2/${tf.cc}?fsym=${s.replace('USDT','')}&tsym=USDT&limit=${tf.limit}&aggregate=${tf.agg}`);
+        const j = await res.json();
+        if(j.Response === "Error") throw new Error("CC Error");
+        return j.Data.Data.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close,volume:d.volumeto}));
     } catch(e) {
-        // 2. Fallback to CryptoCompare (Friendly CORS)
+        // 2. Fallback to Binance (If CC fails)
         try {
-            const res = await fetch(`https://min-api.cryptocompare.com/data/v2/${tf.cc}?fsym=${s.replace('USDT','')}&tsym=USDT&limit=${tf.limit}&aggregate=${tf.agg}`);
-            const j = await res.json();
-            if(j.Response === "Error") return [];
-            return j.Data.Data.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close,volume:d.volumeto}));
+            const intervalMap = { '1m':'1m', '5m':'5m', '15m':'15m', '1H':'1h', '4H':'4h', '1D':'1d', '1W':'1w' };
+            const binanceInterval = intervalMap[tf.label];
+            const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${s}&interval=${binanceInterval}&limit=${tf.limit}`);
+            if (!res.ok) throw new Error("Binance Blocked");
+            const data = await res.json();
+            
+            return data.map(d => ({
+                time: d[0] / 1000,
+                open: parseFloat(d[1]),
+                high: parseFloat(d[2]),
+                low: parseFloat(d[3]),
+                close: parseFloat(d[4]),
+                volume: parseFloat(d[5])
+            }));
         } catch(err) {
             console.warn("All Data APIs Failed for", s);
             return [];
