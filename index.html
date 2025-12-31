@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V19.4 PRO (MATRIX FIXED)</title>
+<title>ZAVANA V19.6 PRO (CLEAN UI)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -31,24 +31,6 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
   body { background:var(--bg-base); color:var(--text-primary); font-family:'IBM Plex Sans', sans-serif; margin:0; overflow-x: hidden; overflow-y: auto; height: 100vh; display: flex; flex-direction: column; font-size: 14px; }
    
-  /* --- STRATEGY MANIFESTO HEADER --- */
-  .manifesto-bar {
-      background: #15181d;
-      color: var(--text-secondary);
-      font-size: 11px;
-      padding: 8px 30px;
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: -0.2px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-  }
-  .manifesto-bar strong { color: var(--accent); }
-  .manifesto-text { opacity: 0.8; font-style: italic; }
-
   /* --- LAYOUT: DESKTOP HEADER --- */
   .navbar-top { height: 64px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
   .brand { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px; }
@@ -212,7 +194,6 @@
   /* --- RESPONSIVE MEDIA QUERIES --- */
   @media (max-width: 768px) {
       .navbar-top { display: none; }
-      .manifesto-bar { display: none; } /* Hide manifesto on very small screens or stack it */
       .navbar-bottom { display: flex; }
       .main-content { padding: 15px 10px; }
       .grid { grid-template-columns: 1fr; } /* 1 Column on Mobile */
@@ -233,12 +214,6 @@
 
 <!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
-
-<!-- MANIFESTO BAR -->
-<div class="manifesto-bar">
-    <strong>MISSION AUDIT:</strong> 
-    <span class="manifesto-text">"Saya ingin sistem trading yang memberi alarm sebelum harga bergerak, bukan saat harga sudah bergerak. Fokus pada deteksi niat market, proximity ke demand/supply, dan pembatalan signal jika harga sudah terlalu jauh dari struktur."</span>
-</div>
 
 <!-- DESKTOP TOP HEADER -->
 <header class="navbar-top">
@@ -372,6 +347,9 @@ const audioCooldown = new Map();
 const lastAnalysisTime = new Map(); 
 let wakeLock = null;
 let titleInterval = null;
+
+// GLOBAL ALERT TRACKER (NEW)
+const activeAlerts = new Map(); 
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
@@ -737,10 +715,6 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     let bScore = 0; let sScore = 0;
     
     // RAW SCORING (FOR MATRIX VISUAL - RESTORED LOGIC)
-    // Even if intent is not perfect, we show trend state in Matrix
-    // The previous version had raw scores, so we use similar logic for Matrix populating
-    // Trend (2) + Momentum (1) + Structure (2)
-    
     if (isUptrend) bScore += 2; else sScore += 2;
     if (obvVal > -40) bScore += 1;
     if (obvVal < 40) sScore += 1;
@@ -749,7 +723,7 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     if (intent === "BULL_PREPARE") {
         if (last.close > last.open) bScore += 1; 
         if (last.low < nearestSupport) bScore += 2; 
-        if (bScore >= 4) signal = "BUY"; // Higher threshold for strict entry
+        if (bScore >= 4) signal = "BUY"; 
     }
     
     if (intent === "BEAR_PREPARE") {
@@ -758,12 +732,10 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         if (sScore >= 4) signal = "SELL"; 
     }
 
-    // MATRIX LOGIC (RESTORED): Use broader definition for heatmap
-    // If Trend is UP and Momentum is OK, show Green Dot (even if no strict Buy signal yet)
     let matrixSig = "WAIT";
     if (bScore >= 3) matrixSig = "BUY";
     else if (sScore >= 3) matrixSig = "SELL";
-    MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig); // <--- RESTORED LINE
+    MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig); 
 
     // SL/TP CALC
     let tp = 0, sl = 0;
@@ -800,15 +772,41 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     updateCardUI(sym, res, atr);
     updateMatrixUI(sym);
     
-    // ALARM HANDLER (BROWSER BAR FLASH + SOUND)
+    // === NEW: PRIORITY ALARM HANDLER ===
     if (signal !== "WAIT") {
-        triggerAlert(sym, signal);
-        flashTitle(`🚨 ${signal} ${sym}`, true);
+        activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${signal} ${sym}` });
+        triggerAlert(sym, signal); // Audio triggers immediately
     } else if (intent !== "NEUTRAL") {
+        activeAlerts.set(sym, { type: 'INTENT', msg: `⚠️ PREP ${sym}` });
         triggerAlert(sym, "PREPARE");
-        flashTitle(`⚠️ PREP ${sym}`, false);
     } else {
-        flashTitle("", false); // Stop flashing if neutral
+        activeAlerts.delete(sym); // Remove from priority queue if neutral
+    }
+    
+    updateTitleAlert(); // Force update browser title based on priority
+}
+
+// NEW FUNCTION: UPDATE BROWSER TITLE BASED ON PRIORITY
+function updateTitleAlert() {
+    let urgentMsg = null;
+    let warningMsg = null;
+    
+    for (const [sym, alert] of activeAlerts) {
+        if (alert.type === 'SIGNAL') {
+            urgentMsg = alert.msg; 
+            break; // Found urgent, stop looking (highest priority)
+        }
+        if (alert.type === 'INTENT') {
+            warningMsg = alert.msg;
+        }
+    }
+    
+    if (urgentMsg) {
+        flashTitle(urgentMsg, true);
+    } else if (warningMsg) {
+        flashTitle(warningMsg, false);
+    } else {
+        flashTitle("", false);
     }
 }
 
@@ -1028,7 +1026,7 @@ async function toggleWakeLock() {
 function flashTitle(msg, isUrgent) {
     if(!msg) { 
         if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V19.4 PRO (MATRIX FIXED)"; 
+        document.title = "ZAVANA V19.5 PRO (BROWSER ALARM FIXED)"; 
         return; 
     }
     if(titleInterval) clearInterval(titleInterval);
