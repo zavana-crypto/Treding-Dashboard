@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V19.6 PRO (CLEAN UI)</title>
+<title>ZAVANA V25.1 PRO (STRICT NO HISTORY ARROWS)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -133,13 +133,18 @@
 
   /* Chart Area (TALLER) */
   .chart-container { height: 240px; width: 100%; position: relative; background: var(--bg-base); border-bottom: 1px solid var(--bg-base); }
+  
+  /* VISUAL ARROW UPDATES (BLINKING) */
   .visual-arrow { position: absolute; top: 15px; right: 15px; font-size: 24px; z-index: 5; opacity: 0; pointer-events: none; font-weight: 900; }
   .visual-arrow.buy { color: var(--binance-green); opacity: 1; animation: bounceUp 1s infinite; }
   .visual-arrow.sell { color: var(--binance-red); opacity: 1; animation: bounceDown 1s infinite; }
+  .visual-arrow.prep { color: var(--accent); opacity: 1; animation: blink-arrow 0.5s infinite; text-shadow: 0 0 10px rgba(252, 213, 53, 0.5); }
+
   .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; pointer-events: none; z-index: 5; }
   
   @keyframes bounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+  @keyframes blink-arrow { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
 
   /* Data Row */
   .data-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 14px 20px; gap: 10px; font-family: 'JetBrains Mono'; }
@@ -194,6 +199,7 @@
   /* --- RESPONSIVE MEDIA QUERIES --- */
   @media (max-width: 768px) {
       .navbar-top { display: none; }
+      .manifesto-bar { display: none; } /* Hide manifesto on very small screens or stack it */
       .navbar-bottom { display: flex; }
       .main-content { padding: 15px 10px; }
       .grid { grid-template-columns: 1fr; } /* 1 Column on Mobile */
@@ -209,7 +215,7 @@
 <!-- LOADING OVERLAY -->
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-family:'JetBrains Mono'; color:var(--text-secondary); font-size:14px; font-weight:600;">AUDITING LOGIC...</div>
+    <div style="font-family:'JetBrains Mono'; color:var(--text-secondary); font-size:14px; font-weight:600;">FINALIZING CONFIG...</div>
 </div>
 
 <!-- TOAST CONTAINER -->
@@ -255,7 +261,7 @@
                         <th>Price</th>
                         <th>Intent</th>
                         <th>Signal</th>
-                        <th>Dist. to Struct</th>
+                        <th>RR Ratio</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -348,8 +354,10 @@ const lastAnalysisTime = new Map();
 let wakeLock = null;
 let titleInterval = null;
 
-// GLOBAL ALERT TRACKER (NEW)
+// GLOBAL ALERT TRACKER
 const activeAlerts = new Map(); 
+// STRUCTURE COOLDOWN TRACKER
+const cooldownMap = new Map();
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
@@ -497,18 +505,22 @@ function renderGrid() {
         const chart = LightweightCharts.createChart(cont, {
             layout: { backgroundColor: '#0b0e11', textColor: '#848e9c', fontSize: 11, fontFamily: 'JetBrains Mono' }, 
             grid: { vertLines: { color: '#1e2329' }, horzLines: { color: '#1e2329' } },
-            rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } },
-            timeScale: { visible: false, borderVisible: false },
+            // UPDATED MARGINS FOR BETTER VERTICAL USAGE
+            rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.02, bottom: 0.02 } },
+            timeScale: { visible: false, borderVisible: false, rightOffset: 5 }, 
             crosshair: { vertLine: { visible: false }, horzLine: { visible: false } },
             handleScroll: false, handleScale: false
         });
         const candleColorUp = isGold ? '#FFD700' : '#0ECB81'; 
         const series = chart.addCandlestickSeries({ upColor: candleColorUp, downColor: '#F6465D', borderVisible: false, wickVisible: true });
-        const zoneSeries = chart.addLineSeries({ color: 'rgba(255,255,255,0.2)', lineWidth: 1, lineStyle: 2, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
+        
+        // RESTORED: SEPARATE SUPPORT AND RESISTANCE LINES FOR CLARITY
+        const supportSeries = chart.addLineSeries({ color: '#0ECB81', lineWidth: 1, lineStyle: 2, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
+        const resistSeries = chart.addLineSeries({ color: '#F6465D', lineWidth: 1, lineStyle: 2, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
         
         new ResizeObserver(e => { if(e[0]) chart.applyOptions({ width: e[0].contentRect.width, height: e[0].contentRect.height }); }).observe(cont);
         
-        charts.set(s, { chart, series, zoneSeries });
+        charts.set(s, { chart, series, supportSeries, resistSeries });
         marketData.set(s, []);
     });
 }
@@ -546,7 +558,7 @@ function updateScreenerTable() {
 }
 
 /* =========================================
-   DATA & STRATEGY (AUDITED: ANTI-FOMO & INTENT)
+   DATA & STRATEGY (AUDITED: ANTI-FOMO & INTENT & HISTORY)
    ========================================= */
 async function changeTimeframe(tf) {
     CURRENT_TF = tf;
@@ -560,13 +572,13 @@ async function changeTimeframe(tf) {
     
     for (const sym of COINS) {
         await new Promise(r => setTimeout(r, 1000)); 
-        const hist = await fetchHistory(sym, tf.ws, tf.limit);
+        const hist = await fetchHistory(sym, tf.ws, 500); // 500 Candles for valid history calculation & visuals
         if(hist && hist.length > 0) { 
             marketData.set(sym, hist);
             const cObj = charts.get(sym);
             if(cObj) {
                 cObj.series.setData(hist);
-                cObj.chart.timeScale().fitContent(); 
+                cObj.chart.timeScale().fitContent(); // FIT CONTENT after data
                 analyze(sym, hist, tf);
             }
         }
@@ -584,7 +596,6 @@ async function changeTimeframe(tf) {
     };
 }
 
-// CHANGED: 3-Stage Fetch Strategy (Direct -> Proxy -> Backup)
 async function fetchHistory(s, interval, lim) {
     try {
         const url = `https://api.binance.com/api/v3/klines?symbol=${s}&interval=${interval}&limit=${lim}`;
@@ -639,7 +650,7 @@ function handleStream(sym, candle) {
         arr[arr.length-1] = candle; 
     } else if (candle.time > last.time) {
         arr.push(candle); 
-        if(arr.length > 500) arr.shift();
+        if(arr.length > 1000) arr.shift(); // Keep history manageable
     }
     
     const pEl = document.getElementById(`price-${sym}`);
@@ -664,126 +675,182 @@ function handleStream(sym, candle) {
 }
 
 /* =========================================
-   REVISED ANALYZE FUNCTION (AUDITED LOGIC)
+   REVISED ANALYZE FUNCTION (FINAL BRUTAL AUDIT V24.2)
    ========================================= */
 function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
-    if(data.length < 50) return; 
+    if(data.length < 100) return; 
 
-    const last = data[data.length-1];
+    // Indicators
+    const atrArray = calcATRArray(data, 14);
+    const sma20Array = calcSMAArray(data, 20);
+    const ema21Array = calcEMAArray(data, 21);
+    const rsiArray = calcRSIArray(data, 14);
+    const vStopArray = calcVolStopSeries(data, 20, 3.0);
     
-    // 1. DATA PREP
-    const atr = calcATR(data, 14);
-    const sma20 = calcSMA(data, 20);
-    const ema21 = calcEMA(data, 21);
-    const supportBand = Math.max(sma20, ema21); 
-    const resistBand = Math.min(sma20, ema21);
-    
-    // 2. STRUCTURE & TREND
     const smc = findOrderBlocksAdvanced(data, 5);
-    const vStopBig = calcVolStopSeries(data, 20, 3.0);
-    const isUptrend = vStopBig.uptrend;
     
-    // 3. MOMENTUM
-    const obvOsc = calcOBVOscillator(data, 10, 10);
-    const obvVal = obvOsc[obvOsc.length-1];
+    // Config
+    const MAX_DIST_ATR = 1.8;
+    const INTENT_DIST_ATR = 1.2;
     
-    // === AUDIT LOGIC (ANTI-FOMO) ===
-    let intent = "NEUTRAL";
-    let signal = "WAIT";
-    let isOverextended = false;
-    let distRatio = 0;
+    let lastIntent = "NEUTRAL";
+    let lastSignal = "WAIT";
+    let lastIsOverextended = false;
+    let lastDistRatio = 0;
+    let lastRes = {};
+    // Store scores for last candle
+    let lastBScore = 0;
+    let lastSScore = 0;
+
+    let markers = [];
     
-    let nearestSupport = smc.bullOB ? smc.bullOB.top : supportBand;
-    let nearestResist = smc.bearOB ? smc.bearOB.bottom : resistBand;
-    
-    if (isUptrend) {
-        const distToSup = last.close - nearestSupport;
-        distRatio = distToSup / atr;
-        if (distRatio > 2.5) isOverextended = true;
-    } else {
-        const distToRes = nearestResist - last.close;
-        distRatio = distToRes / atr;
-        if (distRatio > 2.5) isOverextended = true;
-    }
-    
-    if (isUptrend && !isOverextended) {
-        if (last.close <= nearestSupport + (atr * 1.5)) intent = "BULL_PREPARE";
-    } else if (!isUptrend && !isOverextended) {
-        if (last.close >= nearestResist - (atr * 1.5)) intent = "BEAR_PREPARE";
-    }
-    
-    let bScore = 0; let sScore = 0;
-    
-    // RAW SCORING (FOR MATRIX VISUAL - RESTORED LOGIC)
-    if (isUptrend) bScore += 2; else sScore += 2;
-    if (obvVal > -40) bScore += 1;
-    if (obvVal < 40) sScore += 1;
-    
-    // EXECUTION SIGNAL (STRICT)
-    if (intent === "BULL_PREPARE") {
-        if (last.close > last.open) bScore += 1; 
-        if (last.low < nearestSupport) bScore += 2; 
-        if (bScore >= 4) signal = "BUY"; 
-    }
-    
-    if (intent === "BEAR_PREPARE") {
-        if (last.close < last.open) sScore += 1; 
-        if (last.high > nearestResist) sScore += 2; 
-        if (sScore >= 4) signal = "SELL"; 
+    // HISTORY LOOP
+    for(let i = data.length - 100; i < data.length; i++) {
+        if(i < 50) continue;
+        
+        const current = data[i];
+        const prev = data[i-1];
+        const atr = atrArray[i];
+        const sma20 = sma20Array[i];
+        const ema21 = ema21Array[i];
+        const rsi = rsiArray[i];
+        const rsiPrev = rsiArray[i-1];
+        const supportBand = Math.max(sma20, ema21); 
+        const resistBand = Math.min(sma20, ema21);
+        const isUptrend = vStopArray[i].uptrend;
+        
+        let nearestSupport = smc.bullOB ? smc.bullOB.top : supportBand;
+        let nearestResist = smc.bearOB ? smc.bearOB.bottom : resistBand;
+        
+        let intent = "NEUTRAL";
+        let signal = "WAIT";
+        let isOverextended = false;
+        let distRatio = 0;
+        
+        const bodySize = Math.abs(current.close - current.open);
+        
+        // 1. DISTANCE CHECK
+        if (isUptrend) {
+            const distToSup = current.close - nearestSupport;
+            distRatio = distToSup / atr;
+            if (distRatio > MAX_DIST_ATR) isOverextended = true;
+        } else {
+            const distToRes = nearestResist - current.close;
+            distRatio = distToRes / atr;
+            if (distRatio > MAX_DIST_ATR) isOverextended = true;
+        }
+        
+        // 2. INTENT LOGIC
+        if (isUptrend && !isOverextended) {
+            if (distRatio <= INTENT_DIST_ATR) intent = "BULL_PREPARE";
+        } else if (!isUptrend && !isOverextended) {
+            if (distRatio <= INTENT_DIST_ATR) intent = "BEAR_PREPARE";
+        }
+        
+        // 3. ZERO FLOAT EXECUTION (SCORE SYSTEM RESTORED)
+        let bScore = 0; let sScore = 0;
+        
+        // Base Score from Trend
+        if (isUptrend) bScore += 2; else sScore += 2;
+
+        // Score from Intent
+        if (intent === "BULL_PREPARE") bScore += 2;
+        if (intent === "BEAR_PREPARE") sScore += 2;
+
+        const isGreen = current.close > current.open;
+        const isRed = current.close < current.open;
+        const strongCloseBuy = (current.close - current.low) / (current.high - current.low) > 0.6;
+        const strongCloseSell = (current.high - current.close) / (current.high - current.low) > 0.6;
+        
+        // RSI Hooks
+        const rsiHookUp = (rsiPrev < 35 && rsi > rsiPrev) || (rsi < 45 && rsi > rsiPrev + 2);
+        const rsiHookDown = (rsiPrev > 65 && rsi < rsiPrev) || (rsi > 55 && rsi < rsiPrev - 2);
+
+        if (intent === "BULL_PREPARE") {
+            if (isGreen) bScore += 1;
+            if (rsiHookUp) bScore += 2;
+            if (strongCloseBuy) bScore += 1;
+            
+            if (bScore >= 6) signal = "BUY"; 
+        }
+        
+        if (intent === "BEAR_PREPARE") {
+            if (isRed) sScore += 1;
+            if (rsiHookDown) sScore += 2;
+            if (strongCloseSell) sScore += 1;
+            
+            if (sScore >= 6) signal = "SELL";
+        }
+        
+        // CORRECTION: Only add markers for CURRENT candle (no history arrows)
+        if (i === data.length - 1) {
+            if (signal === "BUY") markers.push({ time: current.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'GO' });
+            else if (signal === "SELL") markers.push({ time: current.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'GO' });
+            
+            if (intent === "BULL_PREPARE") markers.push({ time: current.time, position: 'belowBar', color: '#FCD535', shape: 'arrowUp', size: 1 });
+            else if (intent === "BEAR_PREPARE") markers.push({ time: current.time, position: 'aboveBar', color: '#FCD535', shape: 'arrowDown', size: 1 });
+        }
+
+        // Save last state for UI
+        if(i === data.length - 1) {
+            lastIntent = intent;
+            lastSignal = signal;
+            lastIsOverextended = isOverextended;
+            lastDistRatio = distRatio;
+            lastBScore = bScore;
+            lastSScore = sScore;
+            
+            let matrixSig = "WAIT";
+            if (lastSignal === "BUY" || (intent === "BULL_PREPARE" && isUptrend)) matrixSig = "BUY";
+            else if (lastSignal === "SELL" || (intent === "BEAR_PREPARE" && !isUptrend)) matrixSig = "SELL";
+            MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig);
+            
+            // SL/TP CALC
+            let tp = 0, sl = 0;
+            if (signal === "BUY") { sl = nearestSupport - atr; tp = smc.bearOB ? smc.bearOB.bottom : current.close + (atr * 3); }
+            else if (signal === "SELL") { sl = nearestResist + atr; tp = smc.bullOB ? smc.bullOB.top : current.close - (atr * 3); }
+            else { sl = isUptrend ? nearestSupport : nearestResist; tp = isUptrend ? current.close + (atr*3) : current.close - (atr*3); }
+            
+            lastRes = { signal: lastSignal, intent: lastIntent, isOverextended: lastIsOverextended, distRatio: lastDistRatio, price: current.close, tp, sl, bScore: lastBScore, sScore: lastSScore };
+        }
     }
 
-    let matrixSig = "WAIT";
-    if (bScore >= 3) matrixSig = "BUY";
-    else if (sScore >= 3) matrixSig = "SELL";
-    MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig); 
-
-    // SL/TP CALC
-    let tp = 0, sl = 0;
-    if (signal === "BUY") {
-        sl = nearestSupport - atr;
-        tp = smc.bearOB ? smc.bearOB.bottom : last.close + (atr * 4);
-    } else if (signal === "SELL") {
-        sl = nearestResist + atr;
-        tp = smc.bullOB ? smc.bullOB.top : last.close - (atr * 4);
-    } else {
-        sl = isUptrend ? nearestSupport : nearestResist;
-        tp = isUptrend ? last.close + (atr*3) : last.close - (atr*3);
-    }
-
-    const res = { signal, intent, isOverextended, distRatio, price: last.close, tp, sl, bScore, sScore };
-    analysisResults.set(sym, res);
+    analysisResults.set(sym, lastRes);
 
     if (isBackground) { updateMatrixUI(sym); return; }
     
     // VISUALS
     const cObj = charts.get(sym);
     if(cObj) {
-        const zoneLevel = isUptrend ? nearestSupport : nearestResist;
-        cObj.zoneSeries.setData(data.map(d => ({ time: d.time, value: zoneLevel })));
+        // Support & Resistance Lines
+        let nearestSupport = smc.bullOB ? smc.bullOB.top : 0;
+        let nearestResist = smc.bearOB ? smc.bearOB.bottom : 0;
+        cObj.supportSeries.setData(data.map(d => ({ time: d.time, value: nearestSupport })));
+        cObj.resistSeries.setData(data.map(d => ({ time: d.time, value: nearestResist })));
         
-        let markers = [];
-        if (intent === "BULL_PREPARE") markers.push({ time: last.time, position: 'belowBar', color: '#FCD535', shape: 'circle', text: 'PREP' });
-        if (intent === "BEAR_PREPARE") markers.push({ time: last.time, position: 'aboveBar', color: '#FCD535', shape: 'circle', text: 'PREP' });
-        if (signal === "BUY") markers.push({ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'GO' });
-        if (signal === "SELL") markers.push({ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'GO' });
-        cObj.series.setMarkers(markers);
+        // Add OB Markers
+        let obMarkers = [];
+        if (smc.bullOB) obMarkers.push({ time: smc.bullOB.time, position: 'belowBar', color: 'cyan', shape: 'circle', text: 'OB' });
+        if (smc.bearOB) obMarkers.push({ time: smc.bearOB.time, position: 'aboveBar', color: 'orange', shape: 'circle', text: 'OB' });
+        
+        // Merge markers
+        cObj.series.setMarkers([...obMarkers, ...markers]);
     }
     
-    updateCardUI(sym, res, atr);
+    updateCardUI(sym, lastRes, atrArray[atrArray.length-1]);
     updateMatrixUI(sym);
     
-    // === NEW: PRIORITY ALARM HANDLER ===
-    if (signal !== "WAIT") {
-        activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${signal} ${sym}` });
-        triggerAlert(sym, signal); // Audio triggers immediately
-    } else if (intent !== "NEUTRAL") {
+    // ALERTS
+    if (lastSignal !== "WAIT") {
+        activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${lastSignal} ${sym}` });
+        triggerAlert(sym, lastSignal); 
+    } else if (lastIntent !== "NEUTRAL") {
         activeAlerts.set(sym, { type: 'INTENT', msg: `⚠️ PREP ${sym}` });
         triggerAlert(sym, "PREPARE");
     } else {
-        activeAlerts.delete(sym); // Remove from priority queue if neutral
+        activeAlerts.delete(sym); 
     }
-    
-    updateTitleAlert(); // Force update browser title based on priority
+    updateTitleAlert(); 
 }
 
 // NEW FUNCTION: UPDATE BROWSER TITLE BASED ON PRIORITY
@@ -811,17 +878,21 @@ function updateTitleAlert() {
 }
 
 /* =========================================
-   MATH HELPERS
+   MATH HELPERS (UPDATED TO RETURN ARRAYS)
    ========================================= */
 
 function calcVolStopSeries(data, length, factor) {
+    let results = [];
     let max = data[0].close;
     let min = data[0].close;
     let uptrend = true;
     let stop = data[0].close - (calcTR(data[0], data[0]) * factor);
+    results.push({ stop, uptrend });
+    
     for(let i=1; i<data.length; i++) {
         const curr = data[i];
-        const tr = Math.max(curr.high - curr.low, Math.abs(curr.high - data[i-1].close), Math.abs(curr.low - data[i-1].close));
+        const prev = data[i-1];
+        const tr = Math.max(curr.high - curr.low, Math.abs(curr.high - prev.close), Math.abs(curr.low - prev.close));
         const atrM = tr * factor;
         max = Math.max(max, curr.close);
         min = Math.min(min, curr.close);
@@ -832,11 +903,13 @@ function calcVolStopSeries(data, length, factor) {
             max = curr.close; min = curr.close; uptrend = newUptrend;
             stop = uptrend ? max - atrM : min + atrM;
         }
+        results.push({ stop, uptrend });
     }
-    return { stop, uptrend };
+    return results;
 }
 
 function calcTR(curr, prev) { return Math.max(curr.high - curr.low, Math.abs(curr.high - prev.close), Math.abs(curr.low - prev.close)); }
+
 function calcOBVOscillator(data, n1, n2) {
     let obv = [0];
     for(let i=1; i<data.length; i++) {
@@ -844,18 +917,19 @@ function calcOBVOscillator(data, n1, n2) {
         const sign = change > 0 ? 1 : (change < 0 ? -1 : 0);
         obv.push(obv[i-1] + (sign * data[i].volume));
     }
-    const emaOBV = calcEMAArray(obv, n1);
+    const emaOBV = calcEMAArraySimple(obv, n1);
     let absDiff = [];
     for(let i=0; i<obv.length; i++) absDiff.push(Math.abs(obv[i] - emaOBV[i]));
-    const emaAbsDiff = calcEMAArray(absDiff, n1);
+    const emaAbsDiff = calcEMAArraySimple(absDiff, n1);
     let out = [];
     for(let i=0; i<obv.length; i++) {
         const denom = 0.015 * emaAbsDiff[i];
         if (denom === 0) out.push(0); else out.push( (obv[i] - emaOBV[i]) / denom );
     }
-    return calcEMAArray(out, n2);
+    return calcEMAArraySimple(out, n2);
 }
-function calcEMAArray(dataArr, period) {
+
+function calcEMAArraySimple(dataArr, period) {
     let results = [];
     let k = 2 / (period + 1);
     let ema = dataArr[0];
@@ -863,6 +937,78 @@ function calcEMAArray(dataArr, period) {
     for(let i=1; i<dataArr.length; i++) { ema = (dataArr[i] * k) + (ema * (1 - k)); results.push(ema); }
     return results;
 }
+
+function calcEMAArray(data, period) {
+    let results = [];
+    let k = 2 / (period + 1);
+    let ema = data[0].close;
+    results.push(ema);
+    for(let i=1; i<data.length; i++) { ema = (data[i].close * k) + (ema * (1 - k)); results.push(ema); }
+    return results;
+}
+
+function calcSMAArray(data, period) {
+    let results = [];
+    for (let i = 0; i < data.length; i++) {
+        if (i < period - 1) { results.push(data[i].close); continue; }
+        let sum = 0;
+        for (let j = 0; j < period; j++) sum += data[i - j].close;
+        results.push(sum / period);
+    }
+    return results;
+}
+
+function calcATRArray(data, period) {
+    let results = [];
+    let trs = [];
+    // TR Calc
+    for(let i=0; i<data.length; i++) {
+        if(i===0) trs.push(data[i].high - data[i].low);
+        else trs.push(Math.max(data[i].high - data[i].low, Math.abs(data[i].high - data[i-1].close), Math.abs(data[i].low - data[i-1].close)));
+    }
+    // ATR SMA
+    for (let i = 0; i < trs.length; i++) {
+        if (i < period - 1) { results.push(trs[i]); continue; }
+        let sum = 0;
+        for (let j = 0; j < period; j++) sum += trs[i - j];
+        results.push(sum / period);
+    }
+    return results;
+}
+
+// NEW: RSI Calculation
+function calcRSIArray(data, period) {
+    let results = [];
+    let gains = [];
+    let losses = [];
+    
+    // Initial diffs
+    for(let i=1; i<data.length; i++) {
+        const change = data[i].close - data[i-1].close;
+        gains.push(change > 0 ? change : 0);
+        losses.push(change < 0 ? Math.abs(change) : 0);
+    }
+    
+    // First RSI
+    let avgGain = 0, avgLoss = 0;
+    for(let i=0; i<period; i++) { avgGain += gains[i]; avgLoss += losses[i]; }
+    avgGain /= period; avgLoss /= period;
+    
+    // Push nulls for first period
+    for(let i=0; i<period; i++) results.push(50); 
+    
+    results.push(100 - (100 / (1 + (avgGain/avgLoss))));
+    
+    // Smoothed
+    for(let i=period; i<data.length-1; i++) {
+        avgGain = ((avgGain * (period-1)) + gains[i]) / period;
+        avgLoss = ((avgLoss * (period-1)) + losses[i]) / period;
+        if(avgLoss === 0) results.push(100);
+        else results.push(100 - (100 / (1 + (avgGain/avgLoss))));
+    }
+    return results;
+}
+
 function findOrderBlocksAdvanced(data, periods = 5) {
     if(data.length < 50) return {};
     let bullOB = null; let bearOB = null;
@@ -882,6 +1028,8 @@ function findOrderBlocksAdvanced(data, periods = 5) {
     }
     return { bullOB, bearOB };
 }
+
+// Helpers for Single Value (Compatibility)
 function calcSMA(d, p) { if(d.length<p) return d[d.length-1].close; let s=0; for(let i=d.length-p; i<d.length; i++) s+=d[i].close; return s/p; }
 function calcEMA(d,p){if(d.length<p)return null;const k=2/(p+1);let e=d[0].close;for(let i=1;i<d.length;i++)e=(d[i].close*k)+(e*(1-k));return e;}
 function calcATR(d,p){if(d.length<p+1)return 0;let s=0;for(let i=d.length-p;i<d.length;i++)s+=Math.max(d[i].high-d[i].low,Math.abs(d[i].high-d[i-1].close),Math.abs(d[i].low-d[i-1].close));return s/p;}
@@ -938,10 +1086,14 @@ function updateCardUI(sym, res, atr) {
         if(tag) { tag.textContent = 'PREPARE BUY'; tag.classList.add('tag-intent-buy'); }
         if(msgEl) { msgEl.textContent = `IN BUY ZONE (${res.distRatio.toFixed(1)}x ATR)`; msgEl.style.color = '#FCD535'; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-intent';
+        // VISUAL ARROW BLINKING
+        if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow prep'; }
     } else if (res.intent === 'BEAR_PREPARE') {
         if(tag) { tag.textContent = 'PREPARE SELL'; tag.classList.add('tag-intent-sell'); }
         if(msgEl) { msgEl.textContent = `IN SELL ZONE (${res.distRatio.toFixed(1)}x ATR)`; msgEl.style.color = '#FCD535'; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-intent';
+        // VISUAL ARROW BLINKING
+        if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow prep'; }
     } else {
         if(tag) { tag.textContent = 'WAITING SETUP'; tag.classList.add('tag-wait-bull'); }
         if(msgEl) { msgEl.textContent = 'NO CLEAR INTENT'; msgEl.style.color = '#848e9c'; }
@@ -954,8 +1106,8 @@ function updateCardUI(sym, res, atr) {
     if(btnSell) btnSell.className = `btn-trade sell ${res.signal==='SELL'?'active':''}`;
     
     // UPDATE DATA SAFELY
-    setText(`sc-buy-${sym}`, res.bScore.toFixed(0));
-    setText(`sc-sell-${sym}`, res.sScore.toFixed(0));
+    setText(`sc-buy-${sym}`, res.bScore ? res.bScore.toFixed(0) : '0');
+    setText(`sc-sell-${sym}`, res.sScore ? res.sScore.toFixed(0) : '0');
     setText(`e-${sym}`, res.price.toFixed(res.price<1?4:2));
     setText(`dist-${sym}`, res.distRatio.toFixed(1) + 'x ATR');
     setText(`tp-${sym}`, res.tp.toFixed(res.price<1?4:2));
@@ -985,7 +1137,8 @@ function startMatrixScanner() {
         const tf = TIMEFRAMES[tfIdx];
         if(tf.label !== CURRENT_TF.label) {
             try {
-                const hist = await fetchHistory(sym, tf.ws, 60);
+                // Fetch 200 candles to satisfy RSI history requirement
+                const hist = await fetchHistory(sym, tf.ws, 200);
                 if(hist.length > 50) analyze(sym, hist, tf, true);
             } catch(e) {}
         }
@@ -1026,7 +1179,7 @@ async function toggleWakeLock() {
 function flashTitle(msg, isUrgent) {
     if(!msg) { 
         if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V19.5 PRO (BROWSER ALARM FIXED)"; 
+        document.title = "ZAVANA V25.1 PRO (STRICT NO HISTORY ARROWS)"; 
         return; 
     }
     if(titleInterval) clearInterval(titleInterval);
