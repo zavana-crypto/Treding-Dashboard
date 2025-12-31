@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V18.9 PRO (SMART SMC + VISUAL SR)</title>
+<title>ZAVANA V19.1 PRO (REAL MOMENTUM LOGIC)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -191,7 +191,7 @@
 <!-- LOADING OVERLAY -->
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-family:'JetBrains Mono'; color:var(--text-secondary); font-size:14px; font-weight:600;">ENHANCING VISUALS...</div>
+    <div style="font-family:'JetBrains Mono'; color:var(--text-secondary); font-size:14px; font-weight:600;">ENHANCING LOGIC...</div>
 </div>
 
 <!-- TOAST CONTAINER -->
@@ -525,7 +525,7 @@ function updateScreenerTable() {
 }
 
 /* =========================================
-   DATA & STRATEGY (TUNED FOR >70% ACCURACY & ANTI-CHOPPY)
+   DATA & STRATEGY (REALISTIC MOMENTUM HYBRID)
    ========================================= */
 async function changeTimeframe(tf) {
     CURRENT_TF = tf;
@@ -620,7 +620,8 @@ function getStrategyParams(type) {
     }
 }
 
-// MODIFIED: UPDATED ANALYZE FUNCTION TO HANDLE CHOPPY MARKETS
+// === THE FIX: REALISTIC ANALYZE FUNCTION ===
+// Disabling "Counter-Trend" sells when Momentum is Strong
 function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     if(data.length < 50) return; 
 
@@ -635,179 +636,147 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     const bb = calcBB(data, 20, 2);
     const atr = calcATR(data, 14); 
     
-    // --- 1. CHOPPY MARKET DETECTION ---
-    // Count how many times price crossed EMA50 in last 20 candles
+    // --- 1. CHOPPY & SQUEEZE DETECTION ---
     let crossCount = 0;
     for(let i=data.length-20; i<data.length; i++) {
        if((data[i].close > ema50 && data[i-1].close < ema50) || (data[i].close < ema50 && data[i-1].close > ema50)) crossCount++;
     }
     const bbWidth = (bb.upper - bb.lower) / ema200;
     const isSqueeze = bbWidth < 0.005; 
-    const isChoppy = crossCount > 6 || isSqueeze; // Strict chopping filter
+    const isChoppy = crossCount > 6 || isSqueeze; 
 
     // --- 2. SMC CALCULATION ---
     const smc = calculateSMC(data);
 
-    // === UPDATE CHART WITH S/R LINES ===
+    // === VISUAL LINES ===
     const cObj = charts.get(sym);
     if(cObj) {
-        if (smc.support) {
-            // Fill history with current Support level for visualization
-            const lineData = data.map(d => ({ time: d.time, value: smc.support }));
-            cObj.supportSeries.setData(lineData);
-        }
-        if (smc.resistance) {
-            // Fill history with current Resistance level for visualization
-            const lineData = data.map(d => ({ time: d.time, value: smc.resistance }));
-            cObj.resistSeries.setData(lineData);
-        }
+        if (smc.support) cObj.supportSeries.setData(data.map(d => ({ time: d.time, value: smc.support })));
+        if (smc.resistance) cObj.resistSeries.setData(data.map(d => ({ time: d.time, value: smc.resistance })));
     }
 
     const mainTrend = last.close > ema200 ? 'BULLISH' : 'BEARISH';
-    const shortTrend = last.close > ema50 ? 'BULLISH' : 'BEARISH';
-    
     const isGreen = last.close >= last.open;
     const isRed = last.close < last.open;
     
+    // BODY & WICK ANALYSIS (The Truth Teller)
+    const bodySize = Math.abs(last.close - last.open);
+    const upperWick = last.high - Math.max(last.open, last.close);
+    const lowerWick = Math.min(last.open, last.close) - last.low;
+    
+    // STRONG MOMENTUM DEFINITION (THE VETO POWER)
+    const totalRange = last.high - last.low;
+    // Strong Green = Green Body is large (>70% of candle) AND bigger than average vol
+    const isStrongGreen = isGreen && (bodySize > totalRange * 0.7) && (bodySize > atr * 0.5);
+    const isStrongRed = isRed && (bodySize > totalRange * 0.7) && (bodySize > atr * 0.5);
+
     let bScore = 0, sScore = 0;
 
-    // Trend Score
-    if(mainTrend === 'BULLISH') {
-        bScore += strat.trendWeight;
-        sScore -= 2.0; 
-    } else {
-        sScore += strat.trendWeight;
-        bScore -= 2.0;
-    }
+    // --- TREND BIAS ---
+    if(mainTrend === 'BULLISH') { bScore += 2.0; sScore -= 1.0; } 
+    else { sScore += 2.0; bScore -= 1.0; }
     
-    if(shortTrend === 'BULLISH') bScore += 1.0; 
-    else sScore += 1.0;
+    // --- OSCILLATOR (RSI & STOCH) --- 
+    if (rsi < strat.rsiBuy) bScore += 1.5;
+    
+    if (rsi > strat.rsiSell) {
+        // !!! VETO LOGIC !!!
+        // If RSI is high BUT Candle is Strong Green -> IT IS A PUMP, NOT A SELL.
+        if (isStrongGreen) {
+            sScore -= 10.0; // KILL THE SELL SIGNAL
+            bScore += 2.0;  // MOMENTUM BONUS
+        } else if (upperWick > bodySize || isRed) {
+            // Only Sell if we see Weakness (Wick) or Red
+            sScore += 2.0;
+        } else {
+            // Neutral zone (High RSI but still creeping up)
+            sScore += 0.5; 
+        }
+    }
 
-    // Stoch & RSI (Oscillators)
     if (tf.type === 'HYPER') {
          if((stoch.k < strat.stochBuy && stoch.k > stoch.d) || stoch.k < 10) bScore += strat.stochWeight;
-         if((stoch.k > strat.stochSell && stoch.k < stoch.d) || stoch.k > 90) sScore += strat.stochWeight;
+         if((stoch.k > strat.stochSell && stoch.k < stoch.d)) {
+             if (!isStrongGreen) sScore += strat.stochWeight; // Don't sell green power
+         }
     } else {
-         if(stoch.k < strat.stochBuy) bScore += (strat.stochWeight * 0.8);
-         if(stoch.k < strat.stochBuy && stoch.k > stoch.d) bScore += (strat.stochWeight * 0.2);
-         if(stoch.k > strat.stochSell) sScore += (strat.stochWeight * 0.8);
-         if(stoch.k > strat.stochSell && stoch.k < stoch.d) sScore += (strat.stochWeight * 0.2);
+         if(stoch.k < strat.stochBuy) bScore += strat.stochWeight;
+         if(stoch.k > strat.stochSell) {
+             if (!isStrongGreen) sScore += strat.stochWeight;
+         }
     }
     
-    if(rsi < strat.rsiBuy) bScore += 1.5;
-    if(rsi > strat.rsiSell) sScore += 1.5;
-    
-    // Price Action Basics
-    if(isGreen) bScore += 1.0;
-    if(isRed) sScore += 1.0;
-    
-    if(last.close < bb.lower) bScore += 2.0;
-    if(last.close > bb.upper) sScore += 2.0;
-
-    // --- 3. TUNED SMC LOGIC (With Choppy Protection) ---
-    // OB logic now includes "Displacement" check inside calculateSMC, so these OBs are smarter.
-    
-    if (smc.bullOB) {
-        // Price touches OB Zone
-        if (last.low <= smc.bullOB.top && last.close >= smc.bullOB.bottom) {
-             let obScore = 4.5;
-             // If Choppy, reduce confidence in OB
-             if(isChoppy) obScore = 1.0; 
-             
-             bScore += obScore;
-             
-             // Bonus: Rejection Wick confirmation (Hammer candle at OB)
-             if (last.close > last.open && (last.open - last.low) > (last.close - last.open)) {
-                 bScore += 2.0; // Wick Rejection Bonus
-             }
+    // --- PRICE ACTION & BOLLINGER BANDS ---
+    // Rule: Don't short a breakout!
+    if(last.close > bb.upper) {
+        if (isStrongGreen) {
+            // BREAKOUT DETECTED: Don't Sell!
+            sScore -= 10.0; // Kill the sell signal
+            bScore += 5.0;  // FORCE BUY ON BREAKOUT
+        } else if (upperWick > bodySize || isRed) {
+            // Fakeout / Rejection at band
+            sScore += 3.0;
         }
     }
-    if (smc.bearOB) {
-        // Price touches OB Zone
-        if (last.high >= smc.bearOB.bottom && last.close <= smc.bearOB.top) {
-             let obScore = 4.5;
-             // If Choppy, reduce confidence in OB
-             if(isChoppy) obScore = 1.0;
-
-             sScore += obScore;
-             
-             // Bonus: Rejection Wick confirmation (Shooting Star at OB)
-             if (last.close < last.open && (last.high - last.open) > (last.open - last.close)) {
-                 sScore += 2.0; // Wick Rejection Bonus
-             }
+    
+    if(last.close < bb.lower) {
+        if (isStrongRed) {
+             bScore -= 10.0; // Don't buy the dump
+             sScore += 5.0;  // FORCE SELL ON BREAKDOWN
+        } else {
+             bScore += 3.0; // Reversion buy
         }
     }
 
-    // Liquidity Sweep Logic (Fractal Fakeout)
-    if (smc.lastSwingLow && last.low < smc.lastSwingLow && last.close > smc.lastSwingLow) {
-        bScore += 3.0; 
+    // --- SMC / ORDER BLOCKS ---
+    if (smc.bullOB && last.close >= smc.bullOB.bottom && last.low <= smc.bullOB.top) {
+        bScore += 3.0;
+        if (isGreen && lowerWick > bodySize) bScore += 2.0; // Hammer at OB
     }
-    if (smc.lastSwingHigh && last.high > smc.lastSwingHigh && last.close < smc.lastSwingHigh) {
-        sScore += 3.0; 
-    }
-
-    // SRv2 Logic (Structure Support) - ELIMINATE RISK: Don't buy if right at resistance
-    if (Math.abs(last.close - smc.support) / last.close < 0.003) {
-        bScore += 2.0; // Buying near support is good
-        sScore -= 5.0; // Selling right at support is risky (Trap)
-    }
-    if (Math.abs(last.close - smc.resistance) / last.close < 0.003) {
-        sScore += 2.0; // Selling near resistance is good
-        bScore -= 5.0; // Buying right at resistance is risky (Trap)
+    if (smc.bearOB && last.close <= smc.bearOB.top && last.high >= smc.bearOB.bottom) {
+        if (!isStrongGreen) {
+            sScore += 3.0;
+            if (isRed && upperWick > bodySize) sScore += 2.0; 
+        }
     }
 
-    // --- 4. SIGNAL GENERATION (DYNAMIC THRESHOLD) ---
+    // --- IMPULSE CHECK ---
+    const impulse = bodySize / atr;
+    if (impulse > 1.5 && isGreen) {
+        sScore = 0; // Absolute Veto on Green Impulse
+        bScore += 3.0;
+    }
+
+    // --- FINAL SIGNAL ---
     let finalThreshold = strat.threshold;
-    // If market is Choppy, raise the bar!
-    if(isChoppy) finalThreshold += 3.0; 
+    if(isChoppy) finalThreshold += 2.0; 
 
     let signal = 'WAIT';
     if(bScore >= finalThreshold && bScore > sScore) signal = 'BUY';
     if(sScore >= finalThreshold && sScore > bScore) signal = 'SELL';
     
-    // --- REDUCE FLOATING RISK: TIGHTER SL ---
-    let tp = 0, sl = 0;
-    if(signal === 'BUY') {
-        if (smc.bullOB) {
-            sl = smc.bullOB.bottom - (atr * 0.2); 
-        } else if (smc.lastSwingLow) {
-             sl = smc.lastSwingLow - (atr * 0.5);
-        } else {
-             sl = last.close - (atr * 1.5); 
-        }
-        tp = smc.resistance ? smc.resistance : last.close + (atr * 3);
-    } else if(signal === 'SELL') {
-        if (smc.bearOB) {
-            sl = smc.bearOB.top + (atr * 0.2); 
-        } else if (smc.lastSwingHigh) {
-            sl = smc.lastSwingHigh + (atr * 0.5);
-        } else {
-            sl = last.close + (atr * 1.5); 
-        }
-        tp = smc.support ? smc.support : last.close - (atr * 3); 
-    }
+    // --- PROTECTION: DONT FLIP FLOP ---
+    // If signal is SELL but current is GREEN, hold WAIT.
+    if (signal === 'SELL' && isGreen) signal = 'WAIT';
+    // If signal is BUY but current is RED, hold WAIT.
+    if (signal === 'BUY' && isRed) signal = 'WAIT';
 
-    // --- URGENT / TAKE PROFIT CHECK FOR MATRIX ---
-    let isUrgent = false;
-    let surgeMultiplier = 1.2;
-    if(tf.label === '1H') surgeMultiplier = 1.5;
-    if(tf.label === '4H') surgeMultiplier = 2.0;
-    const candleSize = Math.abs(last.close - last.open);
-    if (candleSize > (atr * surgeMultiplier)) isUrgent = true;
-    
-    if (signal === 'BUY' && last.close > bb.upper) isUrgent = true;
-    if (signal === 'SELL' && last.close < bb.lower) isUrgent = true;
-
-    // Store Simple Signal + Urgent Status in Matrix
-    const matrixSig = isUrgent ? signal + '_SURGE' : signal;
+    // Store Matrix
+    const matrixSig = (impulse > 1.5) ? signal + '_SURGE' : signal;
     MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig);
     
-    if (isBackground) {
-        updateMatrixUI(sym);
-        return; 
+    if (isBackground) { updateMatrixUI(sym); return; }
+
+    // --- SL/TP ---
+    let tp = 0, sl = 0;
+    if(signal === 'BUY') {
+        sl = last.low - (atr * 1.5);
+        tp = smc.resistance ? smc.resistance : last.close + (atr * 4);
+    } else if(signal === 'SELL') {
+        sl = last.high + (atr * 1.5);
+        tp = smc.support ? smc.support : last.close - (atr * 4); 
     }
 
-    // --- MAIN UI UPDATES ---
     const res = { signal, bScore, sScore, trend: mainTrend, rsi, price: last.close, open: last.open, tp, sl, stochK: stoch.k, atr };
     analysisResults.set(sym, res);
     
@@ -819,14 +788,10 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         let markers = [];
         if(signal === 'BUY') markers.push({ time: last.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'B' });
         else if(signal === 'SELL') markers.push({ time: last.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'S' });
-        
-        if(smc.bullOB && last.close > smc.bullOB.top) markers.push({ time: smc.bullOB.time, position: 'belowBar', color: '#0ECB81', shape: 'circle', text: 'OB' });
-        if(smc.bearOB && last.close < smc.bearOB.bottom) markers.push({ time: smc.bearOB.time, position: 'aboveBar', color: '#F6465D', shape: 'circle', text: 'OB' });
-        
         cObj.series.setMarkers(markers);
     }
     
-    updateCardUI(sym, res, isUrgent, isChoppy); // Pass isChoppy status for UI
+    updateCardUI(sym, res, (impulse > 1.5), isChoppy);
     updateMatrixUI(sym);
     if(signal !== 'WAIT') triggerAlert(sym, signal);
 }
