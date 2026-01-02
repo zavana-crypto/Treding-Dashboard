@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V25.16 PRO (FINAL MANIFESTO)</title>
+<title>ZAVANA V25.18 PRO (SMART CONTEXT ENGINE)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#0b0e11">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -198,6 +198,21 @@
   .d-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
   .d-val { font-size: 14px; font-weight: 600; color: var(--text-primary); transition: color 0.2s; }
    
+  /* MARKET NOTE (V25.17) - NEW COMPONENT */
+  .market-note-box {
+      padding: 12px 20px;
+      background: rgba(43, 49, 57, 0.3);
+      border-top: 1px solid var(--bg-base);
+      font-size: 12px;
+      color: var(--text-primary); /* Slightly brighter */
+      font-family: 'IBM Plex Sans', sans-serif;
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+  }
+  .market-note-icon { font-style: normal; font-size: 14px; opacity: 0.8; margin-top: 1px; }
+
   /* Alarm Animations */
   @keyframes blink-slow { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
   @keyframes blink-fast { 0% { opacity: 1; transform: scale(1); } 25% { opacity: 0.5; transform: scale(1.1); } 50% { opacity: 1; transform: scale(1.2); filter: brightness(1.5); } 100% { opacity: 1; transform: scale(1); } }
@@ -616,6 +631,12 @@ function renderGrid() {
                         <span id="alarm-${s}" class="alarm-icon">🔔</span>
                     </div>
                 </div>
+            </div>
+            
+            <!-- NEW MARKET NOTE (V25.18) -->
+            <div class="market-note-box">
+                <span class="market-note-icon">📝</span>
+                <span id="note-${s}">Menunggu analisis pasar...</span>
             </div>
 
             <div class="card-footer">
@@ -1078,11 +1099,15 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             else if (signal === "SELL") { sl = nearestResist + atr; tp = smc.bullOB ? smc.bullOB.top : current.close - (atr * 3); }
             else { sl = useBullishLogic ? nearestSupport : nearestResist; tp = useBullishLogic ? current.close + (atr*3) : current.close - (atr*3); }
             
+            // GENERATE NOTE (V25.18 - SMART CONTEXT ENGINE)
+            let note = generateMarketNote(lastRegime, lastIsShock, adx, distRatio, tf); // Added tf
+
             lastRes = { 
                 signal: lastSignal, intent: lastIntent, isOverextended: lastIsOverextended, 
                 distRatio: lastDistRatio, price: current.close, tp, sl, 
                 bScore: lastBScore, sScore: lastSScore, exitAdvice: lastExitAdvice,
-                regime: lastRegime, sizing: lastSizing, hint: lastHint, isShock: lastIsShock
+                regime: lastRegime, sizing: lastSizing, hint: lastHint, isShock: lastIsShock,
+                note: note // Pass note to UI
             };
         }
     }
@@ -1121,6 +1146,41 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         activeAlerts.delete(sym); 
     }
     updateTitleAlert(); 
+}
+
+/* =========================================
+   MARKET NOTE GENERATOR (V25.18 - SMART CONTEXT ENGINE)
+   ========================================= */
+function generateMarketNote(regime, isShock, adx, distRatio, tf) {
+    const prefix = `[${tf.label}]`;
+    
+    if (isShock) {
+        return `${prefix} BAHAYA: Volatilitas ekstrem (Shock). Hindari entry baru, market tidak stabil.`;
+    }
+    
+    // CONTEXT: SIDEWAYS / RANGE
+    if (regime === "RANGE") {
+        if (tf.type === 'INVEST' || tf.type === 'SWING') {
+            return `${prefix} Fase Akumulasi/Distribusi. Market landai, bagus untuk posisi jangka panjang di support bawah.`;
+        } else {
+            return `${prefix} Sideways (Chop). Hindari trend-following. Fokus scalping pemantulan pendek (Ping-pong).`;
+        }
+    }
+    
+    // CONTEXT: TRENDING
+    if (regime === "TREND" || regime === "WEAK TREND") {
+        if (distRatio > 1.8) {
+            return `${prefix} Overextended (Jenuh). Harga sudah lari jauh dari rata-rata. Waspada koreksi/pullback tajam.`;
+        }
+        
+        if (tf.type === 'INVEST' || tf.type === 'SWING') {
+            return `${prefix} Tren Utama Valid. Struktur market sehat untuk HOLD jangka panjang. Ikuti arus besar.`;
+        } else {
+            return `${prefix} Momentum Kuat. Fokus entry searah tren (Follow Trend) untuk profit cepat.`;
+        }
+    }
+    
+    return `${prefix} Netral. Menunggu konfirmasi arah.`;
 }
 
 // NEW FUNCTION: UPDATE BROWSER TITLE BASED ON PRIORITY
@@ -1373,6 +1433,30 @@ function updateCardUI(sym, res, atr) {
     if(visualEl) { visualEl.className = 'visual-arrow'; visualEl.textContent = '➤'; }
     if(alarmEl) alarmEl.className = 'alarm-icon';
 
+    // UPDATE NOTE (V25.17)
+    setText(`note-${sym}`, res.note);
+
+    // SHOCK PROTECTION
+    if (res.isShock) {
+        card.classList.add('fomo-mode');
+        if(tag) { tag.textContent = 'NEWS RISK'; tag.classList.add('tag-news'); }
+        if(msgEl) { 
+            msgEl.textContent = `VOL SHOCK! WAIT.`; 
+            msgEl.style.color = '#ff4444'; 
+        }
+        return;
+    }
+
+    // COOLDOWN MODE (V25.15)
+    if (res.signal === 'COOLDOWN') {
+        if(tag) { tag.textContent = 'COOLDOWN'; tag.classList.add('tag-cooldown'); }
+        if(msgEl) { 
+            msgEl.textContent = `${res.hint}`; 
+            msgEl.style.color = '#848e9c'; 
+        }
+        return;
+    }
+
     // 1. OVEREXTENDED STATE (FOMO)
     if (res.isOverextended) {
         card.classList.add('fomo-mode');
@@ -1478,6 +1562,7 @@ function startMatrixScanner() {
 function initSettingsForm() {
     document.getElementById('coinInput').value = COINS.join(', ');
     
+    // INIT PROFILE INPUT
     document.getElementById('emailServiceId').value = EMAIL_CONFIG.serviceId;
     document.getElementById('emailTemplateId').value = EMAIL_CONFIG.templateId;
     document.getElementById('emailPublicKey').value = EMAIL_CONFIG.publicKey;
@@ -1508,7 +1593,7 @@ async function toggleWakeLock() {
 function flashTitle(msg, isUrgent) {
     if(!msg) { 
         if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V25.10 PRO (CLEAN TRADING)"; 
+        document.title = "ZAVANA V25.18 PRO (SMART CONTEXT ENGINE)"; 
         return; 
     }
     if(titleInterval) clearInterval(titleInterval);
