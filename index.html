@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V25.18 PRO (SMART CONTEXT ENGINE)</title>
+<title>ZAVANA V25.19 PRO (SMART CONTEXT ENGINE)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#0b0e11">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Lightweight Charts for Main App -->
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+<!-- Chart.js for Docs Visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- EmailJS SDK -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
@@ -127,8 +130,6 @@
   .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); border-color: var(--border); }
    
   .card.sniper-mode { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(252, 213, 53, 0.2); }
-  
-  /* OVEREXTENDED / FOMO MODE STYLE */
   .card.fomo-mode { border: 1px solid var(--danger); }
   .card.fomo-mode .card-header { opacity: 0.7; }
    
@@ -137,17 +138,13 @@
    
   .tag-wait-bull { background: #2b3139; color: var(--text-secondary); } 
   .tag-wait-bear { background: #2b3139; color: var(--text-secondary); } 
-  
-  /* NEW TAGS */
   .tag-intent-buy { background: var(--accent); color: #000; animation: blink-slow 2s infinite; }
   .tag-intent-sell { background: #ffaa00; color: #000; animation: blink-slow 2s infinite; }
-  
   .tag-buy { background: var(--binance-green); color: #fff; animation: pulse-green 1s infinite; }
   .tag-sell { background: var(--binance-red); color: #fff; animation: pulse-red 1s infinite; }
-  
   .tag-fomo { background: var(--danger); color: #fff; }
-  .tag-news { background: #702525; color: #fff; animation: blink-fast 0.5s infinite; } /* NEWS RISK TAG */
-  .tag-cooldown { background: #5633a1; color: #fff; } /* COOLDOWN TAG */
+  .tag-news { background: #702525; color: #fff; animation: blink-fast 0.5s infinite; } 
+  .tag-cooldown { background: #5633a1; color: #fff; } 
 
   @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(14, 203, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0); } }
   @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(246, 70, 93, 0); } 100% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0); } }
@@ -165,29 +162,17 @@
 
   /* Matrix Bar */
   .matrix-strip { display: flex; gap: 3px; padding: 6px 20px; background: var(--bg-base); }
-  
-  /* MODIFIKASI: Ditambahkan cursor pointer agar user tahu bisa diklik */
   .m-dot { flex: 1; height: 5px; border-radius: 2px; background: var(--bg-hover); transition: 0.3s; cursor: pointer; }
-   
-  /* UPDATED: Matrix Dot States */
   .m-dot.bull { background: var(--binance-green); box-shadow: 0 0 5px var(--binance-green); }
   .m-dot.bear { background: var(--binance-red); box-shadow: 0 0 5px var(--binance-red); }
   .m-dot.active { height: 7px; margin-top: -1px; border: 1px solid #fff; }
    
-  /* NEW: Blinking States for Take Profit / Surge */
-  .m-dot.blink-green { background: var(--binance-green); box-shadow: 0 0 8px var(--binance-green); animation: blink-fast 0.5s infinite; }
-  .m-dot.blink-red { background: var(--binance-red); box-shadow: 0 0 8px var(--binance-red); animation: blink-fast 0.5s infinite; }
-  .m-dot.warning { background: var(--warning); box-shadow: 0 0 5px var(--warning); } /* For Intent Phase */
-
   /* Chart Area (TALLER) */
   .chart-container { height: 240px; width: 100%; position: relative; background: var(--bg-base); border-bottom: 1px solid var(--bg-base); }
-  
-  /* VISUAL ARROW UPDATES (BLINKING) */
   .visual-arrow { position: absolute; top: 15px; right: 15px; font-size: 24px; z-index: 5; opacity: 0; pointer-events: none; font-weight: 900; }
   .visual-arrow.buy { color: var(--binance-green); opacity: 1; animation: bounceUp 1s infinite; }
   .visual-arrow.sell { color: var(--binance-red); opacity: 1; animation: bounceDown 1s infinite; }
   .visual-arrow.prep { color: var(--accent); opacity: 1; animation: blink-arrow 0.5s infinite; text-shadow: 0 0 10px rgba(252, 213, 53, 0.5); }
-
   .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; pointer-events: none; z-index: 5; font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(2px); }
   
   @keyframes bounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
@@ -199,20 +184,7 @@
   .data-item { display: flex; flex-direction: column; gap: 4px; }
   .d-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
   .d-val { font-size: 14px; font-weight: 600; color: var(--text-primary); transition: color 0.2s; }
-   
-  /* MARKET NOTE (V25.17) - NEW COMPONENT */
-  .market-note-box {
-      padding: 12px 20px;
-      background: rgba(43, 49, 57, 0.3);
-      border-top: 1px solid var(--bg-base);
-      font-size: 12px;
-      color: var(--text-primary); /* Slightly brighter */
-      font-family: 'IBM Plex Sans', sans-serif;
-      line-height: 1.5;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-  }
+  .market-note-box { padding: 12px 20px; background: rgba(43, 49, 57, 0.3); border-top: 1px solid var(--bg-base); font-size: 12px; color: var(--text-primary); font-family: 'IBM Plex Sans', sans-serif; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; }
   .market-note-icon { font-style: normal; font-size: 14px; opacity: 0.8; margin-top: 1px; }
 
   /* Alarm Animations */
@@ -224,7 +196,6 @@
   .alarm-active-fast { display: inline-block; color: var(--accent); text-shadow: 0 0 12px var(--accent); animation: blink-fast 0.25s infinite; }
   .alarm-sell-slow { display: inline-block; color: var(--binance-red); animation: blink-slow 2s infinite ease-in-out; }
   .alarm-sell-fast { display: inline-block; color: #ff0000; text-shadow: 0 0 12px #ff0000; animation: blink-fast 0.25s infinite; }
-  /* New Alarm State: Intent */
   .alarm-intent { display: inline-block; color: var(--accent); animation: blink-slow 1s infinite; }
 
   /* Action Footer */
@@ -240,13 +211,49 @@
   .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-  /* TRADING GUIDE / MANIFESTO (REVISED V25.16) */
+  /* MANIFESTO & DOCS STYLES */
   .manifesto-box { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; color: var(--text-secondary); }
   .man-col h4 { color: var(--accent); margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--bg-hover); padding-bottom: 10px; }
   .man-item { margin-bottom: 12px; font-size: 13px; line-height: 1.5; }
   .man-item b { color: var(--text-primary); }
   .man-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px; }
   .man-rule { margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed var(--bg-hover); color:var(--text-primary); font-weight:600; font-size:12px; }
+
+  /* --- DOCS SECTION CUSTOM CSS --- */
+  .docs-section { margin-top: 40px; border-top: 2px dashed var(--border); padding-top: 30px; }
+  .docs-header { text-align: center; margin-bottom: 30px; }
+  .docs-header h2 { color: var(--text-primary); font-size: 24px; margin: 0; }
+  .docs-header p { color: var(--text-secondary); font-size: 14px; margin-top: 8px; }
+  
+  .docs-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+  .docs-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; transition: 0.3s; }
+  .docs-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .docs-icon { font-size: 32px; margin-bottom: 15px; display: block; }
+  
+  .docs-logic-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 25px; margin-bottom: 30px; }
+  .logic-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .logic-btn { background: var(--bg-hover); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .logic-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  .chart-canvas-container { position: relative; height: 300px; width: 100%; max-width: 800px; margin: 0 auto; }
+  
+  /* SIMULATOR STYLES */
+  .sim-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; align-items: start; }
+  .sim-controls { background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+  
+  /* Custom Slider */
+  input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: -8px; }
+  input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--bg-hover); border-radius: 2px; }
+  
+  .sim-score-display { text-align: center; margin-top: 20px; }
+  .sim-score-val { font-size: 32px; font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent); display:block; }
+  
+  /* Stepper */
+  .stepper-container { position: relative; padding-left: 20px; border-left: 2px solid var(--bg-hover); margin-left: 10px; }
+  .step-item { margin-bottom: 30px; position: relative; }
+  .step-dot { position: absolute; left: -29px; top: 0; width: 16px; height: 16px; background: var(--bg-base); border: 2px solid var(--accent); border-radius: 50%; }
+  .step-content h4 { color: var(--text-primary); margin: 0 0 5px 0; font-size: 14px; }
+  .step-content p { color: var(--text-secondary); margin: 0; font-size: 13px; }
 
   /* --- TABLE & SETTINGS --- */
   .table-wrapper { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
@@ -270,7 +277,7 @@
   /* --- RESPONSIVE MEDIA QUERIES --- */
   @media (max-width: 768px) {
       .navbar-top { display: none; }
-      .manifesto-box { grid-template-columns: 1fr; gap: 20px; }
+      .manifesto-box, .docs-grid-3, .sim-container { grid-template-columns: 1fr; gap: 20px; }
       .navbar-bottom { display: flex; }
       .main-content { padding: 15px 10px; }
       .grid { grid-template-columns: 1fr; } /* 1 Column on Mobile */
@@ -278,9 +285,8 @@
       .chart-container { height: 220px; } 
       .coin-title { font-size: 16px; }
       .price-main { font-size: 18px; }
-      
-      /* Mobile Footer Fix */
       .app-footer { padding-bottom: 70px; border-top: none; flex-direction: column; gap: 8px; }
+      .chart-canvas-container { height: 200px; }
   }
 </style>
 </head>
@@ -345,6 +351,137 @@
                 <div class="man-item"><span class="man-tag" style="background:var(--danger); color:#fff;">EXIT RISK</span> <b>BAHAYA:</b> Volatilitas ekstrem atau RSI jenuh. Keluar semua posisi (TP ALL) tanpa pengecualian. Sistem akan masuk COOLDOWN otomatis.</div>
             </div>
         </div>
+
+        <!-- NEW: ZAVANA INTERACTIVE DOCS & SIMULATOR -->
+        <div class="docs-section">
+            <div class="docs-header">
+                <h2>ZAVANA INTERACTIVE GUIDE</h2>
+                <p>Panduan visual, simulator, dan logika di balik "Smart Context Engine".</p>
+            </div>
+
+            <!-- 1. PHILOSOPHY GRID -->
+            <div class="docs-grid-3">
+                <div class="docs-card">
+                    <span class="docs-icon">🛡️</span>
+                    <h3 style="color:var(--text-primary); margin:0 0 10px 0;">Trust (Scoring)</h3>
+                    <p style="color:var(--text-secondary); font-size:13px; margin:0;">Transparansi skor 0-10. Anda tahu kapan harus masuk (Prime) dan kapan harus diam (Wait).</p>
+                </div>
+                <div class="docs-card">
+                    <span class="docs-icon">⚡</span>
+                    <h3 style="color:var(--text-primary); margin:0 0 10px 0;">Usability (Matrix)</h3>
+                    <p style="color:var(--text-secondary); font-size:13px; margin:0;">Satu layar, tanpa scroll berlebih. Klik "Matrix Strip" di kartu untuk ganti timeframe global.</p>
+                </div>
+                <div class="docs-card">
+                    <span class="docs-icon">⚓</span>
+                    <h3 style="color:var(--text-primary); margin:0 0 10px 0;">Stability (Logic)</h3>
+                    <p style="color:var(--text-secondary); font-size:13px; margin:0;">Auto-reconnect WebSocket dan manajemen memori efisien. Anti-lag.</p>
+                </div>
+            </div>
+
+            <!-- 2. LOGIC LAB CHART -->
+            <div class="docs-logic-box">
+                <h3 style="color:var(--accent); margin-top:0; text-align:center;">VISUALISASI KONTEKS PASAR</h3>
+                <p style="color:var(--text-secondary); font-size:13px; text-align:center; margin-bottom:20px;">Klik tombol di bawah untuk melihat bagaimana sistem membaca pola market.</p>
+                
+                <div class="logic-controls">
+                    <button class="logic-btn active" onclick="updateLogicChart('range', this)">RANGE (Sideways)</button>
+                    <button class="logic-btn" onclick="updateLogicChart('trend', this)">TREND (Momentum)</button>
+                    <button class="logic-btn" onclick="updateLogicChart('shock', this)">SHOCK (News Risk)</button>
+                </div>
+                
+                <div class="chart-canvas-container">
+                    <canvas id="logicChart"></canvas>
+                </div>
+                <div id="logic-explanation" style="text-align:center; margin-top:15px; color:var(--text-secondary); font-size:13px; font-style:italic;">
+                    Mode Sideways: ADX rendah, sistem mencari pemantulan pendek.
+                </div>
+            </div>
+
+            <!-- 3. SIMULATOR & SOP -->
+            <div class="sim-container">
+                <!-- LEFT: SIMULATOR CONTROLS -->
+                <div>
+                    <h3 style="color:var(--text-primary); margin-top:0;">Simulator Kartu</h3>
+                    <p style="color:var(--text-secondary); font-size:13px; margin-bottom:20px;">Geser slider untuk melihat respon visual kartu terhadap skor sinyal.</p>
+                    
+                    <div class="sim-controls">
+                        <label style="display:block; color:var(--text-secondary); font-size:12px; font-weight:700; margin-bottom:10px;">SIGNAL SCORE (0 - 10)</label>
+                        <input type="range" min="7.0" max="9.5" step="0.1" value="7.5" oninput="updateSimulator(this.value)">
+                        <div class="sim-score-display">
+                            <span class="sim-score-val" id="simScoreVal">7.5</span>
+                            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase;" id="simScoreText">WAITING SETUP</span>
+                        </div>
+                    </div>
+
+                    <!-- SIMULATED CARD DISPLAY -->
+                    <div class="card" id="simCard" style="margin-top:20px; border:2px solid transparent;">
+                        <div class="sniper-tag" id="simTag">WAIT</div>
+                        <div class="card-header">
+                            <div class="coin-meta">
+                                <div style="width:36px; height:36px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; color:black; font-weight:bold;">₿</div>
+                                <div>
+                                    <div class="coin-title">BTC/USDT</div>
+                                    <div class="coin-vol">Vol: SIMULATION</div>
+                                </div>
+                            </div>
+                            <div class="price-meta">
+                                <div class="price-main c-up">98,500.00</div>
+                                <div class="price-change c-up">+1.2%</div>
+                            </div>
+                        </div>
+                        <div class="matrix-strip">
+                            <div class="m-dot active"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div>
+                        </div>
+                        <div style="height:100px; background:var(--bg-base); position:relative; display:flex; align-items:center; justify-content:center;">
+                            <span style="color:var(--bg-hover); font-weight:bold;">CHART VISUAL</span>
+                            <div id="simArrow" style="font-size:24px; position:absolute; top:10px; right:10px; opacity:0.2;">➤</div>
+                            <div id="simMsg" class="visual-msg">WAITING</div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn-trade buy" id="simBtnBuy" style="opacity:0.3;">BUY</button>
+                            <button class="btn-trade sell" id="simBtnSell" style="opacity:0.3;">SELL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: SOP STEPPER -->
+                <div>
+                    <h3 style="color:var(--text-primary); margin-top:0;">S.O.P Eksekusi</h3>
+                    <div class="stepper-container">
+                        <div class="step-item">
+                            <div class="step-dot"></div>
+                            <div class="step-content">
+                                <h4>1. Inisialisasi</h4>
+                                <p>Tunggu sistem loading (2-3 detik) sampai indikator footer hijau "System: OK".</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-dot"></div>
+                            <div class="step-content">
+                                <h4>2. Pilih Timeframe (Matrix)</h4>
+                                <p>Klik titik pada bar Matrix di kartu mana saja untuk pindah mode global (Scalping 1m/5m vs Swing 1H/4H).</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-dot"></div>
+                            <div class="step-content">
+                                <h4>3. Cek Traffic Light</h4>
+                                <p><b>GELAP:</b> Wait.<br><b>KUNING:</b> Prepare.<br><b>HIJAU/MERAH + SKOR > 8.0:</b> Eksekusi.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-dot"></div>
+                            <div class="step-content">
+                                <h4>4. Manajemen Risiko</h4>
+                                <p>Ikuti saran dinamis (HOLD, TAKE PARTIAL, EXIT RISK) yang muncul di kartu.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- END DOCS SECTION -->
 
     </div>
 
@@ -501,6 +638,11 @@ function startApp() {
         setInterval(updateScreenerTable, 2000); 
         setInterval(updateHealthMonitor, 1000); // HEALTH CHECK TICKER
         startMatrixScanner();
+        
+        // INIT DOCS
+        initLogicChart();
+        updateSimulator(7.5);
+        
         setTimeout(() => {
             document.getElementById('loading-overlay').style.display = 'none';
         }, 1000);
@@ -1645,6 +1787,145 @@ document.addEventListener('click', () => { if(!audioCtx) audioCtx = new AudioCon
 let auth, db, user;
 async function toggleCloudSync() { showToast("Cloud Sync Active (Stub Mode)"); } 
 async function saveCloudData() {}
+
+/* =========================================
+   DOCS & SIMULATOR LOGIC
+   ========================================= */
+let logicChart;
+function initLogicChart() {
+    if(!document.getElementById('logicChart')) return;
+    const ctx = document.getElementById('logicChart').getContext('2d');
+    
+    // Data Generators
+    const generateRangeData = () => Array.from({length: 50}, (_, i) => Math.sin(i * 0.5) * 20 + 50 + (Math.random() * 5));
+    const generateTrendData = () => Array.from({length: 50}, (_, i) => 20 + (i * 1.5) + (Math.sin(i) * 5));
+    const generateShockData = () => Array.from({length: 50}, (_, i) => (i > 35 && i < 45) ? 50 + (Math.random() * 80 - 40) : 50 + (Math.random() * 5));
+
+    const config = {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 50}, (_, i) => i),
+            datasets: [{
+                label: 'Price Action',
+                data: generateRangeData(),
+                borderColor: '#848e9c',
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: {
+                x: { display: false },
+                y: { display: false, min: 0, max: 100 }
+            },
+            animation: { duration: 1000 }
+        }
+    };
+
+    logicChart = new Chart(ctx, config);
+    window.logicChart = logicChart;
+    window.generateRangeData = generateRangeData;
+    window.generateTrendData = generateTrendData;
+    window.generateShockData = generateShockData;
+}
+
+window.updateLogicChart = function(mode, btn) {
+    if(!window.logicChart) return;
+    
+    // Reset Buttons
+    document.querySelectorAll('.logic-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const explanation = document.getElementById('logic-explanation');
+    let newData, color, text;
+
+    if (mode === 'range') {
+        newData = window.generateRangeData();
+        color = '#848e9c';
+        text = "<strong>RANGE (Sideways):</strong> ADX Rendah (<20). Sistem menyarankan strategi Ping-pong/Scalping pendek. Skor diperketat.";
+    } else if (mode === 'trend') {
+        newData = window.generateTrendData();
+        color = '#0ecb81';
+        text = "<strong>TREND (Momentum):</strong> ADX Tinggi (>25). Sistem agresif mencari pullback/breakout. Skor entry lebih longgar.";
+    } else if (mode === 'shock') {
+        newData = window.generateShockData();
+        color = '#f6465d';
+        text = "<strong>SHOCK (News/Crash):</strong> Volatilitas > 3x ATR. Sistem masuk mode <strong>NEWS RISK</strong>. Sinyal diblokir otomatis.";
+    }
+
+    window.logicChart.data.datasets[0].data = newData;
+    window.logicChart.data.datasets[0].borderColor = color;
+    window.logicChart.update();
+    explanation.innerHTML = text;
+}
+
+window.updateSimulator = function(val) {
+    const score = parseFloat(val);
+    document.getElementById('simScoreVal').innerText = score.toFixed(1);
+    
+    const simCard = document.getElementById('simCard');
+    const simTag = document.getElementById('simTag');
+    const simMsg = document.getElementById('simMsg');
+    const simArrow = document.getElementById('simArrow');
+    const simBtnBuy = document.getElementById('simBtnBuy');
+    const simScoreText = document.getElementById('simScoreText');
+
+    // Reset
+    simCard.className = 'card';
+    simBtnBuy.style.opacity = '0.3';
+    simArrow.style.opacity = '0.2';
+    simArrow.innerText = '➤';
+    
+    if (score < 8.0) {
+        simCard.classList.remove('sniper-mode', 'fomo-mode');
+        simTag.innerText = "WAIT";
+        simTag.className = "sniper-tag tag-wait-bull";
+        simMsg.innerText = "SCANNING";
+        simMsg.style.color = "var(--text-secondary)";
+        simScoreText.innerText = "WAITING SETUP";
+        simScoreText.style.color = "var(--text-secondary)";
+    } 
+    else if (score >= 8.0 && score <= 8.3) {
+        simCard.classList.add('sniper-mode');
+        simTag.innerText = "EXECUTE BUY";
+        simTag.className = "sniper-tag tag-buy";
+        simMsg.innerText = "SCORE: " + score.toFixed(1) + " | SAFE";
+        simMsg.style.color = "var(--binance-green)";
+        simScoreText.innerText = "EARLY ENTRY";
+        simScoreText.style.color = "var(--binance-green)";
+        simBtnBuy.style.opacity = '1';
+        simArrow.style.opacity = '1';
+        simArrow.innerText = '▲';
+        simArrow.style.color = "var(--binance-green)";
+    }
+    else if (score >= 8.4 && score <= 8.7) {
+        simCard.classList.add('sniper-mode');
+        simCard.style.borderColor = "var(--accent)";
+        simTag.innerText = "STRONG BUY";
+        simTag.className = "sniper-tag tag-intent-buy";
+        simMsg.innerText = "SCORE: " + score.toFixed(1) + " | AGG";
+        simMsg.style.color = "var(--accent)";
+        simScoreText.innerText = "PRIME MOMENTUM";
+        simScoreText.style.color = "var(--accent)";
+        simBtnBuy.style.opacity = '1';
+        simArrow.style.opacity = '1';
+        simArrow.innerText = '▲';
+        simArrow.style.color = "var(--accent)";
+    }
+    else {
+        simCard.classList.add('fomo-mode');
+        simTag.innerText = "SKIP / RISKY";
+        simTag.className = "sniper-tag tag-fomo";
+        simMsg.innerText = "TOO FAR";
+        simMsg.style.color = "var(--danger)";
+        simScoreText.innerText = "OVEREXTENDED";
+        simScoreText.style.color = "var(--danger)";
+    }
+}
 
 const checkLib = setInterval(() => { if (typeof LightweightCharts !== 'undefined') { clearInterval(checkLib); startApp(); } }, 200);
 </script>
