@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V25.1 PRO (STRICT NO HISTORY ARROWS)</title>
+<title>ZAVANA V25.6 PRO (ADX FILTER + GUIDE)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -140,7 +140,7 @@
   .visual-arrow.sell { color: var(--binance-red); opacity: 1; animation: bounceDown 1s infinite; }
   .visual-arrow.prep { color: var(--accent); opacity: 1; animation: blink-arrow 0.5s infinite; text-shadow: 0 0 10px rgba(252, 213, 53, 0.5); }
 
-  .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; pointer-events: none; z-index: 5; }
+  .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; pointer-events: none; z-index: 5; font-weight: 700; letter-spacing: 0.5px; }
   
   @keyframes bounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
@@ -177,6 +177,13 @@
   .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+  /* TRADING GUIDE / MANIFESTO */
+  .manifesto-box { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; color: var(--text-secondary); }
+  .man-col h4 { color: var(--accent); margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--bg-hover); padding-bottom: 10px; }
+  .man-item { margin-bottom: 12px; font-size: 13px; line-height: 1.5; }
+  .man-item b { color: var(--text-primary); }
+  .man-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px; }
+
   /* --- TABLE & SETTINGS --- */
   .table-wrapper { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
   table { width: 100%; border-collapse: collapse; min-width: 800px; }
@@ -199,7 +206,7 @@
   /* --- RESPONSIVE MEDIA QUERIES --- */
   @media (max-width: 768px) {
       .navbar-top { display: none; }
-      .manifesto-bar { display: none; } /* Hide manifesto on very small screens or stack it */
+      .manifesto-box { grid-template-columns: 1fr; gap: 20px; }
       .navbar-bottom { display: flex; }
       .main-content { padding: 15px 10px; }
       .grid { grid-template-columns: 1fr; } /* 1 Column on Mobile */
@@ -248,6 +255,29 @@
         <div class="grid" id="grid">
             <!-- CARDS INJECTED HERE -->
         </div>
+
+        <!-- NEW: TRADING GUIDE SECTION -->
+        <div class="manifesto-box">
+            <div class="man-col">
+                <h4>1. MEMBACA SIGNAL (SCORING)</h4>
+                <div class="man-item"><span class="man-tag" style="background:#2b3139; color:#fff;">8.0 - 8.3</span> <b>EARLY / FRESH:</b> Awal pergerakan. Resiko paling rendah, potensi profit panjang. Sangat disarankan untuk entry.</div>
+                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">8.4 - 8.7</span> <b>PRIME MOMENTUM:</b> Validasi kuat. Harga sudah bergerak menjauh dari support. Masuk segera, jangan tunda.</div>
+                <div class="man-item"><span class="man-tag" style="background:var(--danger); color:#fff;">8.8 - 9.0</span> <b>LATE / CLIMAX:</b> Harga sudah lari jauh. Sering terjadi koreksi (pullback) sesaat setelah ini. Masuk dengan lot kecil atau tunggu koreksi.</div>
+            </div>
+            <div class="man-col">
+                <h4>2. STRATEGI TIMEFRAME</h4>
+                <div class="man-item"><span class="man-tag" style="background:var(--binance-red);">1M / 5M</span> <b>SCALPING:</b> Hit & Run. Ambil profit 0.5% - 1.5%. Jangan ditahan jika signal hilang. Fokus pada kecepatan.</div>
+                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">15M / 1H</span> <b>DAY TRADE:</b> Tahan posisi beberapa jam. Ikuti saran "EXIT ASSISTANT". Jika trend kuat, tahan sampai close candle.</div>
+                <div class="man-item"><span class="man-tag" style="background:var(--binance-green);">4H / 1D</span> <b>SWING / INVEST:</b> Santai. Abaikan noise kecil. Hanya keluar jika trend berubah total atau muncul "EXIT RISK".</div>
+            </div>
+            <div class="man-col">
+                <h4>3. EXIT MANAGEMENT</h4>
+                <div class="man-item"><span class="man-tag" style="background:var(--binance-green);">HOLD</span> <b>TAHAN:</b> Trend masih sehat. Jangan terburu-buru TP. Biarkan profit berlari.</div>
+                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">TAKE PARTIAL</span> <b>AMANKAN:</b> Harga kena Resistance/OB. Jual 50% aset, sisanya pasang Stop Loss di harga Entry (BEP).</div>
+                <div class="man-item"><span class="man-tag" style="background:var(--danger); color:#fff;">EXIT RISK</span> <b>BAHAYA:</b> Volatilitas ekstrem atau RSI jenuh. Segera keluar semua posisi (TP All) sebelum market berbalik arah.</div>
+            </div>
+        </div>
+
     </div>
 
     <!-- PAGE 2: MARKETS -->
@@ -261,7 +291,7 @@
                         <th>Price</th>
                         <th>Intent</th>
                         <th>Signal</th>
-                        <th>RR Ratio</th>
+                        <th>Advice</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -543,13 +573,18 @@ function updateScreenerTable() {
         if (res.signal === 'SELL') sigClass = 'c-down';
         if (res.isOverextended) sigClass = 'c-down';
 
+        let adviceColor = 'var(--text-primary)';
+        if (res.exitAdvice === 'HOLD') adviceColor = 'var(--binance-green)';
+        if (res.exitAdvice === 'TAKE PARTIAL') adviceColor = 'var(--accent)';
+        if (res.exitAdvice === 'EXIT RISK') adviceColor = 'var(--danger)';
+
         html += `
             <tr style="border-bottom:1px solid var(--border);">
                 <td><b style="color:var(--text-primary);">${base}</b></td>
                 <td style="font-family:'JetBrains Mono';">${res.price ? res.price.toFixed(res.price<1?4:2) : '---'}</td>
                 <td class="${intentClass}" style="font-size:11px; font-weight:700;">${res.intent || 'NEUTRAL'}</td>
                 <td class="${sigClass}" style="font-size:11px;">${res.isOverextended ? 'FOMO/SKIP' : (res.signal || 'WAIT')}</td>
-                <td style="font-family:'JetBrains Mono'; font-size:11px;">${res.distRatio ? res.distRatio.toFixed(1) + 'x ATR' : '--'}</td>
+                <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700; color:${adviceColor}">${res.exitAdvice || '--'}</td>
                 <td><a href="https://www.binance.com/en/trade/${base}_USDT" target="_blank" style="color:var(--accent); text-decoration:none;">VIEW</a></td>
             </tr>
         `;
@@ -675,7 +710,7 @@ function handleStream(sym, candle) {
 }
 
 /* =========================================
-   REVISED ANALYZE FUNCTION (FINAL BRUTAL AUDIT V24.2)
+   REVISED ANALYZE FUNCTION (V25.6 - ADX FILTER)
    ========================================= */
 function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     if(data.length < 100) return; 
@@ -686,11 +721,13 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     const ema21Array = calcEMAArray(data, 21);
     const rsiArray = calcRSIArray(data, 14);
     const vStopArray = calcVolStopSeries(data, 20, 3.0);
+    // NEW: ADX Calculation
+    const adxArray = calcADXArray(data, 14);
     
     const smc = findOrderBlocksAdvanced(data, 5);
     
     // Config
-    const MAX_DIST_ATR = 1.8;
+    const MAX_DIST_ATR = 2.5; 
     const INTENT_DIST_ATR = 1.2;
     
     let lastIntent = "NEUTRAL";
@@ -698,6 +735,8 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     let lastIsOverextended = false;
     let lastDistRatio = 0;
     let lastRes = {};
+    let lastExitAdvice = "NEUTRAL"; 
+    
     // Store scores for last candle
     let lastBScore = 0;
     let lastSScore = 0;
@@ -715,9 +754,22 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         const ema21 = ema21Array[i];
         const rsi = rsiArray[i];
         const rsiPrev = rsiArray[i-1];
+        const adx = adxArray[i]; // Get ADX
         const supportBand = Math.max(sma20, ema21); 
         const resistBand = Math.min(sma20, ema21);
-        const isUptrend = vStopArray[i].uptrend;
+        
+        const isVStopBullish = vStopArray[i].uptrend;
+        const isPriceBelowMAs = current.close < ema21 && current.close < sma20;
+        const isPriceAboveMAs = current.close > ema21 && current.close > sma20;
+        
+        let useBullishLogic = isVStopBullish;
+        
+        if (isVStopBullish && isPriceBelowMAs) {
+            useBullishLogic = false; 
+        }
+        if (!isVStopBullish && isPriceAboveMAs) {
+            useBullishLogic = true; 
+        }
         
         let nearestSupport = smc.bullOB ? smc.bullOB.top : supportBand;
         let nearestResist = smc.bearOB ? smc.bearOB.bottom : resistBand;
@@ -727,10 +779,8 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         let isOverextended = false;
         let distRatio = 0;
         
-        const bodySize = Math.abs(current.close - current.open);
-        
         // 1. DISTANCE CHECK
-        if (isUptrend) {
+        if (useBullishLogic) {
             const distToSup = current.close - nearestSupport;
             distRatio = distToSup / atr;
             if (distRatio > MAX_DIST_ATR) isOverextended = true;
@@ -741,48 +791,112 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         }
         
         // 2. INTENT LOGIC
-        if (isUptrend && !isOverextended) {
+        if (useBullishLogic && !isOverextended) {
             if (distRatio <= INTENT_DIST_ATR) intent = "BULL_PREPARE";
-        } else if (!isUptrend && !isOverextended) {
+        } else if (!useBullishLogic && !isOverextended) {
             if (distRatio <= INTENT_DIST_ATR) intent = "BEAR_PREPARE";
         }
         
-        // 3. ZERO FLOAT EXECUTION (SCORE SYSTEM RESTORED)
-        let bScore = 0; let sScore = 0;
+        // 3. DYNAMIC SCORE SYSTEM
+        let bScore = 0.0; let sScore = 0.0;
         
-        // Base Score from Trend
-        if (isUptrend) bScore += 2; else sScore += 2;
+        // Base Score
+        if (useBullishLogic) bScore += 4.0; else sScore += 4.0;
 
         // Score from Intent
-        if (intent === "BULL_PREPARE") bScore += 2;
-        if (intent === "BEAR_PREPARE") sScore += 2;
+        if (intent === "BULL_PREPARE") bScore += 2.0;
+        if (intent === "BEAR_PREPARE") sScore += 2.0;
 
         const isGreen = current.close > current.open;
         const isRed = current.close < current.open;
         const strongCloseBuy = (current.close - current.low) / (current.high - current.low) > 0.6;
         const strongCloseSell = (current.high - current.close) / (current.high - current.low) > 0.6;
         
-        // RSI Hooks
         const rsiHookUp = (rsiPrev < 35 && rsi > rsiPrev) || (rsi < 45 && rsi > rsiPrev + 2);
         const rsiHookDown = (rsiPrev > 65 && rsi < rsiPrev) || (rsi > 55 && rsi < rsiPrev - 2);
 
+        // --- DECIMAL CALCULATION ---
+        let scoringDist = Math.min(distRatio, 1.8); 
+        let decimalAdder = scoringDist / 2.0; 
+        
+        let rsiDelta = Math.abs(rsi - rsiPrev);
+        if (rsiDelta > 4) decimalAdder += 0.1; 
+        
+        if (decimalAdder > 0.9) decimalAdder = 0.9;
+        if (decimalAdder < 0.0) decimalAdder = 0.0;
+        
+        // --- WICK & BODY ANALYSIS ---
+        const upperWick = current.high - Math.max(current.open, current.close);
+        const lowerWick = Math.min(current.open, current.close) - current.low;
+        const bodySize = Math.abs(current.close - current.open);
+        const isBodySolid = bodySize > (atr * 0.2); 
+
+        // --- NEW: ADX FILTER (SIDEWAYS PROTECTION) ---
+        // If ADX is below 20, market is choppy. We penalize the score.
+        let adxPenalty = 0.0;
+        if (adx < 20) adxPenalty = 2.0; 
+        else if (adx < 25) adxPenalty = 0.5;
+
         if (intent === "BULL_PREPARE") {
-            if (isGreen) bScore += 1;
-            if (rsiHookUp) bScore += 2;
-            if (strongCloseBuy) bScore += 1;
+            if (isGreen) bScore += 1.0;
+            if (rsiHookUp) bScore += 1.0;
+            if (strongCloseBuy) bScore += 0.5;
             
-            if (bScore >= 6) signal = "BUY"; 
+            bScore += decimalAdder;
+
+            // Penalties
+            if (upperWick > bodySize && bodySize > 0) bScore -= 1.5; 
+            if (!isBodySolid && decimalAdder > 0.5) bScore -= 0.5;
+            bScore -= adxPenalty; // Apply ADX Penalty
+
+            if (bScore >= 8.0) signal = "BUY"; 
         }
         
-        if (intent === "BEAR_PREPARE") {
-            if (isRed) sScore += 1;
-            if (rsiHookDown) sScore += 2;
-            if (strongCloseSell) sScore += 1;
+        if (intent === "BEAR_PREPARE" || (!useBullishLogic && isRed)) {
+            if(intent === "NEUTRAL" && !useBullishLogic && isPriceBelowMAs) sScore += 1.0; 
+            if (isRed) sScore += 1.0;
+            if (rsiHookDown) sScore += 1.0; 
+            if (strongCloseSell) sScore += 0.5;
             
-            if (sScore >= 6) signal = "SELL";
+            sScore += decimalAdder;
+            
+            // Penalties
+            if (lowerWick > bodySize && bodySize > 0) sScore -= 1.5;
+            if (!isBodySolid && decimalAdder > 0.5) sScore -= 0.5;
+            sScore -= adxPenalty; // Apply ADX Penalty
+            
+            if (sScore >= 8.0) signal = "SELL";
+        }
+
+        // ============================================
+        // 4. STRUCTURED EXIT ASSISTANT
+        // ============================================
+        let exitAdvice = "NEUTRAL";
+        
+        if (useBullishLogic) { 
+            const obTop = smc.bearOB ? smc.bearOB.bottom : 999999;
+            const isObHit = current.close >= obTop;
+            
+            if (rsi > 75 || distRatio > 2.0) {
+                exitAdvice = "EXIT RISK"; 
+            } else if (rsi > 65 || distRatio > 1.2 || isObHit) {
+                exitAdvice = "TAKE PARTIAL"; 
+            } else {
+                exitAdvice = "HOLD"; 
+            }
+        } else { 
+            const obBot = smc.bullOB ? smc.bullOB.top : 0;
+            const isObHit = current.close <= obBot;
+
+            if (rsi < 25 || distRatio > 2.0) {
+                exitAdvice = "EXIT RISK"; 
+            } else if (rsi < 35 || distRatio > 1.2 || isObHit) {
+                exitAdvice = "TAKE PARTIAL"; 
+            } else {
+                exitAdvice = "HOLD"; 
+            }
         }
         
-        // CORRECTION: Only add markers for CURRENT candle (no history arrows)
         if (i === data.length - 1) {
             if (signal === "BUY") markers.push({ time: current.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'GO' });
             else if (signal === "SELL") markers.push({ time: current.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'GO' });
@@ -791,7 +905,6 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             else if (intent === "BEAR_PREPARE") markers.push({ time: current.time, position: 'aboveBar', color: '#FCD535', shape: 'arrowDown', size: 1 });
         }
 
-        // Save last state for UI
         if(i === data.length - 1) {
             lastIntent = intent;
             lastSignal = signal;
@@ -799,19 +912,19 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             lastDistRatio = distRatio;
             lastBScore = bScore;
             lastSScore = sScore;
+            lastExitAdvice = exitAdvice;
             
             let matrixSig = "WAIT";
-            if (lastSignal === "BUY" || (intent === "BULL_PREPARE" && isUptrend)) matrixSig = "BUY";
-            else if (lastSignal === "SELL" || (intent === "BEAR_PREPARE" && !isUptrend)) matrixSig = "SELL";
+            if (lastSignal === "BUY" || (intent === "BULL_PREPARE" && useBullishLogic)) matrixSig = "BUY";
+            else if (lastSignal === "SELL" || (intent === "BEAR_PREPARE" && !useBullishLogic)) matrixSig = "SELL";
             MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig);
             
-            // SL/TP CALC
             let tp = 0, sl = 0;
             if (signal === "BUY") { sl = nearestSupport - atr; tp = smc.bearOB ? smc.bearOB.bottom : current.close + (atr * 3); }
             else if (signal === "SELL") { sl = nearestResist + atr; tp = smc.bullOB ? smc.bullOB.top : current.close - (atr * 3); }
-            else { sl = isUptrend ? nearestSupport : nearestResist; tp = isUptrend ? current.close + (atr*3) : current.close - (atr*3); }
+            else { sl = useBullishLogic ? nearestSupport : nearestResist; tp = useBullishLogic ? current.close + (atr*3) : current.close - (atr*3); }
             
-            lastRes = { signal: lastSignal, intent: lastIntent, isOverextended: lastIsOverextended, distRatio: lastDistRatio, price: current.close, tp, sl, bScore: lastBScore, sScore: lastSScore };
+            lastRes = { signal: lastSignal, intent: lastIntent, isOverextended: lastIsOverextended, distRatio: lastDistRatio, price: current.close, tp, sl, bScore: lastBScore, sScore: lastSScore, exitAdvice: lastExitAdvice };
         }
     }
 
@@ -822,25 +935,21 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     // VISUALS
     const cObj = charts.get(sym);
     if(cObj) {
-        // Support & Resistance Lines
         let nearestSupport = smc.bullOB ? smc.bullOB.top : 0;
         let nearestResist = smc.bearOB ? smc.bearOB.bottom : 0;
         cObj.supportSeries.setData(data.map(d => ({ time: d.time, value: nearestSupport })));
         cObj.resistSeries.setData(data.map(d => ({ time: d.time, value: nearestResist })));
         
-        // Add OB Markers
         let obMarkers = [];
         if (smc.bullOB) obMarkers.push({ time: smc.bullOB.time, position: 'belowBar', color: 'cyan', shape: 'circle', text: 'OB' });
         if (smc.bearOB) obMarkers.push({ time: smc.bearOB.time, position: 'aboveBar', color: 'orange', shape: 'circle', text: 'OB' });
         
-        // Merge markers
         cObj.series.setMarkers([...obMarkers, ...markers]);
     }
     
     updateCardUI(sym, lastRes, atrArray[atrArray.length-1]);
     updateMatrixUI(sym);
     
-    // ALERTS
     if (lastSignal !== "WAIT") {
         activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${lastSignal} ${sym}` });
         triggerAlert(sym, lastSignal); 
@@ -861,7 +970,7 @@ function updateTitleAlert() {
     for (const [sym, alert] of activeAlerts) {
         if (alert.type === 'SIGNAL') {
             urgentMsg = alert.msg; 
-            break; // Found urgent, stop looking (highest priority)
+            break; 
         }
         if (alert.type === 'INTENT') {
             warningMsg = alert.msg;
@@ -878,8 +987,78 @@ function updateTitleAlert() {
 }
 
 /* =========================================
-   MATH HELPERS (UPDATED TO RETURN ARRAYS)
+   MATH HELPERS
    ========================================= */
+
+// NEW: Calc ADX Array
+function calcADXArray(data, period) {
+    if(data.length < period * 2) return new Array(data.length).fill(0);
+    
+    let tr = [], dmPlus = [], dmMinus = [];
+    
+    for(let i=1; i<data.length; i++) {
+        let h = data[i].high, l = data[i].low, cPrev = data[i-1].close;
+        let hPrev = data[i-1].high, lPrev = data[i-1].low;
+        
+        tr.push(Math.max(h-l, Math.abs(h-cPrev), Math.abs(l-cPrev)));
+        
+        let up = h - hPrev;
+        let down = lPrev - l;
+        
+        dmPlus.push( (up > down && up > 0) ? up : 0 );
+        dmMinus.push( (down > up && down > 0) ? down : 0 );
+    }
+    
+    // Smooth Function
+    const smooth = (arr, p) => {
+        let res = [];
+        let sum = 0;
+        for(let i=0; i<p; i++) sum += arr[i];
+        res.push(sum); // First val is sum
+        // Wilder's Smoothing
+        for(let i=p; i<arr.length; i++) {
+            res.push( res[res.length-1] - (res[res.length-1]/p) + arr[i] );
+        }
+        return res;
+    };
+    
+    let trSmooth = smooth(tr, period);
+    let dmPlusSmooth = smooth(dmPlus, period);
+    let dmMinusSmooth = smooth(dmMinus, period);
+    
+    let diPlus = [], diMinus = [], dx = [];
+    
+    // Align Arrays
+    // Smoothing reduces length by period-1 roughly, but here we just need to match indices
+    // We will align by cutting off the beginning of data array in the final map if needed, 
+    // but simple approach: standard loop.
+    
+    for(let i=0; i<trSmooth.length; i++) {
+        let dip = 0, dim = 0;
+        if(trSmooth[i] !== 0) {
+            dip = 100 * (dmPlusSmooth[i] / trSmooth[i]);
+            dim = 100 * (dmMinusSmooth[i] / trSmooth[i]);
+        }
+        diPlus.push(dip);
+        diMinus.push(dim);
+        
+        let sum = dip + dim;
+        let diff = Math.abs(dip - dim);
+        dx.push( sum===0 ? 0 : 100 * (diff/sum) );
+    }
+    
+    // ADX is smoothed DX
+    let adxVals = smooth(dx, period);
+    
+    // Pad beginning with 0s to match data length
+    let result = new Array(data.length).fill(0);
+    let offset = data.length - adxVals.length;
+    for(let i=0; i<adxVals.length; i++) {
+        result[i+offset] = adxVals[i];
+    }
+    
+    return result;
+}
 
 function calcVolStopSeries(data, length, factor) {
     let results = [];
@@ -909,25 +1088,6 @@ function calcVolStopSeries(data, length, factor) {
 }
 
 function calcTR(curr, prev) { return Math.max(curr.high - curr.low, Math.abs(curr.high - prev.close), Math.abs(curr.low - prev.close)); }
-
-function calcOBVOscillator(data, n1, n2) {
-    let obv = [0];
-    for(let i=1; i<data.length; i++) {
-        const change = data[i].close - data[i-1].close;
-        const sign = change > 0 ? 1 : (change < 0 ? -1 : 0);
-        obv.push(obv[i-1] + (sign * data[i].volume));
-    }
-    const emaOBV = calcEMAArraySimple(obv, n1);
-    let absDiff = [];
-    for(let i=0; i<obv.length; i++) absDiff.push(Math.abs(obv[i] - emaOBV[i]));
-    const emaAbsDiff = calcEMAArraySimple(absDiff, n1);
-    let out = [];
-    for(let i=0; i<obv.length; i++) {
-        const denom = 0.015 * emaAbsDiff[i];
-        if (denom === 0) out.push(0); else out.push( (obv[i] - emaOBV[i]) / denom );
-    }
-    return calcEMAArraySimple(out, n2);
-}
 
 function calcEMAArraySimple(dataArr, period) {
     let results = [];
@@ -1067,16 +1227,24 @@ function updateCardUI(sym, res, atr) {
         return; 
     }
 
+    // EXIT ADVICE COLORS (V25.3)
+    let adviceColor = '#848e9c';
+    let adviceText = res.exitAdvice || 'NEUTRAL';
+    if (res.exitAdvice === 'HOLD') adviceColor = '#0ecb81'; // Green
+    if (res.exitAdvice === 'TAKE PARTIAL') adviceColor = '#FCD535'; // Yellow
+    if (res.exitAdvice === 'EXIT RISK') adviceColor = '#cf304a'; // Red
+
     // 2. SIGNAL STATE (EXECUTION)
+    // UPDATE: Now displays DECIMAL Score (V25.4)
     if (res.signal === 'BUY') {
         if(tag) { tag.textContent = 'EXECUTE BUY'; tag.classList.add('tag-buy'); }
-        if(msgEl) { msgEl.textContent = 'CONFIRMED ENTRY'; msgEl.style.color = '#0ecb81'; }
+        if(msgEl) { msgEl.textContent = `BUY SCORE: ${res.bScore.toFixed(1)} | ${adviceText}`; msgEl.style.color = adviceColor; }
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-active-fast';
         card.classList.add('sniper-mode');
     } else if (res.signal === 'SELL') {
         if(tag) { tag.textContent = 'EXECUTE SELL'; tag.classList.add('tag-sell'); }
-        if(msgEl) { msgEl.textContent = 'CONFIRMED ENTRY'; msgEl.style.color = '#f6465d'; }
+        if(msgEl) { msgEl.textContent = `SELL SCORE: ${res.sScore.toFixed(1)} | ${adviceText}`; msgEl.style.color = adviceColor; }
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-sell-fast';
         card.classList.add('sniper-mode');
@@ -1084,19 +1252,19 @@ function updateCardUI(sym, res, atr) {
     // 3. INTENT STATE (PRE-SIGNAL)
     else if (res.intent === 'BULL_PREPARE') {
         if(tag) { tag.textContent = 'PREPARE BUY'; tag.classList.add('tag-intent-buy'); }
-        if(msgEl) { msgEl.textContent = `IN BUY ZONE (${res.distRatio.toFixed(1)}x ATR)`; msgEl.style.color = '#FCD535'; }
+        if(msgEl) { msgEl.textContent = `BULLISH (${res.bScore.toFixed(1)}) | ${adviceText}`; msgEl.style.color = adviceColor; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-intent';
         // VISUAL ARROW BLINKING
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow prep'; }
     } else if (res.intent === 'BEAR_PREPARE') {
         if(tag) { tag.textContent = 'PREPARE SELL'; tag.classList.add('tag-intent-sell'); }
-        if(msgEl) { msgEl.textContent = `IN SELL ZONE (${res.distRatio.toFixed(1)}x ATR)`; msgEl.style.color = '#FCD535'; }
+        if(msgEl) { msgEl.textContent = `BEARISH (${res.sScore.toFixed(1)}) | ${adviceText}`; msgEl.style.color = adviceColor; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-intent';
         // VISUAL ARROW BLINKING
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow prep'; }
     } else {
         if(tag) { tag.textContent = 'WAITING SETUP'; tag.classList.add('tag-wait-bull'); }
-        if(msgEl) { msgEl.textContent = 'NO CLEAR INTENT'; msgEl.style.color = '#848e9c'; }
+        if(msgEl) { msgEl.textContent = `SCANNING | ${adviceText}`; msgEl.style.color = adviceColor; }
     }
     
     // BTN UPDATE
@@ -1106,8 +1274,8 @@ function updateCardUI(sym, res, atr) {
     if(btnSell) btnSell.className = `btn-trade sell ${res.signal==='SELL'?'active':''}`;
     
     // UPDATE DATA SAFELY
-    setText(`sc-buy-${sym}`, res.bScore ? res.bScore.toFixed(0) : '0');
-    setText(`sc-sell-${sym}`, res.sScore ? res.sScore.toFixed(0) : '0');
+    setText(`sc-buy-${sym}`, res.bScore ? res.bScore.toFixed(1) : '0.0');
+    setText(`sc-sell-${sym}`, res.sScore ? res.sScore.toFixed(1) : '0.0');
     setText(`e-${sym}`, res.price.toFixed(res.price<1?4:2));
     setText(`dist-${sym}`, res.distRatio.toFixed(1) + 'x ATR');
     setText(`tp-${sym}`, res.tp.toFixed(res.price<1?4:2));
@@ -1179,7 +1347,7 @@ async function toggleWakeLock() {
 function flashTitle(msg, isUrgent) {
     if(!msg) { 
         if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V25.1 PRO (STRICT NO HISTORY ARROWS)"; 
+        document.title = "ZAVANA V25.6 PRO (ADX FILTER + GUIDE)"; 
         return; 
     }
     if(titleInterval) clearInterval(titleInterval);
