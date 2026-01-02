@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V25.12 PRO (STABLE RELEASE)</title>
+<title>ZAVANA V25.14 PRO (FINAL RELEASE)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#0b0e11">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -60,6 +60,22 @@
    
   .nav-actions { display: flex; gap: 15px; align-items: center; }
 
+  /* --- FOOTER (COPYRIGHT & DISCLAIMER) --- */
+  .app-footer {
+      background: var(--bg-base);
+      border-top: 1px solid var(--border);
+      padding: 8px 20px;
+      text-align: center;
+      flex-shrink: 0;
+      z-index: 90;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #474d57; /* Low contrast for elegance */
+      letter-spacing: 0.5px;
+      line-height: 1.4;
+  }
+  .app-footer span { display: inline-block; margin: 0 5px; }
+
   /* --- LAYOUT: MOBILE BOTTOM NAV --- */
   .navbar-bottom { display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: var(--bg-card); border-top: 1px solid var(--border); z-index: 100; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
   .mobile-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 500; width: 100%; height: 100%; }
@@ -68,7 +84,7 @@
   .mobile-nav-item.active svg { fill: var(--accent); }
 
   /* --- MAIN CONTENT (SCROLLABLE AREA) --- */
-  .main-content { flex: 1; padding: 25px 30px; margin: 0; width: 100%; max-width: 100%; overflow-y: auto; padding-bottom: 80px; scroll-behavior: smooth; }
+  .main-content { flex: 1; padding: 25px 30px; margin: 0; width: 100%; max-width: 100%; overflow-y: auto; padding-bottom: 20px; scroll-behavior: smooth; }
   
   /* UX: Custom Scrollbar for Desktop */
   .main-content::-webkit-scrollbar { width: 8px; }
@@ -126,6 +142,7 @@
   .tag-sell { background: var(--binance-red); color: #fff; animation: pulse-red 1s infinite; }
   
   .tag-fomo { background: var(--danger); color: #fff; }
+  .tag-news { background: #702525; color: #fff; animation: blink-fast 0.5s infinite; } /* NEWS RISK TAG */
 
   @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(14, 203, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0); } }
   @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(246, 70, 93, 0); } 100% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0); } }
@@ -164,7 +181,7 @@
   .visual-arrow.sell { color: var(--binance-red); opacity: 1; animation: bounceDown 1s infinite; }
   .visual-arrow.prep { color: var(--accent); opacity: 1; animation: blink-arrow 0.5s infinite; text-shadow: 0 0 10px rgba(252, 213, 53, 0.5); }
 
-  .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; pointer-events: none; z-index: 5; font-weight: 700; letter-spacing: 0.5px; }
+  .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; pointer-events: none; z-index: 5; font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(2px); }
   
   @keyframes bounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
@@ -238,6 +255,9 @@
       .chart-container { height: 220px; } 
       .coin-title { font-size: 16px; }
       .price-main { font-size: 18px; }
+      
+      /* Mobile Footer Fix */
+      .app-footer { padding-bottom: 70px; border-top: none; }
   }
 </style>
 </head>
@@ -280,25 +300,25 @@
             <!-- CARDS INJECTED HERE -->
         </div>
 
-        <!-- NEW: TRADING GUIDE SECTION -->
+        <!-- TRADING GUIDE SECTION (Updated V25.13) -->
         <div class="manifesto-box">
             <div class="man-col">
-                <h4>1. MEMBACA SIGNAL (SCORING)</h4>
-                <div class="man-item"><span class="man-tag" style="background:#2b3139; color:#fff;">8.0 - 8.3</span> <b>EARLY / FRESH:</b> Awal pergerakan. Resiko paling rendah, potensi profit panjang. Sangat disarankan untuk entry.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">8.4 - 8.7</span> <b>PRIME MOMENTUM:</b> Validasi kuat. Harga sudah bergerak menjauh dari support. Masuk segera, jangan tunda.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--danger); color:#fff;">8.8 - 9.0</span> <b>LATE / CLIMAX:</b> Harga sudah lari jauh. Sering terjadi koreksi (pullback) sesaat setelah ini. Masuk dengan lot kecil atau tunggu koreksi.</div>
+                <h4>1. MEMBACA SIGNAL & CONTEXT</h4>
+                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">SIGNAL</span> Perhatikan Score. 8.0+ = Entry. Desimal (.7) = Momentum Kuat.</div>
+                <div class="man-item"><span class="man-tag" style="background:#2b3139; color:#fff;">CONTEXT</span> Perhatikan Regime (TREND/RANGE). Jangan entry BUY saat market RANGE kecuali di support bawah.</div>
+                <div class="man-item"><span class="man-tag" style="background:var(--danger); color:#fff;">SHOCK</span> Jika muncul "NEWS RISK", volatilitas ekstrem terdeteksi (3x ATR). Jangan entry baru.</div>
             </div>
             <div class="man-col">
-                <h4>2. STRATEGI TIMEFRAME</h4>
-                <div class="man-item"><span class="man-tag" style="background:var(--binance-red);">1M / 5M</span> <b>SCALPING:</b> Hit & Run. Ambil profit 0.5% - 1.5%. Jangan ditahan jika signal hilang. Fokus pada kecepatan.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">15M / 1H</span> <b>DAY TRADE:</b> Tahan posisi beberapa jam. Ikuti saran "EXIT ASSISTANT". Jika trend kuat, tahan sampai close candle.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--binance-green);">4H / 1D</span> <b>SWING / INVEST:</b> Santai. Abaikan noise kecil. Hanya keluar jika trend berubah total atau muncul "EXIT RISK".</div>
+                <h4>2. SIZING GUIDANCE</h4>
+                <div class="man-item"><span class="man-tag" style="background:var(--binance-green);">1.0x SIZE</span> Market Stabil (Normal Volatility, Trending). Aman untuk alokasi normal.</div>
+                <div class="man-item"><span class="man-tag" style="background:var(--warning); color:#000;">0.5x SIZE</span> Volatilitas Tinggi atau Sideways. Kurangi resiko setengahnya.</div>
+                <div class="man-item"><span class="man-tag" style="background:#2b3139; color:#fff;">NO TRADE</span> Saat "EXIT RISK" atau "NEWS RISK" muncul. Cash is king.</div>
             </div>
             <div class="man-col">
-                <h4>3. EXIT MANAGEMENT</h4>
-                <div class="man-item"><span class="man-tag" style="background:var(--binance-green);">HOLD</span> <b>TAHAN:</b> Trend masih sehat. Jangan terburu-buru TP. Biarkan profit berlari.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">TAKE PARTIAL</span> <b>AMANKAN:</b> Harga kena Resistance/OB. Jual 50% aset, sisanya pasang Stop Loss di harga Entry (BEP).</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--danger); color:#fff;">EXIT RISK</span> <b>BAHAYA:</b> Volatilitas ekstrem atau RSI jenuh. Segera keluar semua posisi (TP All) sebelum market berbalik arah.</div>
+                <h4>3. WHY NO SIGNAL?</h4>
+                <div class="man-item"><b>LOW ADX:</b> Trend terlalu lemah (< 20). Potensi chop/sideways tinggi.</div>
+                <div class="man-item"><b>WICK REJECTION:</b> Ada perlawanan harga (ekor panjang). Signal dibatalkan untuk hindari jebakan.</div>
+                <div class="man-item"><b>SCORE DROP:</b> Momentum hilang tiba-tiba. Lebih baik ketinggalan daripada nyangkut.</div>
             </div>
         </div>
 
@@ -313,7 +333,7 @@
                     <tr>
                         <th>Pair</th>
                         <th>Price</th>
-                        <th>Intent</th>
+                        <th>Context</th>
                         <th>Signal</th>
                         <th>Advice</th>
                         <th>Action</th>
@@ -347,6 +367,11 @@
     </div>
 
 </main>
+
+<!-- FOOTER (COPYRIGHT) -->
+<footer class="app-footer">
+    © ZAVANA 2026 <span>•</span> Trading memiliki risiko tinggi. Bukan nasihat keuangan.
+</footer>
 
 <!-- MOBILE BOTTOM NAV -->
 <nav class="navbar-bottom">
@@ -399,7 +424,7 @@ const TIMEFRAMES = [
 
 let CURRENT_TF = TIMEFRAMES[2]; 
 let ws = null;
-let wsRetryTimer = null; // STABILITY: Retry Timer Reference
+let wsRetryTimer = null; 
 const charts = new Map();
 const marketData = new Map();
 const MTF_MATRIX = new Map(); 
@@ -411,9 +436,6 @@ let titleInterval = null;
 
 // GLOBAL ALERT TRACKER
 const activeAlerts = new Map(); 
-// STRUCTURE COOLDOWN TRACKER
-const cooldownMap = new Map();
-
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 
@@ -560,7 +582,6 @@ function renderGrid() {
         const chart = LightweightCharts.createChart(cont, {
             layout: { backgroundColor: '#0b0e11', textColor: '#848e9c', fontSize: 11, fontFamily: 'JetBrains Mono' }, 
             grid: { vertLines: { color: '#1e2329' }, horzLines: { color: '#1e2329' } },
-            // UPDATED MARGINS FOR BETTER VERTICAL USAGE
             rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.02, bottom: 0.02 } },
             timeScale: { visible: false, borderVisible: false, rightOffset: 5 }, 
             crosshair: { vertLine: { visible: false }, horzLine: { visible: false } },
@@ -607,7 +628,7 @@ function updateScreenerTable() {
             <tr style="border-bottom:1px solid var(--border);">
                 <td><b style="color:var(--text-primary);">${base}</b></td>
                 <td style="font-family:'JetBrains Mono';">${res.price ? res.price.toFixed(res.price<1?4:2) : '---'}</td>
-                <td class="${intentClass}" style="font-size:11px; font-weight:700;">${res.intent || 'NEUTRAL'}</td>
+                <td style="font-size:11px; font-weight:700;">${res.regime || '---'}</td>
                 <td class="${sigClass}" style="font-size:11px;">${res.isOverextended ? 'FOMO/SKIP' : (res.signal || 'WAIT')}</td>
                 <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700; color:${adviceColor}">${res.exitAdvice || '--'}</td>
                 <td><a href="https://www.binance.com/en/trade/${base}_USDT" target="_blank" style="color:var(--accent); text-decoration:none;">VIEW</a></td>
@@ -618,7 +639,7 @@ function updateScreenerTable() {
 }
 
 /* =========================================
-   DATA & STRATEGY (AUDITED: ANTI-FOMO & INTENT & HISTORY)
+   DATA & STRATEGY (AUDITED: V25.13 META-CONTEXT)
    ========================================= */
 async function changeTimeframe(tf) {
     CURRENT_TF = tf;
@@ -634,13 +655,13 @@ async function changeTimeframe(tf) {
     
     for (const sym of COINS) {
         await new Promise(r => setTimeout(r, 1000)); 
-        const hist = await fetchHistory(sym, tf.ws, 500); // 500 Candles for valid history calculation & visuals
+        const hist = await fetchHistory(sym, tf.ws, 500); 
         if(hist && hist.length > 0) { 
             marketData.set(sym, hist);
             const cObj = charts.get(sym);
             if(cObj) {
                 cObj.series.setData(hist);
-                cObj.chart.timeScale().fitContent(); // FIT CONTENT after data
+                cObj.chart.timeScale().fitContent(); 
                 analyze(sym, hist, tf);
             }
         }
@@ -675,7 +696,7 @@ function connectWebSocket(tf) {
     
     ws.onerror = (e) => {
         console.error('WS Error', e);
-        ws.close(); // Force close to trigger onclose
+        ws.close(); 
     };
 }
 
@@ -730,7 +751,6 @@ function handleStream(sym, candle) {
     const last = arr[arr.length-1];
     
     // DETEKSI EVENT CANDLE CLOSE / NEW CANDLE
-    // Inilah kunci "Event-Based" Synchronization
     let isNewCandle = false;
     
     if (candle.time === last.time) {
@@ -754,20 +774,13 @@ function handleStream(sym, candle) {
     const cObj = charts.get(sym);
     if(cObj) cObj.series.update(candle);
     
-    // LOGIKA REFRESH BARU (DETERMINISTIK)
     const now = Date.now();
     const lastRun = lastAnalysisTime.get(sym) || 0;
     
-    // 1. PRIORITAS UTAMA: Event Candle Close
-    // Jika candle baru muncul, jalankan analisis SEGERA untuk mengunci signal candle sebelumnya.
-    // Ini menjamin konsistensi di semua window browser.
     if (isNewCandle) {
         analyze(sym, arr, CURRENT_TF); 
         lastAnalysisTime.set(sym, now);
     } 
-    // 2. PRIORITAS KEDUA: Update Berkala (Intra-Candle)
-    // Refresh santai setiap 2 detik untuk melihat pergerakan harga running.
-    // Tidak perlu terlalu cepat (spamming) karena signal valid ada di close candle.
     else if (now - lastRun > 2000) { 
         analyze(sym, arr, CURRENT_TF);
         lastAnalysisTime.set(sym, now);
@@ -775,7 +788,7 @@ function handleStream(sym, candle) {
 }
 
 /* =========================================
-   REVISED ANALYZE FUNCTION (V25.6 - ADX FILTER)
+   REVISED ANALYZE FUNCTION (V25.13 - META CONTEXT)
    ========================================= */
 function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     if(data.length < 100) return; 
@@ -786,7 +799,6 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     const ema21Array = calcEMAArray(data, 21);
     const rsiArray = calcRSIArray(data, 14);
     const vStopArray = calcVolStopSeries(data, 20, 3.0);
-    // NEW: ADX Calculation
     const adxArray = calcADXArray(data, 14);
     
     const smc = findOrderBlocksAdvanced(data, 5);
@@ -802,9 +814,14 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     let lastRes = {};
     let lastExitAdvice = "NEUTRAL"; 
     
-    // Store scores for last candle
     let lastBScore = 0;
     let lastSScore = 0;
+    
+    // META CONTEXT VARIABLES (V25.13)
+    let lastRegime = "NEUTRAL";
+    let lastSizing = "1.0x";
+    let lastHint = "";
+    let lastIsShock = false;
 
     let markers = [];
     
@@ -819,22 +836,38 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         const ema21 = ema21Array[i];
         const rsi = rsiArray[i];
         const rsiPrev = rsiArray[i-1];
-        const adx = adxArray[i]; // Get ADX
+        const adx = adxArray[i]; 
         const supportBand = Math.max(sma20, ema21); 
         const resistBand = Math.min(sma20, ema21);
         
+        // --- 1. CONTEXT ANALYSIS (META LAYER) ---
+        let regime = "NEUTRAL";
+        if (adx < 20) regime = "RANGE";
+        else if (adx > 25) regime = "TREND";
+        else regime = "WEAK TREND";
+
+        // Volatility / Shock Check
+        const candleRange = current.high - current.low;
+        const isShock = candleRange > (atr * 3.0); // 3x ATR = SHOCK EVENT
+        
+        // Sizing Suggestion
+        let sizing = "1.0x";
+        if (regime === "RANGE") sizing = "0.5x";
+        if (isShock) sizing = "NO TRADE";
+
+        // Hint Generation (Why No Signal?)
+        let hint = "";
+        if (adx < 20) hint = "Low ADX";
+        
+        // --- END CONTEXT ---
+
         const isVStopBullish = vStopArray[i].uptrend;
         const isPriceBelowMAs = current.close < ema21 && current.close < sma20;
         const isPriceAboveMAs = current.close > ema21 && current.close > sma20;
         
         let useBullishLogic = isVStopBullish;
-        
-        if (isVStopBullish && isPriceBelowMAs) {
-            useBullishLogic = false; 
-        }
-        if (!isVStopBullish && isPriceAboveMAs) {
-            useBullishLogic = true; 
-        }
+        if (isVStopBullish && isPriceBelowMAs) useBullishLogic = false; 
+        if (!isVStopBullish && isPriceAboveMAs) useBullishLogic = true; 
         
         let nearestSupport = smc.bullOB ? smc.bullOB.top : supportBand;
         let nearestResist = smc.bearOB ? smc.bearOB.bottom : resistBand;
@@ -844,7 +877,7 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         let isOverextended = false;
         let distRatio = 0;
         
-        // 1. DISTANCE CHECK
+        // Distance Check
         if (useBullishLogic) {
             const distToSup = current.close - nearestSupport;
             distRatio = distToSup / atr;
@@ -855,20 +888,17 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             if (distRatio > MAX_DIST_ATR) isOverextended = true;
         }
         
-        // 2. INTENT LOGIC
+        // Intent Logic
         if (useBullishLogic && !isOverextended) {
             if (distRatio <= INTENT_DIST_ATR) intent = "BULL_PREPARE";
         } else if (!useBullishLogic && !isOverextended) {
             if (distRatio <= INTENT_DIST_ATR) intent = "BEAR_PREPARE";
         }
         
-        // 3. DYNAMIC SCORE SYSTEM
+        // Scoring
         let bScore = 0.0; let sScore = 0.0;
         
-        // Base Score
         if (useBullishLogic) bScore += 4.0; else sScore += 4.0;
-
-        // Score from Intent
         if (intent === "BULL_PREPARE") bScore += 2.0;
         if (intent === "BEAR_PREPARE") sScore += 2.0;
 
@@ -880,39 +910,38 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         const rsiHookUp = (rsiPrev < 35 && rsi > rsiPrev) || (rsi < 45 && rsi > rsiPrev + 2);
         const rsiHookDown = (rsiPrev > 65 && rsi < rsiPrev) || (rsi > 55 && rsi < rsiPrev - 2);
 
-        // --- DECIMAL CALCULATION ---
         let scoringDist = Math.min(distRatio, 1.8); 
         let decimalAdder = scoringDist / 2.0; 
-        
         let rsiDelta = Math.abs(rsi - rsiPrev);
         if (rsiDelta > 4) decimalAdder += 0.1; 
-        
         if (decimalAdder > 0.9) decimalAdder = 0.9;
         if (decimalAdder < 0.0) decimalAdder = 0.0;
         
-        // --- WICK & BODY ANALYSIS ---
         const upperWick = current.high - Math.max(current.open, current.close);
         const lowerWick = Math.min(current.open, current.close) - current.low;
         const bodySize = Math.abs(current.close - current.open);
         const isBodySolid = bodySize > (atr * 0.2); 
 
-        // --- NEW: ADX FILTER (SIDEWAYS PROTECTION) ---
-        // If ADX is below 20, market is choppy. We penalize the score.
+        // ADX Penalty
         let adxPenalty = 0.0;
         if (adx < 20) adxPenalty = 2.0; 
         else if (adx < 25) adxPenalty = 0.5;
+
+        // ** SHOCK PENALTY (NEWS PROTECTION) **
+        if (isShock) {
+            adxPenalty += 10.0; // Kill signal immediately
+            hint = "NEWS RISK (Vol Spike)";
+        }
 
         if (intent === "BULL_PREPARE") {
             if (isGreen) bScore += 1.0;
             if (rsiHookUp) bScore += 1.0;
             if (strongCloseBuy) bScore += 0.5;
-            
             bScore += decimalAdder;
 
-            // Penalties
-            if (upperWick > bodySize && bodySize > 0) bScore -= 1.5; 
+            if (upperWick > bodySize && bodySize > 0) { bScore -= 1.5; hint = "Wick Reject"; }
             if (!isBodySolid && decimalAdder > 0.5) bScore -= 0.5;
-            bScore -= adxPenalty; // Apply ADX Penalty
+            bScore -= adxPenalty;
 
             if (bScore >= 8.0) signal = "BUY"; 
         }
@@ -922,44 +951,29 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             if (isRed) sScore += 1.0;
             if (rsiHookDown) sScore += 1.0; 
             if (strongCloseSell) sScore += 0.5;
-            
             sScore += decimalAdder;
             
-            // Penalties
-            if (lowerWick > bodySize && bodySize > 0) sScore -= 1.5;
+            if (lowerWick > bodySize && bodySize > 0) { sScore -= 1.5; hint = "Wick Reject"; }
             if (!isBodySolid && decimalAdder > 0.5) sScore -= 0.5;
-            sScore -= adxPenalty; // Apply ADX Penalty
+            sScore -= adxPenalty;
             
             if (sScore >= 8.0) signal = "SELL";
         }
 
-        // ============================================
-        // 4. STRUCTURED EXIT ASSISTANT
-        // ============================================
+        // Exit Advice
         let exitAdvice = "NEUTRAL";
-        
         if (useBullishLogic) { 
             const obTop = smc.bearOB ? smc.bearOB.bottom : 999999;
             const isObHit = current.close >= obTop;
-            
-            if (rsi > 75 || distRatio > 2.0) {
-                exitAdvice = "EXIT RISK"; 
-            } else if (rsi > 65 || distRatio > 1.2 || isObHit) {
-                exitAdvice = "TAKE PARTIAL"; 
-            } else {
-                exitAdvice = "HOLD"; 
-            }
+            if (rsi > 75 || distRatio > 2.0) exitAdvice = "EXIT RISK"; 
+            else if (rsi > 65 || distRatio > 1.2 || isObHit) exitAdvice = "TAKE PARTIAL"; 
+            else exitAdvice = "HOLD"; 
         } else { 
             const obBot = smc.bullOB ? smc.bullOB.top : 0;
             const isObHit = current.close <= obBot;
-
-            if (rsi < 25 || distRatio > 2.0) {
-                exitAdvice = "EXIT RISK"; 
-            } else if (rsi < 35 || distRatio > 1.2 || isObHit) {
-                exitAdvice = "TAKE PARTIAL"; 
-            } else {
-                exitAdvice = "HOLD"; 
-            }
+            if (rsi < 25 || distRatio > 2.0) exitAdvice = "EXIT RISK"; 
+            else if (rsi < 35 || distRatio > 1.2 || isObHit) exitAdvice = "TAKE PARTIAL"; 
+            else exitAdvice = "HOLD"; 
         }
         
         if (i === data.length - 1) {
@@ -978,6 +992,10 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             lastBScore = bScore;
             lastSScore = sScore;
             lastExitAdvice = exitAdvice;
+            lastRegime = regime;
+            lastSizing = sizing;
+            lastHint = hint;
+            lastIsShock = isShock;
             
             let matrixSig = "WAIT";
             if (lastSignal === "BUY" || (intent === "BULL_PREPARE" && useBullishLogic)) matrixSig = "BUY";
@@ -989,7 +1007,12 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             else if (signal === "SELL") { sl = nearestResist + atr; tp = smc.bullOB ? smc.bullOB.top : current.close - (atr * 3); }
             else { sl = useBullishLogic ? nearestSupport : nearestResist; tp = useBullishLogic ? current.close + (atr*3) : current.close - (atr*3); }
             
-            lastRes = { signal: lastSignal, intent: lastIntent, isOverextended: lastIsOverextended, distRatio: lastDistRatio, price: current.close, tp, sl, bScore: lastBScore, sScore: lastSScore, exitAdvice: lastExitAdvice };
+            lastRes = { 
+                signal: lastSignal, intent: lastIntent, isOverextended: lastIsOverextended, 
+                distRatio: lastDistRatio, price: current.close, tp, sl, 
+                bScore: lastBScore, sScore: lastSScore, exitAdvice: lastExitAdvice,
+                regime: lastRegime, sizing: lastSizing, hint: lastHint, isShock: lastIsShock
+            };
         }
     }
 
@@ -1018,6 +1041,8 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
     if (lastSignal !== "WAIT") {
         activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${lastSignal} ${sym}` });
         triggerAlert(sym, lastSignal); 
+    } else if (lastIsShock) {
+        activeAlerts.set(sym, { type: 'INTENT', msg: `⚠️ NEWS RISK ${sym}` });
     } else if (lastIntent !== "NEUTRAL") {
         activeAlerts.set(sym, { type: 'INTENT', msg: `⚠️ PREP ${sym}` });
         triggerAlert(sym, "PREPARE");
@@ -1094,10 +1119,6 @@ function calcADXArray(data, period) {
     let diPlus = [], diMinus = [], dx = [];
     
     // Align Arrays
-    // Smoothing reduces length by period-1 roughly, but here we just need to match indices
-    // We will align by cutting off the beginning of data array in the final map if needed, 
-    // but simple approach: standard loop.
-    
     for(let i=0; i<trSmooth.length; i++) {
         let dip = 0, dim = 0;
         if(trSmooth[i] !== 0) {
@@ -1264,7 +1285,6 @@ function updateCardUI(sym, res, atr) {
     const card = document.getElementById(`card-${sym}`);
     if(!card) return;
 
-    // Helper: Safely get element and set text/style
     const setText = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
     const setStyle = (id, prop, val) => { const el = document.getElementById(id); if(el) el.style[prop] = val; };
     const setClass = (id, cls) => { const el = document.getElementById(id); if(el) el.className = cls; };
@@ -1280,6 +1300,17 @@ function updateCardUI(sym, res, atr) {
     if(tag) tag.className = 'sniper-tag';
     if(visualEl) { visualEl.className = 'visual-arrow'; visualEl.textContent = '➤'; }
     if(alarmEl) alarmEl.className = 'alarm-icon';
+
+    // SHOCK PROTECTION
+    if (res.isShock) {
+        card.classList.add('fomo-mode');
+        if(tag) { tag.textContent = 'NEWS RISK'; tag.classList.add('tag-news'); }
+        if(msgEl) { 
+            msgEl.textContent = `VOL SHOCK! WAIT.`; 
+            msgEl.style.color = '#ff4444'; 
+        }
+        return;
+    }
 
     // 1. OVEREXTENDED STATE (FOMO)
     if (res.isOverextended) {
@@ -1300,16 +1331,16 @@ function updateCardUI(sym, res, atr) {
     if (res.exitAdvice === 'EXIT RISK') adviceColor = '#cf304a'; // Red
 
     // 2. SIGNAL STATE (EXECUTION)
-    // UPDATE: Now displays DECIMAL Score (V25.4)
+    // UPDATE: V25.13 - ADD SIZING INFO
     if (res.signal === 'BUY') {
         if(tag) { tag.textContent = 'EXECUTE BUY'; tag.classList.add('tag-buy'); }
-        if(msgEl) { msgEl.textContent = `BUY SCORE: ${res.bScore.toFixed(1)} | ${adviceText}`; msgEl.style.color = adviceColor; }
+        if(msgEl) { msgEl.textContent = `BUY (${res.sizing}) | ${adviceText}`; msgEl.style.color = adviceColor; }
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-active-fast';
         card.classList.add('sniper-mode');
     } else if (res.signal === 'SELL') {
         if(tag) { tag.textContent = 'EXECUTE SELL'; tag.classList.add('tag-sell'); }
-        if(msgEl) { msgEl.textContent = `SELL SCORE: ${res.sScore.toFixed(1)} | ${adviceText}`; msgEl.style.color = adviceColor; }
+        if(msgEl) { msgEl.textContent = `SELL (${res.sizing}) | ${adviceText}`; msgEl.style.color = adviceColor; }
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-sell-fast';
         card.classList.add('sniper-mode');
@@ -1317,19 +1348,20 @@ function updateCardUI(sym, res, atr) {
     // 3. INTENT STATE (PRE-SIGNAL)
     else if (res.intent === 'BULL_PREPARE') {
         if(tag) { tag.textContent = 'PREPARE BUY'; tag.classList.add('tag-intent-buy'); }
-        if(msgEl) { msgEl.textContent = `BULLISH (${res.bScore.toFixed(1)}) | ${adviceText}`; msgEl.style.color = adviceColor; }
+        if(msgEl) { msgEl.textContent = `BULL (${res.bScore.toFixed(1)}) ${res.hint ? '| '+res.hint : ''}`; msgEl.style.color = adviceColor; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-intent';
-        // VISUAL ARROW BLINKING
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow prep'; }
     } else if (res.intent === 'BEAR_PREPARE') {
         if(tag) { tag.textContent = 'PREPARE SELL'; tag.classList.add('tag-intent-sell'); }
-        if(msgEl) { msgEl.textContent = `BEARISH (${res.sScore.toFixed(1)}) | ${adviceText}`; msgEl.style.color = adviceColor; }
+        if(msgEl) { msgEl.textContent = `BEAR (${res.sScore.toFixed(1)}) ${res.hint ? '| '+res.hint : ''}`; msgEl.style.color = adviceColor; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-intent';
-        // VISUAL ARROW BLINKING
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow prep'; }
     } else {
         if(tag) { tag.textContent = 'WAITING SETUP'; tag.classList.add('tag-wait-bull'); }
-        if(msgEl) { msgEl.textContent = `SCANNING | ${adviceText}`; msgEl.style.color = adviceColor; }
+        // V25.13: Show Context in Wait Msg
+        let waitMsg = `SCANNING | ${res.regime}`;
+        if(res.hint) waitMsg = `WAIT (${res.hint})`;
+        if(msgEl) { msgEl.textContent = waitMsg; msgEl.style.color = adviceColor; }
     }
     
     // BTN UPDATE
@@ -1416,7 +1448,7 @@ async function toggleWakeLock() {
 function flashTitle(msg, isUrgent) {
     if(!msg) { 
         if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V25.12 PRO (STABLE RELEASE)"; 
+        document.title = "ZAVANA V25.14 PRO (FINAL RELEASE)"; 
         return; 
     }
     if(titleInterval) clearInterval(titleInterval);
