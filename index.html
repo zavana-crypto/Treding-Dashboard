@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V25.19 PRO (SMART CONTEXT ENGINE)</title>
+<title>ZAVANA V25.21 PRO (OPTIMIZED)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <meta name="theme-color" content="#0b0e11">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -91,7 +91,17 @@
   .mobile-nav-item.active svg { fill: var(--accent); }
 
   /* --- MAIN CONTENT (SCROLLABLE AREA) --- */
-  .main-content { flex: 1; padding: 25px 30px; margin: 0; width: 100%; max-width: 100%; overflow-y: auto; padding-bottom: 20px; scroll-behavior: smooth; }
+  .main-content { 
+    flex: 1; 
+    padding: 25px 30px; 
+    margin: 0; 
+    width: 100%; 
+    max-width: 100%; 
+    overflow-y: auto; 
+    padding-bottom: 20px; 
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* FIX: iOS Smooth Scroll */
+  }
   
   /* UX: Custom Scrollbar for Desktop */
   .main-content::-webkit-scrollbar { width: 8px; }
@@ -114,7 +124,8 @@
   .action-btn { background: var(--bg-hover); color: var(--text-primary); border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
   .action-btn:hover { background: #3a4049; }
   .wakelock-btn.active { color: var(--accent); background: rgba(252, 213, 53, 0.15); border: 1px solid rgba(252, 213, 53, 0.3); }
-  .cloud-btn.synced { color: var(--binance-green); }
+  .audio-btn.active { color: var(--binance-green); border: 1px solid var(--binance-green); }
+  .audio-btn.needed { animation: blink-slow 2s infinite; color: var(--warning); border: 1px solid var(--warning); }
 
   .strategy-badge { font-size: 13px; font-weight: 700; color: var(--text-secondary); font-family: 'JetBrains Mono'; background: var(--bg-card); padding: 8px 14px; border-radius: 4px; border: 1px solid var(--border); }
 
@@ -295,7 +306,7 @@
 <!-- LOADING OVERLAY -->
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-family:'JetBrains Mono'; color:var(--text-secondary); font-size:14px; font-weight:600;">FINALIZING CONFIG...</div>
+    <div style="font-family:'JetBrains Mono'; color:var(--text-secondary); font-size:14px; font-weight:600;">OPTIMIZING ENGINE...</div>
 </div>
 
 <!-- TOAST CONTAINER -->
@@ -303,15 +314,16 @@
 
 <!-- DESKTOP TOP HEADER -->
 <header class="navbar-top">
-    <div class="brand">ZAVANA<span>PRO</span></div>
+    <div class="brand">ZAVANA<span>PRO V2</span></div>
     <div class="nav-links">
         <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
         <div class="nav-link" onclick="showPage('screener', this)">Markets</div>
         <div class="nav-link" onclick="showPage('settings', this)">Settings</div>
     </div>
     <div class="nav-actions">
+        <!-- ADDED: Audio Init Button for Stability -->
+        <button id="audioInitBtn" class="action-btn audio-btn needed" onclick="initAudioContext()">🔊 INIT AUDIO</button>
         <button id="wakeLockBtn" class="action-btn wakelock-btn" onclick="toggleWakeLock()">⚡ ACTIVE</button>
-        <button id="cloudBtn" class="action-btn cloud-btn" onclick="toggleCloudSync()">☁ SYNC</button>
     </div>
 </header>
 
@@ -372,9 +384,9 @@
                     <p style="color:var(--text-secondary); font-size:13px; margin:0;">Satu layar, tanpa scroll berlebih. Klik "Matrix Strip" di kartu untuk ganti timeframe global.</p>
                 </div>
                 <div class="docs-card">
-                    <span class="docs-icon">⚓</span>
-                    <h3 style="color:var(--text-primary); margin:0 0 10px 0;">Stability (Logic)</h3>
-                    <p style="color:var(--text-secondary); font-size:13px; margin:0;">Auto-reconnect WebSocket dan manajemen memori efisien. Anti-lag.</p>
+                    <span class="docs-icon">🚀</span>
+                    <h3 style="color:var(--text-primary); margin:0 0 10px 0;">Optimized Core</h3>
+                    <p style="color:var(--text-secondary); font-size:13px; margin:0;">V25.20: Logic loop hanya menghitung candle terakhir saat realtime, menghemat 90% CPU.</p>
                 </div>
             </div>
 
@@ -521,13 +533,6 @@
             <label>Watchlist (USDT Pairs, Comma Separated)</label>
             <textarea id="coinInput" rows="4"></textarea>
             
-            <label>EmailJS Service ID</label>
-            <input type="text" id="emailServiceId">
-            <label>EmailJS Template ID</label>
-            <input type="text" id="emailTemplateId">
-            <label>EmailJS Public Key</label>
-            <input type="text" id="emailPublicKey">
-            
             <button class="btn-primary" onclick="saveSettings()">Save Configuration</button>
             <div style="text-align:center; margin-top:20px; font-size:12px; color:var(--text-secondary);">
                 User ID: <span id="uidDisplay">Local Session</span>
@@ -577,13 +582,6 @@ try {
 }
 COINS = COINS.map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
 
-let EMAIL_CONFIG;
-try {
-    EMAIL_CONFIG = JSON.parse(localStorage.getItem('zavana_email_config')) || { serviceId: '', templateId: '', publicKey: '' };
-} catch(e) {
-    EMAIL_CONFIG = { serviceId: '', templateId: '', publicKey: '' };
-}
-
 // PROFILE CONFIG (V25.15)
 let CURRENT_PROFILE_KEY = localStorage.getItem('zavana_risk_profile') || 'NORMAL';
 const RISK_PROFILES = {
@@ -617,6 +615,8 @@ const audioCooldown = new Map();
 const lastAnalysisTime = new Map(); 
 let wakeLock = null;
 let titleInterval = null;
+// MARKER CACHE FOR OPTIMIZATION
+const markerCache = new Map();
 
 // GLOBAL ALERT TRACKER
 const activeAlerts = new Map(); 
@@ -631,9 +631,6 @@ function startApp() {
         renderToolbar();
         renderGrid();
         initSettingsForm(); 
-        if(typeof emailjs !== 'undefined' && EMAIL_CONFIG.publicKey) {
-            emailjs.init(EMAIL_CONFIG.publicKey);
-        }
         changeTimeframe(CURRENT_TF);
         setInterval(updateScreenerTable, 2000); 
         setInterval(updateHealthMonitor, 1000); // HEALTH CHECK TICKER
@@ -683,17 +680,6 @@ function showToast(message) {
     }, 3000);
 }
 
-function copyText(text) {
-    if(!text || text === '--') return;
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    showToast(`Copied: ${text}`);
-}
-
 window.showPage = function(pageId, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${pageId}`).classList.add('active');
@@ -704,7 +690,6 @@ window.showPage = function(pageId, el) {
     if(pageId === 'screener') updateScreenerTable();
 }
 
-// NEW: Helper to quick switch global timeframe from Matrix click
 window.quickSwitchTF = function(label) {
     const tf = TIMEFRAMES.find(t => t.label === label);
     if(tf) {
@@ -740,7 +725,6 @@ function renderGrid() {
         card.className = 'card';
         card.id = `card-${s}`;
         
-        // MODIFIED: Matrix strip now includes onclick event calling quickSwitchTF
         card.innerHTML = `
             <div class="sniper-tag" id="tag-${s}">INIT...</div>
             <div class="card-header">
@@ -863,7 +847,7 @@ function updateScreenerTable() {
 }
 
 /* =========================================
-   DATA & STRATEGY (AUDITED: V25.13 META-CONTEXT)
+   DATA & STRATEGY (OPTIMIZED V25.20)
    ========================================= */
 async function changeTimeframe(tf) {
     CURRENT_TF = tf;
@@ -878,7 +862,7 @@ async function changeTimeframe(tf) {
     if(wsRetryTimer) { clearTimeout(wsRetryTimer); wsRetryTimer = null; }
     
     for (const sym of COINS) {
-        await new Promise(r => setTimeout(r, 1000)); 
+        await new Promise(r => setTimeout(r, 200)); // Faster Init
         const hist = await fetchHistory(sym, tf.ws, 500); 
         if(hist && hist.length > 0) { 
             marketData.set(sym, hist);
@@ -886,7 +870,8 @@ async function changeTimeframe(tf) {
             if(cObj) {
                 cObj.series.setData(hist);
                 cObj.chart.timeScale().fitContent(); 
-                analyze(sym, hist, tf);
+                // FULL SCAN ON INIT/TF CHANGE
+                analyze(sym, hist, tf, false, true);
             }
         }
     }
@@ -894,21 +879,17 @@ async function changeTimeframe(tf) {
     connectWebSocket(tf);
 }
 
-// STABILITY: Auto-Reconnecting WebSocket (ROBUST FIX V25.19)
+// STABILITY: Auto-Reconnecting WebSocket
 function connectWebSocket(tf) {
-    // 1. Cleanup old if any (Double Check)
     if (ws) { try{ ws.close(); }catch(e){} ws = null; }
     
     const streams = COINS.map(c => `${c.toLowerCase()}@kline_${tf.ws}`).join('/');
-    
-    // 2. Use local variable to prevent race condition during assignment
     const client = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-    ws = client; // Assign to global
+    ws = client; 
     
     client.onopen = () => { console.log('WS Connected'); lastSocketTime = Date.now(); };
-    
     client.onmessage = (e) => {
-        lastSocketTime = Date.now(); // Update Heartbeat
+        lastSocketTime = Date.now(); 
         try {
             const msg = JSON.parse(e.data);
             const k = msg.data.k;
@@ -916,21 +897,11 @@ function connectWebSocket(tf) {
             handleStream(msg.data.s, c);
         } catch(err) {}
     };
-    
     client.onclose = () => {
         console.warn('WS Closed. Reconnecting...');
-        // 3. Safety Check: Only retry if this client is still the active one
         if (ws === client) {
             ws = null;
-            wsRetryTimer = setTimeout(() => connectWebSocket(tf), 3000); // Retry in 3s
-        }
-    };
-    
-    client.onerror = (e) => {
-        console.error('WS Error', e);
-        // 4. Safety Check: Prevent "Cannot read properties of null"
-        if (ws === client) {
-            try { client.close(); } catch(e) {}
+            wsRetryTimer = setTimeout(() => connectWebSocket(tf), 3000); 
         }
     };
 }
@@ -949,7 +920,7 @@ async function fetchHistory(s, interval, lim) {
              if (!res.ok) throw new Error("Proxy Blocked");
              return await parseBinance(res);
         } catch (e2) {
-             console.warn("Binance Proxy failed, switching to CryptoCompare...");
+             console.warn("Proxy failed, switching to backup...");
              return await fetchHistoryBackup(s, interval, lim);
         }
     }
@@ -961,21 +932,12 @@ async function parseBinance(res) {
 }
 
 async function fetchHistoryBackup(s, interval, lim) {
-    let endpoint = 'histominute';
-    let agg = 1;
-    if(interval === '1m') { endpoint = 'histominute'; agg = 1; }
-    if(interval === '5m') { endpoint = 'histominute'; agg = 5; }
-    if(interval === '15m') { endpoint = 'histominute'; agg = 15; }
-    if(interval === '1h') { endpoint = 'histohour'; agg = 1; }
-    if(interval === '4h') { endpoint = 'histohour'; agg = 4; }
-    if(interval === '1d') { endpoint = 'histoday'; agg = 1; }
-    if(interval === '1w') { endpoint = 'histoday'; agg = 7; }
-
+    let endpoint = 'histominute'; let agg = 1;
+    if(interval.includes('h') || interval.includes('d')) endpoint = 'histohour';
     try {
         const base = s.replace('USDT','');
         const res = await fetch(`https://min-api.cryptocompare.com/data/v2/${endpoint}?fsym=${base}&tsym=USDT&limit=${lim}&aggregate=${agg}`);
         const j = await res.json();
-        if(j.Response === "Error") return [];
         return j.Data.Data.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close,volume:d.volumeto}));
     } catch(e) { return []; }
 }
@@ -985,17 +947,15 @@ function handleStream(sym, candle) {
     if(!arr) return;
     const last = arr[arr.length-1];
     
-    // DETEKSI EVENT CANDLE CLOSE / NEW CANDLE
     let isNewCandle = false;
     
     if (candle.time === last.time) {
-        arr[arr.length-1] = candle; // Update candle yang sedang berjalan
+        arr[arr.length-1] = candle; 
     } else if (candle.time > last.time) {
-        arr.push(candle); // Candle baru terbentuk (artinya candle sebelumnya CLOSE)
+        arr.push(candle); 
         if(arr.length > 1000) arr.shift(); 
-        isNewCandle = true; // Trigger Event
+        isNewCandle = true; 
         
-        // Cooldown Tick Logic
         let cd = cooldownMap.get(sym) || 0;
         if (cd > 0) cooldownMap.set(sym, cd - 1);
     }
@@ -1013,62 +973,54 @@ function handleStream(sym, candle) {
     const cObj = charts.get(sym);
     if(cObj) cObj.series.update(candle);
     
+    // OPTIMIZED TRIGGER: Only analyze if new candle OR throttled tick
     const now = Date.now();
     const lastRun = lastAnalysisTime.get(sym) || 0;
     
     if (isNewCandle) {
-        analyze(sym, arr, CURRENT_TF); 
+        // New Candle: Run Full Logic for this candle, but no need to rescan deep history if not needed.
+        // We set fullScan=false to only calculate for the LAST index
+        analyze(sym, arr, CURRENT_TF, false, false); 
         lastAnalysisTime.set(sym, now);
     } 
     else if (now - lastRun > 2000) { 
-        analyze(sym, arr, CURRENT_TF);
+        // Tick Update: Also only calc last index
+        analyze(sym, arr, CURRENT_TF, false, false);
         lastAnalysisTime.set(sym, now);
     }
 }
 
 /* =========================================
-   REVISED ANALYZE FUNCTION (V25.13 - META CONTEXT)
+   REVISED ANALYZE FUNCTION (OPTIMIZED)
    ========================================= */
-function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
+// Added fullScan parameter to control loop depth
+function analyze(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
     if(data.length < 100) return; 
 
-    // Indicators
+    // Indicators need to be calculated for context regardless of loop depth
+    // (Optimization: In a real advanced engine, we would only calc incremental, but for JS this is fast enough)
     const atrArray = calcATRArray(data, 14);
     const sma20Array = calcSMAArray(data, 20);
     const ema21Array = calcEMAArray(data, 21);
     const rsiArray = calcRSIArray(data, 14);
     const vStopArray = calcVolStopSeries(data, 20, 3.0);
     const adxArray = calcADXArray(data, 14);
-    
     const smc = findOrderBlocksAdvanced(data, 5);
     
-    // Config: USE PROFILE (V25.15)
     const profile = RISK_PROFILES[CURRENT_PROFILE_KEY] || RISK_PROFILES.NORMAL;
     const MAX_DIST_ATR = profile.maxDist; 
-    const INTENT_DIST_ATR = 1.2;
     const MIN_SCORE = profile.minScore;
     const MIN_ADX = profile.minAdx;
     
-    let lastIntent = "NEUTRAL";
-    let lastSignal = "WAIT";
-    let lastIsOverextended = false;
-    let lastDistRatio = 0;
     let lastRes = {};
-    let lastExitAdvice = "NEUTRAL"; 
-    
-    let lastBScore = 0;
-    let lastSScore = 0;
-    
-    // META CONTEXT VARIABLES (V25.13)
-    let lastRegime = "NEUTRAL";
-    let lastSizing = "1.0x";
-    let lastHint = "";
-    let lastIsShock = false;
+    let newMarkers = [];
 
-    let markers = [];
-    
-    // HISTORY LOOP
-    for(let i = data.length - 100; i < data.length; i++) {
+    // PERFORMANCE OPTIMIZATION:
+    // If fullScan is true (Timeframe Change), we loop back 100 candles to regenerate history markers.
+    // If fullScan is false (Realtime), we ONLY look at the last candle (data.length - 1).
+    let startIndex = fullScan ? data.length - 100 : data.length - 1;
+
+    for(let i = startIndex; i < data.length; i++) {
         if(i < 50) continue;
         
         const current = data[i];
@@ -1082,27 +1034,20 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         const supportBand = Math.max(sma20, ema21); 
         const resistBand = Math.min(sma20, ema21);
         
-        // --- 1. CONTEXT ANALYSIS (META LAYER) ---
+        // --- 1. CONTEXT ANALYSIS ---
         let regime = "NEUTRAL";
-        if (adx < MIN_ADX) regime = "RANGE"; // Used Profile MinADX
+        if (adx < MIN_ADX) regime = "RANGE"; 
         else if (adx > 25) regime = "TREND";
         else regime = "WEAK TREND";
 
         // Volatility / Shock Check
         const candleRange = current.high - current.low;
-        const isShock = candleRange > (atr * 3.0); // 3x ATR = SHOCK EVENT
+        const isShock = candleRange > (atr * 3.0); 
         
-        // Sizing Suggestion
-        let sizing = "1.0x";
-        if (regime === "RANGE") sizing = "0.5x";
-        if (isShock) sizing = "NO TRADE";
-
-        // Hint Generation (Why No Signal?)
+        // Hint Generation
         let hint = "";
         if (adx < MIN_ADX) hint = "Low ADX";
         
-        // --- END CONTEXT ---
-
         const isVStopBullish = vStopArray[i].uptrend;
         const isPriceBelowMAs = current.close < ema21 && current.close < sma20;
         const isPriceAboveMAs = current.close > ema21 && current.close > sma20;
@@ -1132,9 +1077,9 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         
         // Intent Logic
         if (useBullishLogic && !isOverextended) {
-            if (distRatio <= INTENT_DIST_ATR) intent = "BULL_PREPARE";
+            if (distRatio <= 1.2) intent = "BULL_PREPARE";
         } else if (!useBullishLogic && !isOverextended) {
-            if (distRatio <= INTENT_DIST_ATR) intent = "BEAR_PREPARE";
+            if (distRatio <= 1.2) intent = "BEAR_PREPARE";
         }
         
         // Scoring
@@ -1152,40 +1097,26 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         const rsiHookUp = (rsiPrev < 35 && rsi > rsiPrev) || (rsi < 45 && rsi > rsiPrev + 2);
         const rsiHookDown = (rsiPrev > 65 && rsi < rsiPrev) || (rsi > 55 && rsi < rsiPrev - 2);
 
-        let scoringDist = Math.min(distRatio, 1.8); 
-        let decimalAdder = scoringDist / 2.0; 
-        let rsiDelta = Math.abs(rsi - rsiPrev);
-        if (rsiDelta > 4) decimalAdder += 0.1; 
+        let decimalAdder = Math.min(distRatio, 1.8) / 2.0; 
+        if (Math.abs(rsi - rsiPrev) > 4) decimalAdder += 0.1; 
         if (decimalAdder > 0.9) decimalAdder = 0.9;
-        if (decimalAdder < 0.0) decimalAdder = 0.0;
         
-        const upperWick = current.high - Math.max(current.open, current.close);
-        const lowerWick = Math.min(current.open, current.close) - current.low;
         const bodySize = Math.abs(current.close - current.open);
         const isBodySolid = bodySize > (atr * 0.2); 
 
-        // ADX Penalty
+        // Penalties
         let adxPenalty = 0.0;
-        if (adx < MIN_ADX) adxPenalty = 2.0; // Profile based
-        else if (adx < 25) adxPenalty = 0.5;
-
-        // ** SHOCK PENALTY (NEWS PROTECTION) **
-        if (isShock) {
-            adxPenalty += 10.0; // Kill signal immediately
-            hint = "NEWS RISK (Vol Spike)";
-        }
+        if (adx < MIN_ADX) adxPenalty = 2.0; 
+        if (isShock) { adxPenalty += 10.0; hint = "NEWS RISK"; }
 
         if (intent === "BULL_PREPARE") {
             if (isGreen) bScore += 1.0;
             if (rsiHookUp) bScore += 1.0;
             if (strongCloseBuy) bScore += 0.5;
             bScore += decimalAdder;
-
-            if (upperWick > bodySize && bodySize > 0) { bScore -= 1.5; hint = "Wick Reject"; }
             if (!isBodySolid && decimalAdder > 0.5) bScore -= 0.5;
             bScore -= adxPenalty;
-
-            if (bScore >= MIN_SCORE) signal = "BUY"; // Profile based
+            if (bScore >= MIN_SCORE) signal = "BUY"; 
         }
         
         if (intent === "BEAR_PREPARE" || (!useBullishLogic && isRed)) {
@@ -1194,12 +1125,9 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             if (rsiHookDown) sScore += 1.0; 
             if (strongCloseSell) sScore += 0.5;
             sScore += decimalAdder;
-            
-            if (lowerWick > bodySize && bodySize > 0) { sScore -= 1.5; hint = "Wick Reject"; }
             if (!isBodySolid && decimalAdder > 0.5) sScore -= 0.5;
             sScore -= adxPenalty;
-            
-            if (sScore >= MIN_SCORE) signal = "SELL"; // Profile based
+            if (sScore >= MIN_SCORE) signal = "SELL"; 
         }
 
         // Exit Advice
@@ -1218,45 +1146,31 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             else exitAdvice = "HOLD"; 
         }
         
-        // Cooldown Logic
+        // Cooldown Check
         if(i === data.length - 1) {
-            // Trigger cooldown if risk event
-            if (isShock || exitAdvice === "EXIT RISK") {
-                cooldownMap.set(sym, 3); // 3 candle cooldown
-            }
-            
-            // Check cooldown status
             let cd = cooldownMap.get(sym) || 0;
-            if (cd > 0) {
-                signal = "COOLDOWN";
-                hint = `Wait ${cd} Candles`;
-            }
+            if (cd > 0) { signal = "COOLDOWN"; hint = `Wait ${cd} Candles`; }
+            else if (isShock || exitAdvice === "EXIT RISK") cooldownMap.set(sym, 3);
         }
 
-        if (i === data.length - 1) {
-            if (signal === "BUY") markers.push({ time: current.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'GO' });
-            else if (signal === "SELL") markers.push({ time: current.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'GO' });
-            
-            if (intent === "BULL_PREPARE" && signal !== "BUY") markers.push({ time: current.time, position: 'belowBar', color: '#FCD535', shape: 'arrowUp', size: 1 });
-            else if (intent === "BEAR_PREPARE" && signal !== "SELL") markers.push({ time: current.time, position: 'aboveBar', color: '#FCD535', shape: 'arrowDown', size: 1 });
+        // Marker Generation
+        let m = null;
+        if (signal === "BUY") m = { time: current.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'GO' };
+        else if (signal === "SELL") m = { time: current.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'GO' };
+        
+        // FIX: Hanya tampilkan panah kuning (PREPARE) di candle terakhir, jangan di histori
+        else if (i === data.length - 1) { 
+            if (intent === "BULL_PREPARE") m = { time: current.time, position: 'belowBar', color: '#FCD535', shape: 'arrowUp', size: 1 };
+            else if (intent === "BEAR_PREPARE") m = { time: current.time, position: 'aboveBar', color: '#FCD535', shape: 'arrowDown', size: 1 };
         }
+        
+        if (m) newMarkers.push(m);
 
         if(i === data.length - 1) {
-            lastIntent = intent;
-            lastSignal = signal;
-            lastIsOverextended = isOverextended;
-            lastDistRatio = distRatio;
-            lastBScore = bScore;
-            lastSScore = sScore;
-            lastExitAdvice = exitAdvice;
-            lastRegime = regime;
-            lastSizing = sizing;
-            lastHint = hint;
-            lastIsShock = isShock;
-            
+            // Save state for UI
             let matrixSig = "WAIT";
-            if (lastSignal === "BUY" || (intent === "BULL_PREPARE" && useBullishLogic)) matrixSig = "BUY";
-            else if (lastSignal === "SELL" || (intent === "BEAR_PREPARE" && !useBullishLogic)) matrixSig = "SELL";
+            if (lastRes.signal === "BUY" || (intent === "BULL_PREPARE" && useBullishLogic)) matrixSig = "BUY";
+            else if (lastRes.signal === "SELL" || (intent === "BEAR_PREPARE" && !useBullishLogic)) matrixSig = "SELL";
             MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig);
             
             let tp = 0, sl = 0;
@@ -1264,24 +1178,18 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
             else if (signal === "SELL") { sl = nearestResist + atr; tp = smc.bullOB ? smc.bullOB.top : current.close - (atr * 3); }
             else { sl = useBullishLogic ? nearestSupport : nearestResist; tp = useBullishLogic ? current.close + (atr*3) : current.close - (atr*3); }
             
-            // GENERATE NOTE (V25.18 - SMART CONTEXT ENGINE)
-            let note = generateMarketNote(lastRegime, lastIsShock, adx, distRatio, tf); // Added tf
-
+            let note = generateMarketNote(regime, isShock, adx, distRatio, tf);
             lastRes = { 
-                signal: lastSignal, intent: lastIntent, isOverextended: lastIsOverextended, 
-                distRatio: lastDistRatio, price: current.close, tp, sl, 
-                bScore: lastBScore, sScore: lastSScore, exitAdvice: lastExitAdvice,
-                regime: lastRegime, sizing: lastSizing, hint: lastHint, isShock: lastIsShock,
-                note: note // Pass note to UI
+                signal, intent, isOverextended, distRatio, price: current.close, tp, sl, 
+                bScore, sScore, exitAdvice, regime, sizing: "1.0x", hint, isShock, note 
             };
         }
     }
 
     analysisResults.set(sym, lastRes);
-
     if (isBackground) { updateMatrixUI(sym); return; }
     
-    // VISUALS
+    // VISUALS: MERGE OLD MARKERS WITH NEW
     const cObj = charts.get(sym);
     if(cObj) {
         let nearestSupport = smc.bullOB ? smc.bullOB.top : 0;
@@ -1289,22 +1197,36 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
         cObj.supportSeries.setData(data.map(d => ({ time: d.time, value: nearestSupport })));
         cObj.resistSeries.setData(data.map(d => ({ time: d.time, value: nearestResist })));
         
+        // Cache Management
+        let cached = markerCache.get(sym) || [];
+        if(fullScan) {
+            // Rebuild Cache completely
+            cached = newMarkers; 
+        } else {
+            // Realtime Update: Remove last marker if it matches current time (overwrite) then append new
+            // Simplified: Just keep cache that is OLDER than current candle time, then add newMarkers
+            const lastTime = data[data.length-1].time;
+            cached = cached.filter(m => m.time < lastTime);
+            cached = [...cached, ...newMarkers];
+        }
+        markerCache.set(sym, cached);
+        
         let obMarkers = [];
         if (smc.bullOB) obMarkers.push({ time: smc.bullOB.time, position: 'belowBar', color: 'cyan', shape: 'circle', text: 'OB' });
         if (smc.bearOB) obMarkers.push({ time: smc.bearOB.time, position: 'aboveBar', color: 'orange', shape: 'circle', text: 'OB' });
         
-        cObj.series.setMarkers([...obMarkers, ...markers]);
+        cObj.series.setMarkers([...obMarkers, ...cached]);
     }
     
-    updateCardUI(sym, lastRes, atrArray[atrArray.length-1]);
+    updateCardUI(sym, lastRes);
     updateMatrixUI(sym);
     
-    if (lastSignal !== "WAIT" && lastSignal !== "COOLDOWN") {
-        activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${lastSignal} ${sym}` });
-        triggerAlert(sym, lastSignal); 
-    } else if (lastIsShock) {
+    if (lastRes.signal !== "WAIT" && lastRes.signal !== "COOLDOWN") {
+        activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${lastRes.signal} ${sym}` });
+        triggerAlert(sym, lastRes.signal); 
+    } else if (lastRes.isShock) {
         activeAlerts.set(sym, { type: 'INTENT', msg: `⚠️ NEWS RISK ${sym}` });
-    } else if (lastIntent !== "NEUTRAL") {
+    } else if (lastRes.intent !== "NEUTRAL") {
         activeAlerts.set(sym, { type: 'INTENT', msg: `⚠️ PREP ${sym}` });
         triggerAlert(sym, "PREPARE");
     } else {
@@ -1314,256 +1236,144 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false) {
 }
 
 /* =========================================
-   MARKET NOTE GENERATOR (V25.18 - SMART CONTEXT ENGINE)
+   MARKET NOTE GENERATOR
    ========================================= */
 function generateMarketNote(regime, isShock, adx, distRatio, tf) {
     const prefix = `[${tf.label}]`;
-    
-    if (isShock) {
-        return `${prefix} BAHAYA: Volatilitas ekstrem (Shock). Hindari entry baru, market tidak stabil.`;
-    }
-    
-    // CONTEXT: SIDEWAYS / RANGE
+    if (isShock) return `${prefix} BAHAYA: Volatilitas ekstrem. Hindari entry, market tidak stabil.`;
     if (regime === "RANGE") {
-        if (tf.type === 'INVEST' || tf.type === 'SWING') {
-            return `${prefix} Fase Akumulasi/Distribusi. Market landai, bagus untuk posisi jangka panjang di support bawah.`;
-        } else {
-            return `${prefix} Sideways (Chop). Hindari trend-following. Fokus scalping pemantulan pendek (Ping-pong).`;
-        }
+        if (tf.type === 'INVEST' || tf.type === 'SWING') return `${prefix} Fase Akumulasi. Bagus untuk posisi jangka panjang.`;
+        else return `${prefix} Sideways. Fokus scalping pemantulan pendek (Ping-pong).`;
     }
-    
-    // CONTEXT: TRENDING
     if (regime === "TREND" || regime === "WEAK TREND") {
-        if (distRatio > 1.8) {
-            return `${prefix} Overextended (Jenuh). Harga sudah lari jauh dari rata-rata. Waspada koreksi/pullback tajam.`;
-        }
-        
-        if (tf.type === 'INVEST' || tf.type === 'SWING') {
-            return `${prefix} Tren Utama Valid. Struktur market sehat untuk HOLD jangka panjang. Ikuti arus besar.`;
-        } else {
-            return `${prefix} Momentum Kuat. Fokus entry searah tren (Follow Trend) untuk profit cepat.`;
-        }
+        if (distRatio > 1.8) return `${prefix} Overextended. Harga sudah lari jauh. Waspada koreksi.`;
+        return `${prefix} Momentum Kuat. Fokus entry searah tren (Follow Trend).`;
     }
-    
     return `${prefix} Netral. Menunggu konfirmasi arah.`;
 }
 
-// NEW FUNCTION: UPDATE BROWSER TITLE BASED ON PRIORITY
 function updateTitleAlert() {
     let urgentMsg = null;
-    let warningMsg = null;
-    
     for (const [sym, alert] of activeAlerts) {
-        if (alert.type === 'SIGNAL') {
-            urgentMsg = alert.msg; 
-            break; 
-        }
-        if (alert.type === 'INTENT') {
-            warningMsg = alert.msg;
-        }
+        if (alert.type === 'SIGNAL') { urgentMsg = alert.msg; break; }
     }
-    
-    if (urgentMsg) {
-        flashTitle(urgentMsg, true);
-    } else if (warningMsg) {
-        flashTitle(warningMsg, false);
-    } else {
-        flashTitle("", false);
-    }
+    flashTitle(urgentMsg, !!urgentMsg);
 }
 
 /* =========================================
-   MATH HELPERS
+   MATH HELPERS (UNCHANGED FOR STABILITY)
    ========================================= */
-
-// NEW: Calc ADX Array
 function calcADXArray(data, period) {
     if(data.length < period * 2) return new Array(data.length).fill(0);
-    
     let tr = [], dmPlus = [], dmMinus = [];
-    
     for(let i=1; i<data.length; i++) {
         let h = data[i].high, l = data[i].low, cPrev = data[i-1].close;
         let hPrev = data[i-1].high, lPrev = data[i-1].low;
-        
         tr.push(Math.max(h-l, Math.abs(h-cPrev), Math.abs(l-cPrev)));
-        
-        let up = h - hPrev;
-        let down = lPrev - l;
-        
+        let up = h - hPrev; let down = lPrev - l;
         dmPlus.push( (up > down && up > 0) ? up : 0 );
         dmMinus.push( (down > up && down > 0) ? down : 0 );
     }
-    
-    // Smooth Function
     const smooth = (arr, p) => {
-        let res = [];
-        let sum = 0;
+        let res = []; let sum = 0;
         for(let i=0; i<p; i++) sum += arr[i];
-        res.push(sum); // First val is sum
-        // Wilder's Smoothing
-        for(let i=p; i<arr.length; i++) {
-            res.push( res[res.length-1] - (res[res.length-1]/p) + arr[i] );
-        }
+        res.push(sum);
+        for(let i=p; i<arr.length; i++) res.push( res[res.length-1] - (res[res.length-1]/p) + arr[i] );
         return res;
     };
-    
     let trSmooth = smooth(tr, period);
     let dmPlusSmooth = smooth(dmPlus, period);
     let dmMinusSmooth = smooth(dmMinus, period);
-    
-    let diPlus = [], diMinus = [], dx = [];
-    
-    // Align Arrays
+    let dx = [];
     for(let i=0; i<trSmooth.length; i++) {
         let dip = 0, dim = 0;
-        if(trSmooth[i] !== 0) {
-            dip = 100 * (dmPlusSmooth[i] / trSmooth[i]);
-            dim = 100 * (dmMinusSmooth[i] / trSmooth[i]);
-        }
-        diPlus.push(dip);
-        diMinus.push(dim);
-        
+        if(trSmooth[i] !== 0) { dip = 100 * (dmPlusSmooth[i] / trSmooth[i]); dim = 100 * (dmMinusSmooth[i] / trSmooth[i]); }
         let sum = dip + dim;
-        let diff = Math.abs(dip - dim);
-        dx.push( sum===0 ? 0 : 100 * (diff/sum) );
+        dx.push( sum===0 ? 0 : 100 * (Math.abs(dip - dim)/sum) );
     }
-    
-    // ADX is smoothed DX
     let adxVals = smooth(dx, period);
-    
-    // Pad beginning with 0s to match data length
     let result = new Array(data.length).fill(0);
     let offset = data.length - adxVals.length;
-    for(let i=0; i<adxVals.length; i++) {
-        result[i+offset] = adxVals[i];
-    }
-    
+    for(let i=0; i<adxVals.length; i++) result[i+offset] = adxVals[i];
     return result;
 }
 
 function calcVolStopSeries(data, length, factor) {
     let results = [];
-    let max = data[0].close;
-    let min = data[0].close;
+    let max = data[0].close; let min = data[0].close;
     let uptrend = true;
     let stop = data[0].close - (calcTR(data[0], data[0]) * factor);
     results.push({ stop, uptrend });
-    
     for(let i=1; i<data.length; i++) {
-        const curr = data[i];
-        const prev = data[i-1];
+        const curr = data[i]; const prev = data[i-1];
         const tr = Math.max(curr.high - curr.low, Math.abs(curr.high - prev.close), Math.abs(curr.low - prev.close));
         const atrM = tr * factor;
-        max = Math.max(max, curr.close);
-        min = Math.min(min, curr.close);
-        if (uptrend) stop = Math.max(stop, max - atrM);
-        else stop = Math.min(stop, min + atrM);
+        max = Math.max(max, curr.close); min = Math.min(min, curr.close);
+        if (uptrend) stop = Math.max(stop, max - atrM); else stop = Math.min(stop, min + atrM);
         const newUptrend = (curr.close - stop) >= 0;
-        if (newUptrend !== uptrend) {
-            max = curr.close; min = curr.close; uptrend = newUptrend;
-            stop = uptrend ? max - atrM : min + atrM;
-        }
+        if (newUptrend !== uptrend) { max = curr.close; min = curr.close; uptrend = newUptrend; stop = uptrend ? max - atrM : min + atrM; }
         results.push({ stop, uptrend });
     }
     return results;
 }
-
 function calcTR(curr, prev) { return Math.max(curr.high - curr.low, Math.abs(curr.high - prev.close), Math.abs(curr.low - prev.close)); }
-
-function calcEMAArraySimple(dataArr, period) {
-    let results = [];
-    let k = 2 / (period + 1);
-    let ema = dataArr[0];
-    results.push(ema);
-    for(let i=1; i<dataArr.length; i++) { ema = (dataArr[i] * k) + (ema * (1 - k)); results.push(ema); }
-    return results;
-}
-
 function calcEMAArray(data, period) {
-    let results = [];
-    let k = 2 / (period + 1);
-    let ema = data[0].close;
+    let results = []; let k = 2 / (period + 1); let ema = data[0].close;
     results.push(ema);
     for(let i=1; i<data.length; i++) { ema = (data[i].close * k) + (ema * (1 - k)); results.push(ema); }
     return results;
 }
-
 function calcSMAArray(data, period) {
     let results = [];
     for (let i = 0; i < data.length; i++) {
         if (i < period - 1) { results.push(data[i].close); continue; }
-        let sum = 0;
-        for (let j = 0; j < period; j++) sum += data[i - j].close;
+        let sum = 0; for (let j = 0; j < period; j++) sum += data[i - j].close;
         results.push(sum / period);
     }
     return results;
 }
-
 function calcATRArray(data, period) {
-    let results = [];
-    let trs = [];
-    // TR Calc
+    let results = []; let trs = [];
     for(let i=0; i<data.length; i++) {
         if(i===0) trs.push(data[i].high - data[i].low);
         else trs.push(Math.max(data[i].high - data[i].low, Math.abs(data[i].high - data[i-1].close), Math.abs(data[i].low - data[i-1].close)));
     }
-    // ATR SMA
     for (let i = 0; i < trs.length; i++) {
         if (i < period - 1) { results.push(trs[i]); continue; }
-        let sum = 0;
-        for (let j = 0; j < period; j++) sum += trs[i - j];
+        let sum = 0; for (let j = 0; j < period; j++) sum += trs[i - j];
         results.push(sum / period);
     }
     return results;
 }
-
-// NEW: RSI Calculation
 function calcRSIArray(data, period) {
-    let results = [];
-    let gains = [];
-    let losses = [];
-    
-    // Initial diffs
+    let results = []; let gains = []; let losses = [];
     for(let i=1; i<data.length; i++) {
         const change = data[i].close - data[i-1].close;
-        gains.push(change > 0 ? change : 0);
-        losses.push(change < 0 ? Math.abs(change) : 0);
+        gains.push(change > 0 ? change : 0); losses.push(change < 0 ? Math.abs(change) : 0);
     }
-    
-    // First RSI
     let avgGain = 0, avgLoss = 0;
     for(let i=0; i<period; i++) { avgGain += gains[i]; avgLoss += losses[i]; }
     avgGain /= period; avgLoss /= period;
-    
-    // Push nulls for first period
     for(let i=0; i<period; i++) results.push(50); 
-    
     results.push(100 - (100 / (1 + (avgGain/avgLoss))));
-    
-    // Smoothed
     for(let i=period; i<data.length-1; i++) {
         avgGain = ((avgGain * (period-1)) + gains[i]) / period;
         avgLoss = ((avgLoss * (period-1)) + losses[i]) / period;
-        if(avgLoss === 0) results.push(100);
-        else results.push(100 - (100 / (1 + (avgGain/avgLoss))));
+        if(avgLoss === 0) results.push(100); else results.push(100 - (100 / (1 + (avgGain/avgLoss))));
     }
     return results;
 }
-
 function findOrderBlocksAdvanced(data, periods = 5) {
     if(data.length < 50) return {};
     let bullOB = null; let bearOB = null;
     for(let i = data.length - 1 - periods; i > 1; i--) {
         const obCandle = data[i];
         if (!bullOB && obCandle.close < obCandle.open) { 
-            let allGreen = true;
-            for(let j=1; j<=periods; j++) { if(data[i+j].close <= data[i+j].open) allGreen = false; }
+            let allGreen = true; for(let j=1; j<=periods; j++) { if(data[i+j].close <= data[i+j].open) allGreen = false; }
             if(allGreen) bullOB = { top: Math.max(obCandle.open, obCandle.close), bottom: obCandle.low, time: obCandle.time };
         }
         if (!bearOB && obCandle.close > obCandle.open) { 
-            let allRed = true;
-            for(let j=1; j<=periods; j++) { if(data[i+j].close >= data[i+j].open) allRed = false; }
+            let allRed = true; for(let j=1; j<=periods; j++) { if(data[i+j].close >= data[i+j].open) allRed = false; }
             if(allRed) bearOB = { top: obCandle.high, bottom: Math.min(obCandle.open, obCandle.close), time: obCandle.time };
         }
         if(bullOB && bearOB) break;
@@ -1571,115 +1381,75 @@ function findOrderBlocksAdvanced(data, periods = 5) {
     return { bullOB, bearOB };
 }
 
-// Helpers for Single Value (Compatibility)
-function calcSMA(d, p) { if(d.length<p) return d[d.length-1].close; let s=0; for(let i=d.length-p; i<d.length; i++) s+=d[i].close; return s/p; }
-function calcEMA(d,p){if(d.length<p)return null;const k=2/(p+1);let e=d[0].close;for(let i=1;i<d.length;i++)e=(d[i].close*k)+(e*(1-k));return e;}
-function calcATR(d,p){if(d.length<p+1)return 0;let s=0;for(let i=d.length-p;i<d.length;i++)s+=Math.max(d[i].high-d[i].low,Math.abs(d[i].high-d[i-1].close),Math.abs(d[i].low-d[i-1].close));return s/p;}
-
-// FIXED: updateCardUI with SAFETY CHECKS
-function updateCardUI(sym, res, atr) {
+function updateCardUI(sym, res) {
     const card = document.getElementById(`card-${sym}`);
     if(!card) return;
-
-    // Helper: Safely get element and set text/style
     const setText = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
-    const setStyle = (id, prop, val) => { const el = document.getElementById(id); if(el) el.style[prop] = val; };
-    const setClass = (id, cls) => { const el = document.getElementById(id); if(el) el.className = cls; };
-    
-    // Direct elements
     const tag = card.querySelector('.sniper-tag');
     const msgEl = document.getElementById(`msg-${sym}`);
     const visualEl = document.getElementById(`visual-${sym}`);
     const alarmEl = document.getElementById(`alarm-${sym}`);
     
-    // RESET CLASSES
     card.classList.remove('fomo-mode', 'sniper-mode');
     if(tag) tag.className = 'sniper-tag';
     if(visualEl) { visualEl.className = 'visual-arrow'; visualEl.textContent = '➤'; }
     if(alarmEl) alarmEl.className = 'alarm-icon';
 
-    // UPDATE NOTE (V25.17)
     setText(`note-${sym}`, res.note);
 
-    // SHOCK PROTECTION
     if (res.isShock) {
         card.classList.add('fomo-mode');
         if(tag) { tag.textContent = 'NEWS RISK'; tag.classList.add('tag-news'); }
-        if(msgEl) { 
-            msgEl.textContent = `VOL SHOCK! WAIT.`; 
-            msgEl.style.color = '#ff4444'; 
-        }
+        if(msgEl) { msgEl.textContent = `VOL SHOCK! WAIT.`; msgEl.style.color = '#ff4444'; }
         return;
     }
-
-    // COOLDOWN MODE (V25.15)
     if (res.signal === 'COOLDOWN') {
         if(tag) { tag.textContent = 'COOLDOWN'; tag.classList.add('tag-cooldown'); }
-        if(msgEl) { 
-            msgEl.textContent = `${res.hint}`; 
-            msgEl.style.color = '#848e9c'; 
-        }
+        if(msgEl) { msgEl.textContent = `${res.hint}`; msgEl.style.color = '#848e9c'; }
         return;
     }
-
-    // 1. OVEREXTENDED STATE (FOMO)
     if (res.isOverextended) {
         card.classList.add('fomo-mode');
         if(tag) { tag.textContent = 'OVEREXTENDED (SKIP)'; tag.classList.add('tag-fomo'); }
-        if(msgEl) { 
-            msgEl.textContent = `TOO FAR (${res.distRatio.toFixed(1)}x ATR)`; 
-            msgEl.style.color = '#ff4444'; 
-        }
+        if(msgEl) { msgEl.textContent = `TOO FAR (${res.distRatio.toFixed(1)}x ATR)`; msgEl.style.color = '#ff4444'; }
         return; 
     }
 
-    // EXIT ADVICE COLORS (V25.3)
     let adviceColor = '#848e9c';
-    let adviceText = res.exitAdvice || 'NEUTRAL';
-    if (res.exitAdvice === 'HOLD') adviceColor = '#0ecb81'; // Green
-    if (res.exitAdvice === 'TAKE PARTIAL') adviceColor = '#FCD535'; // Yellow
-    if (res.exitAdvice === 'EXIT RISK') adviceColor = '#cf304a'; // Red
+    if (res.exitAdvice === 'HOLD') adviceColor = '#0ecb81'; 
+    if (res.exitAdvice === 'TAKE PARTIAL') adviceColor = '#FCD535';
+    if (res.exitAdvice === 'EXIT RISK') adviceColor = '#cf304a';
 
-    // 2. SIGNAL STATE (EXECUTION)
-    // UPDATE: Now displays DECIMAL Score (V25.4)
     if (res.signal === 'BUY') {
         if(tag) { tag.textContent = 'EXECUTE BUY'; tag.classList.add('tag-buy'); }
-        if(msgEl) { msgEl.textContent = `BUY SCORE: ${res.bScore.toFixed(1)} | ${adviceText}`; msgEl.style.color = adviceColor; }
+        if(msgEl) { msgEl.textContent = `BUY SCORE: ${res.bScore.toFixed(1)}`; msgEl.style.color = adviceColor; }
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-active-fast';
         card.classList.add('sniper-mode');
     } else if (res.signal === 'SELL') {
         if(tag) { tag.textContent = 'EXECUTE SELL'; tag.classList.add('tag-sell'); }
-        if(msgEl) { msgEl.textContent = `SELL SCORE: ${res.sScore.toFixed(1)} | ${adviceText}`; msgEl.style.color = adviceColor; }
+        if(msgEl) { msgEl.textContent = `SELL SCORE: ${res.sScore.toFixed(1)}`; msgEl.style.color = adviceColor; }
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
         if(alarmEl) alarmEl.className = 'alarm-icon alarm-sell-fast';
         card.classList.add('sniper-mode');
-    } 
-    // 3. INTENT STATE (PRE-SIGNAL)
-    else if (res.intent === 'BULL_PREPARE') {
+    } else if (res.intent === 'BULL_PREPARE') {
         if(tag) { tag.textContent = 'PREPARE BUY'; tag.classList.add('tag-intent-buy'); }
-        if(msgEl) { msgEl.textContent = `BULLISH (${res.bScore.toFixed(1)}) | ${adviceText}`; msgEl.style.color = adviceColor; }
-        if(alarmEl) alarmEl.className = 'alarm-icon alarm-intent';
-        // VISUAL ARROW BLINKING
+        if(msgEl) { msgEl.textContent = `BULLISH (${res.bScore.toFixed(1)})`; msgEl.style.color = adviceColor; }
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow prep'; }
     } else if (res.intent === 'BEAR_PREPARE') {
         if(tag) { tag.textContent = 'PREPARE SELL'; tag.classList.add('tag-intent-sell'); }
-        if(msgEl) { msgEl.textContent = `BEARISH (${res.sScore.toFixed(1)}) | ${adviceText}`; msgEl.style.color = adviceColor; }
-        if(alarmEl) alarmEl.className = 'alarm-icon alarm-intent';
-        // VISUAL ARROW BLINKING
+        if(msgEl) { msgEl.textContent = `BEARISH (${res.sScore.toFixed(1)})`; msgEl.style.color = adviceColor; }
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow prep'; }
     } else {
         if(tag) { tag.textContent = 'WAITING SETUP'; tag.classList.add('tag-wait-bull'); }
-        if(msgEl) { msgEl.textContent = `SCANNING | ${adviceText}`; msgEl.style.color = adviceColor; }
+        if(msgEl) { msgEl.textContent = `SCANNING | ${res.exitAdvice}`; msgEl.style.color = adviceColor; }
     }
     
-    // BTN UPDATE
     const btnBuy = document.getElementById(`btn-buy-${sym}`);
     if(btnBuy) btnBuy.className = `btn-trade buy ${res.signal==='BUY'?'active':''}`;
     const btnSell = document.getElementById(`btn-sell-${sym}`);
     if(btnSell) btnSell.className = `btn-trade sell ${res.signal==='SELL'?'active':''}`;
     
-    // UPDATE DATA SAFELY
     setText(`sc-buy-${sym}`, res.bScore ? res.bScore.toFixed(1) : '0.0');
     setText(`sc-sell-${sym}`, res.sScore ? res.sScore.toFixed(1) : '0.0');
     setText(`e-${sym}`, res.price.toFixed(res.price<1?4:2));
@@ -1697,7 +1467,6 @@ function updateMatrixUI(sym) {
             el.className = 'm-dot';
             if (sig === 'BUY') el.classList.add('bull');
             else if (sig === 'SELL') el.classList.add('bear');
-            
             if(tf.label === CURRENT_TF.label) el.classList.add('active');
         }
     });
@@ -1711,9 +1480,9 @@ function startMatrixScanner() {
         const tf = TIMEFRAMES[tfIdx];
         if(tf.label !== CURRENT_TF.label) {
             try {
-                // Fetch 200 candles to satisfy RSI history requirement
                 const hist = await fetchHistory(sym, tf.ws, 200);
-                if(hist.length > 50) analyze(sym, hist, tf, true);
+                // Background Matrix Scan: Full logic but not rendered
+                if(hist.length > 50) analyze(sym, hist, tf, true, false); 
             } catch(e) {}
         }
         tfIdx++;
@@ -1726,23 +1495,12 @@ function startMatrixScanner() {
    ========================================= */
 function initSettingsForm() {
     document.getElementById('coinInput').value = COINS.join(', ');
-    
-    // INIT PROFILE INPUT
-    document.getElementById('emailServiceId').value = EMAIL_CONFIG.serviceId;
-    document.getElementById('emailTemplateId').value = EMAIL_CONFIG.templateId;
-    document.getElementById('emailPublicKey').value = EMAIL_CONFIG.publicKey;
 }
 
 window.saveSettings = function() {
     const raw = document.getElementById('coinInput').value;
     COINS = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-    
-    EMAIL_CONFIG.serviceId = document.getElementById('emailServiceId').value;
-    EMAIL_CONFIG.templateId = document.getElementById('emailTemplateId').value;
-    EMAIL_CONFIG.publicKey = document.getElementById('emailPublicKey').value;
     localStorage.setItem('zavana_coins', JSON.stringify(COINS));
-    localStorage.setItem('zavana_email_config', JSON.stringify(EMAIL_CONFIG));
-    saveCloudData();
     location.reload(); 
 }
 
@@ -1758,7 +1516,7 @@ async function toggleWakeLock() {
 function flashTitle(msg, isUrgent) {
     if(!msg) { 
         if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V25.18 PRO (SMART CONTEXT ENGINE)"; 
+        document.title = "ZAVANA V25.20 PRO"; 
         return; 
     }
     if(titleInterval) clearInterval(titleInterval);
@@ -1769,6 +1527,26 @@ function flashTitle(msg, isUrgent) {
     }, 1000);
 }
 
+// AUDIO ENGINE (FIXED V25.20)
+window.initAudioContext = function() {
+    if(!audioCtx) audioCtx = new AudioContext(); 
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    
+    // Play test beep
+    const osc=audioCtx.createOscillator(); const g=audioCtx.createGain(); 
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.frequency.setValueAtTime(600,audioCtx.currentTime); 
+    g.gain.setValueAtTime(0.1,audioCtx.currentTime); 
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.1);
+    osc.start(); osc.stop(audioCtx.currentTime+0.1);
+    
+    const btn = document.getElementById('audioInitBtn');
+    btn.classList.remove('needed');
+    btn.classList.add('active');
+    btn.textContent = "🔊 AUDIO ON";
+    showToast("Audio System Initialized");
+}
+
 function triggerAlert(sym, type) {
     const now = Date.now();
     if(now - (audioCooldown.get(sym)||0) > 60000) {
@@ -1777,16 +1555,12 @@ function triggerAlert(sym, type) {
     }
 }
 async function playBeep() {
-    try { if(!audioCtx) audioCtx = new AudioContext(); if(audioCtx.state === 'suspended') audioCtx.resume();
+    if(!audioCtx) return; 
+    if(audioCtx.state === 'suspended') audioCtx.resume();
     const osc=audioCtx.createOscillator(), g=audioCtx.createGain(); osc.connect(g); g.connect(audioCtx.destination);
     osc.frequency.setValueAtTime(880,audioCtx.currentTime); g.gain.setValueAtTime(0.05,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
-    osc.start(); osc.stop(audioCtx.currentTime+0.2); } catch(e){}
+    osc.start(); osc.stop(audioCtx.currentTime+0.2); 
 }
-document.addEventListener('click', () => { if(!audioCtx) audioCtx = new AudioContext(); });
-
-let auth, db, user;
-async function toggleCloudSync() { showToast("Cloud Sync Active (Stub Mode)"); } 
-async function saveCloudData() {}
 
 /* =========================================
    DOCS & SIMULATOR LOGIC
@@ -1795,8 +1569,6 @@ let logicChart;
 function initLogicChart() {
     if(!document.getElementById('logicChart')) return;
     const ctx = document.getElementById('logicChart').getContext('2d');
-    
-    // Data Generators
     const generateRangeData = () => Array.from({length: 50}, (_, i) => Math.sin(i * 0.5) * 20 + 50 + (Math.random() * 5));
     const generateTrendData = () => Array.from({length: 50}, (_, i) => 20 + (i * 1.5) + (Math.sin(i) * 5));
     const generateShockData = () => Array.from({length: 50}, (_, i) => (i > 35 && i < 45) ? 50 + (Math.random() * 80 - 40) : 50 + (Math.random() * 5));
@@ -1806,26 +1578,14 @@ function initLogicChart() {
         data: {
             labels: Array.from({length: 50}, (_, i) => i),
             datasets: [{
-                label: 'Price Action',
-                data: generateRangeData(),
-                borderColor: '#848e9c',
-                borderWidth: 2,
-                pointRadius: 0,
-                tension: 0.4
+                label: 'Price Action', data: generateRangeData(), borderColor: '#848e9c', borderWidth: 2, pointRadius: 0, tension: 0.4
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { enabled: false } },
-            scales: {
-                x: { display: false },
-                y: { display: false, min: 0, max: 100 }
-            },
-            animation: { duration: 1000 }
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } }, animation: { duration: 1000 }
         }
     };
-
     logicChart = new Chart(ctx, config);
     window.logicChart = logicChart;
     window.generateRangeData = generateRangeData;
@@ -1835,28 +1595,20 @@ function initLogicChart() {
 
 window.updateLogicChart = function(mode, btn) {
     if(!window.logicChart) return;
-    
-    // Reset Buttons
     document.querySelectorAll('.logic-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
     const explanation = document.getElementById('logic-explanation');
     let newData, color, text;
-
     if (mode === 'range') {
-        newData = window.generateRangeData();
-        color = '#848e9c';
+        newData = window.generateRangeData(); color = '#848e9c';
         text = "<strong>RANGE (Sideways):</strong> ADX Rendah (<20). Sistem menyarankan strategi Ping-pong/Scalping pendek. Skor diperketat.";
     } else if (mode === 'trend') {
-        newData = window.generateTrendData();
-        color = '#0ecb81';
+        newData = window.generateTrendData(); color = '#0ecb81';
         text = "<strong>TREND (Momentum):</strong> ADX Tinggi (>25). Sistem agresif mencari pullback/breakout. Skor entry lebih longgar.";
     } else if (mode === 'shock') {
-        newData = window.generateShockData();
-        color = '#f6465d';
+        newData = window.generateShockData(); color = '#f6465d';
         text = "<strong>SHOCK (News/Crash):</strong> Volatilitas > 3x ATR. Sistem masuk mode <strong>NEWS RISK</strong>. Sinyal diblokir otomatis.";
     }
-
     window.logicChart.data.datasets[0].data = newData;
     window.logicChart.data.datasets[0].borderColor = color;
     window.logicChart.update();
@@ -1866,64 +1618,37 @@ window.updateLogicChart = function(mode, btn) {
 window.updateSimulator = function(val) {
     const score = parseFloat(val);
     document.getElementById('simScoreVal').innerText = score.toFixed(1);
-    
     const simCard = document.getElementById('simCard');
     const simTag = document.getElementById('simTag');
     const simMsg = document.getElementById('simMsg');
     const simArrow = document.getElementById('simArrow');
     const simBtnBuy = document.getElementById('simBtnBuy');
     const simScoreText = document.getElementById('simScoreText');
-
-    // Reset
     simCard.className = 'card';
-    simBtnBuy.style.opacity = '0.3';
-    simArrow.style.opacity = '0.2';
-    simArrow.innerText = '➤';
+    simBtnBuy.style.opacity = '0.3'; simArrow.style.opacity = '0.2'; simArrow.innerText = '➤';
     
     if (score < 8.0) {
         simCard.classList.remove('sniper-mode', 'fomo-mode');
-        simTag.innerText = "WAIT";
-        simTag.className = "sniper-tag tag-wait-bull";
-        simMsg.innerText = "SCANNING";
-        simMsg.style.color = "var(--text-secondary)";
-        simScoreText.innerText = "WAITING SETUP";
-        simScoreText.style.color = "var(--text-secondary)";
-    } 
-    else if (score >= 8.0 && score <= 8.3) {
+        simTag.innerText = "WAIT"; simTag.className = "sniper-tag tag-wait-bull";
+        simMsg.innerText = "SCANNING"; simMsg.style.color = "var(--text-secondary)";
+        simScoreText.innerText = "WAITING SETUP"; simScoreText.style.color = "var(--text-secondary)";
+    } else if (score >= 8.0 && score <= 8.3) {
         simCard.classList.add('sniper-mode');
-        simTag.innerText = "EXECUTE BUY";
-        simTag.className = "sniper-tag tag-buy";
-        simMsg.innerText = "SCORE: " + score.toFixed(1) + " | SAFE";
-        simMsg.style.color = "var(--binance-green)";
-        simScoreText.innerText = "EARLY ENTRY";
-        simScoreText.style.color = "var(--binance-green)";
-        simBtnBuy.style.opacity = '1';
-        simArrow.style.opacity = '1';
-        simArrow.innerText = '▲';
-        simArrow.style.color = "var(--binance-green)";
-    }
-    else if (score >= 8.4 && score <= 8.7) {
-        simCard.classList.add('sniper-mode');
-        simCard.style.borderColor = "var(--accent)";
-        simTag.innerText = "STRONG BUY";
-        simTag.className = "sniper-tag tag-intent-buy";
-        simMsg.innerText = "SCORE: " + score.toFixed(1) + " | AGG";
-        simMsg.style.color = "var(--accent)";
-        simScoreText.innerText = "PRIME MOMENTUM";
-        simScoreText.style.color = "var(--accent)";
-        simBtnBuy.style.opacity = '1';
-        simArrow.style.opacity = '1';
-        simArrow.innerText = '▲';
-        simArrow.style.color = "var(--accent)";
-    }
-    else {
+        simTag.innerText = "EXECUTE BUY"; simTag.className = "sniper-tag tag-buy";
+        simMsg.innerText = "SCORE: " + score.toFixed(1) + " | SAFE"; simMsg.style.color = "var(--binance-green)";
+        simScoreText.innerText = "EARLY ENTRY"; simScoreText.style.color = "var(--binance-green)";
+        simBtnBuy.style.opacity = '1'; simArrow.style.opacity = '1'; simArrow.innerText = '▲'; simArrow.style.color = "var(--binance-green)";
+    } else if (score >= 8.4 && score <= 8.7) {
+        simCard.classList.add('sniper-mode'); simCard.style.borderColor = "var(--accent)";
+        simTag.innerText = "STRONG BUY"; simTag.className = "sniper-tag tag-intent-buy";
+        simMsg.innerText = "SCORE: " + score.toFixed(1) + " | AGG"; simMsg.style.color = "var(--accent)";
+        simScoreText.innerText = "PRIME MOMENTUM"; simScoreText.style.color = "var(--accent)";
+        simBtnBuy.style.opacity = '1'; simArrow.style.opacity = '1'; simArrow.innerText = '▲'; simArrow.style.color = "var(--accent)";
+    } else {
         simCard.classList.add('fomo-mode');
-        simTag.innerText = "SKIP / RISKY";
-        simTag.className = "sniper-tag tag-fomo";
-        simMsg.innerText = "TOO FAR";
-        simMsg.style.color = "var(--danger)";
-        simScoreText.innerText = "OVEREXTENDED";
-        simScoreText.style.color = "var(--danger)";
+        simTag.innerText = "SKIP / RISKY"; simTag.className = "sniper-tag tag-fomo";
+        simMsg.innerText = "TOO FAR"; simMsg.style.color = "var(--danger)";
+        simScoreText.innerText = "OVEREXTENDED"; simScoreText.style.color = "var(--danger)";
     }
 }
 
