@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V25.6 PRO (ADX FILTER + GUIDE)</title>
+<title>ZAVANA V25.11 PRO (EVENT-BASED SYNC)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -681,11 +681,16 @@ function handleStream(sym, candle) {
     if(!arr) return;
     const last = arr[arr.length-1];
     
+    // DETEKSI EVENT CANDLE CLOSE / NEW CANDLE
+    // Inilah kunci "Event-Based" Synchronization
+    let isNewCandle = false;
+    
     if (candle.time === last.time) {
-        arr[arr.length-1] = candle; 
+        arr[arr.length-1] = candle; // Update candle yang sedang berjalan
     } else if (candle.time > last.time) {
-        arr.push(candle); 
-        if(arr.length > 1000) arr.shift(); // Keep history manageable
+        arr.push(candle); // Candle baru terbentuk (artinya candle sebelumnya CLOSE)
+        if(arr.length > 1000) arr.shift(); 
+        isNewCandle = true; // Trigger Event
     }
     
     const pEl = document.getElementById(`price-${sym}`);
@@ -701,9 +706,21 @@ function handleStream(sym, candle) {
     const cObj = charts.get(sym);
     if(cObj) cObj.series.update(candle);
     
+    // LOGIKA REFRESH BARU (DETERMINISTIK)
     const now = Date.now();
     const lastRun = lastAnalysisTime.get(sym) || 0;
-    if (now - lastRun > 1000) {
+    
+    // 1. PRIORITAS UTAMA: Event Candle Close
+    // Jika candle baru muncul, jalankan analisis SEGERA untuk mengunci signal candle sebelumnya.
+    // Ini menjamin konsistensi di semua window browser.
+    if (isNewCandle) {
+        analyze(sym, arr, CURRENT_TF); 
+        lastAnalysisTime.set(sym, now);
+    } 
+    // 2. PRIORITAS KEDUA: Update Berkala (Intra-Candle)
+    // Refresh santai setiap 2 detik untuk melihat pergerakan harga running.
+    // Tidak perlu terlalu cepat (spamming) karena signal valid ada di close candle.
+    else if (now - lastRun > 2000) { 
         analyze(sym, arr, CURRENT_TF);
         lastAnalysisTime.set(sym, now);
     }
@@ -1320,13 +1337,16 @@ function startMatrixScanner() {
    ========================================= */
 function initSettingsForm() {
     document.getElementById('coinInput').value = COINS.join(', ');
+    
     document.getElementById('emailServiceId').value = EMAIL_CONFIG.serviceId;
     document.getElementById('emailTemplateId').value = EMAIL_CONFIG.templateId;
     document.getElementById('emailPublicKey').value = EMAIL_CONFIG.publicKey;
 }
+
 window.saveSettings = function() {
     const raw = document.getElementById('coinInput').value;
     COINS = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
+    
     EMAIL_CONFIG.serviceId = document.getElementById('emailServiceId').value;
     EMAIL_CONFIG.templateId = document.getElementById('emailTemplateId').value;
     EMAIL_CONFIG.publicKey = document.getElementById('emailPublicKey').value;
@@ -1335,6 +1355,7 @@ window.saveSettings = function() {
     saveCloudData();
     location.reload(); 
 }
+
 async function toggleWakeLock() {
     if ('wakeLock' in navigator) {
         try { wakeLock ? (await wakeLock.release(), wakeLock=null) : (wakeLock=await navigator.wakeLock.request('screen')); } catch(e){}
@@ -1347,7 +1368,7 @@ async function toggleWakeLock() {
 function flashTitle(msg, isUrgent) {
     if(!msg) { 
         if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V25.6 PRO (ADX FILTER + GUIDE)"; 
+        document.title = "ZAVANA V25.10 PRO (CLEAN TRADING)"; 
         return; 
     }
     if(titleInterval) clearInterval(titleInterval);
