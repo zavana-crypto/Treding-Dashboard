@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ZAVANA V25.11 PRO (EVENT-BASED SYNC)</title>
+<title>ZAVANA V25.12 PRO (STABLE RELEASE)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0b0e11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 <!-- EmailJS SDK -->
@@ -29,10 +32,24 @@
   }
    
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-  body { background:var(--bg-base); color:var(--text-primary); font-family:'IBM Plex Sans', sans-serif; margin:0; overflow-x: hidden; overflow-y: auto; height: 100vh; display: flex; flex-direction: column; font-size: 14px; }
+  
+  /* DESKTOP PACKAGING: App-like body */
+  body { 
+      background:var(--bg-base); 
+      color:var(--text-primary); 
+      font-family:'IBM Plex Sans', sans-serif; 
+      margin:0; 
+      overflow: hidden; /* Prevent full page scroll */
+      height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      font-size: 14px;
+      user-select: none; /* UX: Prevent text selection like an app */
+      -webkit-font-smoothing: antialiased; /* UX: Crisp fonts */
+  }
    
   /* --- LAYOUT: DESKTOP HEADER --- */
-  .navbar-top { height: 64px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .navbar-top { height: 64px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-shrink: 0; }
   .brand { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px; }
   .brand span { color: var(--text-primary); font-size: 13px; background: var(--bg-hover); padding: 3px 8px; border-radius: 4px; }
    
@@ -50,8 +67,15 @@
   .mobile-nav-item.active { color: var(--text-primary); }
   .mobile-nav-item.active svg { fill: var(--accent); }
 
-  /* --- MAIN CONTENT (FULL SCREEN) --- */
-  .main-content { flex: 1; padding: 25px 30px; margin: 0; width: 100%; max-width: 100%; overflow-y: auto; padding-bottom: 80px; }
+  /* --- MAIN CONTENT (SCROLLABLE AREA) --- */
+  .main-content { flex: 1; padding: 25px 30px; margin: 0; width: 100%; max-width: 100%; overflow-y: auto; padding-bottom: 80px; scroll-behavior: smooth; }
+  
+  /* UX: Custom Scrollbar for Desktop */
+  .main-content::-webkit-scrollbar { width: 8px; }
+  .main-content::-webkit-scrollbar-track { background: var(--bg-base); }
+  .main-content::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 4px; }
+  .main-content::-webkit-scrollbar-thumb:hover { background: #474d57; }
+
   .page { display: none; animation: fadeIn 0.2s ease; }
   .page.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -108,7 +132,7 @@
 
   .card-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--bg-base); }
   .coin-meta { display: flex; align-items: center; gap: 12px; }
-  .coin-icon { width: 36px; height: 36px; border-radius: 50%; }
+  .coin-icon { width: 36px; height: 36px; border-radius: 50%; pointer-events: none; }
   .coin-title { font-size: 18px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
   .coin-vol { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
    
@@ -375,6 +399,7 @@ const TIMEFRAMES = [
 
 let CURRENT_TF = TIMEFRAMES[2]; 
 let ws = null;
+let wsRetryTimer = null; // STABILITY: Retry Timer Reference
 const charts = new Map();
 const marketData = new Map();
 const MTF_MATRIX = new Map(); 
@@ -603,7 +628,9 @@ async function changeTimeframe(tf) {
     sLabel.textContent = `MODE: ${tf.type} (${tf.label})`;
     sLabel.style.color = tf.type==='HYPER' ? 'var(--binance-red)' : 'var(--text-primary)';
     
-    if(ws) ws.close();
+    // Clear old WS
+    if(ws) { ws.close(); ws = null; }
+    if(wsRetryTimer) { clearTimeout(wsRetryTimer); wsRetryTimer = null; }
     
     for (const sym of COINS) {
         await new Promise(r => setTimeout(r, 1000)); 
@@ -619,8 +646,18 @@ async function changeTimeframe(tf) {
         }
     }
     
+    connectWebSocket(tf);
+}
+
+// STABILITY: Auto-Reconnecting WebSocket
+function connectWebSocket(tf) {
+    if (ws) { ws.close(); }
+    
     const streams = COINS.map(c => `${c.toLowerCase()}@kline_${tf.ws}`).join('/');
     ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+    
+    ws.onopen = () => { console.log('WS Connected'); };
+    
     ws.onmessage = (e) => {
         try {
             const msg = JSON.parse(e.data);
@@ -628,6 +665,17 @@ async function changeTimeframe(tf) {
             const c = { time: k.t/1000, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v };
             handleStream(msg.data.s, c);
         } catch(err) {}
+    };
+    
+    ws.onclose = () => {
+        console.warn('WS Closed. Reconnecting...');
+        ws = null;
+        wsRetryTimer = setTimeout(() => connectWebSocket(tf), 3000); // Retry in 3s
+    };
+    
+    ws.onerror = (e) => {
+        console.error('WS Error', e);
+        ws.close(); // Force close to trigger onclose
     };
 }
 
@@ -1368,7 +1416,7 @@ async function toggleWakeLock() {
 function flashTitle(msg, isUrgent) {
     if(!msg) { 
         if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V25.10 PRO (CLEAN TRADING)"; 
+        document.title = "ZAVANA V25.12 PRO (STABLE RELEASE)"; 
         return; 
     }
     if(titleInterval) clearInterval(titleInterval);
