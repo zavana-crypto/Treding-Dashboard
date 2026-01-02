@@ -165,7 +165,9 @@
 
   /* Matrix Bar */
   .matrix-strip { display: flex; gap: 3px; padding: 6px 20px; background: var(--bg-base); }
-  .m-dot { flex: 1; height: 5px; border-radius: 2px; background: var(--bg-hover); transition: 0.3s; }
+  
+  /* MODIFIKASI: Ditambahkan cursor pointer agar user tahu bisa diklik */
+  .m-dot { flex: 1; height: 5px; border-radius: 2px; background: var(--bg-hover); transition: 0.3s; cursor: pointer; }
    
   /* UPDATED: Matrix Dot States */
   .m-dot.bull { background: var(--binance-green); box-shadow: 0 0 5px var(--binance-green); }
@@ -560,6 +562,15 @@ window.showPage = function(pageId, el) {
     if(pageId === 'screener') updateScreenerTable();
 }
 
+// NEW: Helper to quick switch global timeframe from Matrix click
+window.quickSwitchTF = function(label) {
+    const tf = TIMEFRAMES.find(t => t.label === label);
+    if(tf) {
+        changeTimeframe(tf);
+        showToast(`Timeframe switched to ${tf.label}`);
+    }
+}
+
 function renderToolbar() {
     const bar = document.getElementById('tfToolbar');
     bar.innerHTML = '';
@@ -586,6 +597,8 @@ function renderGrid() {
         const card = document.createElement('div');
         card.className = 'card';
         card.id = `card-${s}`;
+        
+        // MODIFIED: Matrix strip now includes onclick event calling quickSwitchTF
         card.innerHTML = `
             <div class="sniper-tag" id="tag-${s}">INIT...</div>
             <div class="card-header">
@@ -606,7 +619,7 @@ function renderGrid() {
             </div>
             
             <div class="matrix-strip">
-                ${TIMEFRAMES.map(t => `<div id="mtx-${s}-${t.label}" class="m-dot" title="${t.label}"></div>`).join('')}
+                ${TIMEFRAMES.map(t => `<div id="mtx-${s}-${t.label}" class="m-dot" title="Switch to ${t.label}" onclick="quickSwitchTF('${t.label}')"></div>`).join('')}
             </div>
 
             <div class="chart-container">
@@ -719,7 +732,7 @@ async function changeTimeframe(tf) {
     sLabel.style.color = tf.type==='HYPER' ? 'var(--binance-red)' : 'var(--text-primary)';
     
     // Clear old WS
-    if(ws) { ws.close(); ws = null; }
+    if(ws) { try{ws.close();}catch(e){} ws = null; }
     if(wsRetryTimer) { clearTimeout(wsRetryTimer); wsRetryTimer = null; }
     
     for (const sym of COINS) {
@@ -739,16 +752,20 @@ async function changeTimeframe(tf) {
     connectWebSocket(tf);
 }
 
-// STABILITY: Auto-Reconnecting WebSocket
+// STABILITY: Auto-Reconnecting WebSocket (ROBUST FIX V25.19)
 function connectWebSocket(tf) {
-    if (ws) { ws.close(); }
+    // 1. Cleanup old if any (Double Check)
+    if (ws) { try{ ws.close(); }catch(e){} ws = null; }
     
     const streams = COINS.map(c => `${c.toLowerCase()}@kline_${tf.ws}`).join('/');
-    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
     
-    ws.onopen = () => { console.log('WS Connected'); lastSocketTime = Date.now(); };
+    // 2. Use local variable to prevent race condition during assignment
+    const client = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+    ws = client; // Assign to global
     
-    ws.onmessage = (e) => {
+    client.onopen = () => { console.log('WS Connected'); lastSocketTime = Date.now(); };
+    
+    client.onmessage = (e) => {
         lastSocketTime = Date.now(); // Update Heartbeat
         try {
             const msg = JSON.parse(e.data);
@@ -758,15 +775,21 @@ function connectWebSocket(tf) {
         } catch(err) {}
     };
     
-    ws.onclose = () => {
+    client.onclose = () => {
         console.warn('WS Closed. Reconnecting...');
-        ws = null;
-        wsRetryTimer = setTimeout(() => connectWebSocket(tf), 3000); // Retry in 3s
+        // 3. Safety Check: Only retry if this client is still the active one
+        if (ws === client) {
+            ws = null;
+            wsRetryTimer = setTimeout(() => connectWebSocket(tf), 3000); // Retry in 3s
+        }
     };
     
-    ws.onerror = (e) => {
+    client.onerror = (e) => {
         console.error('WS Error', e);
-        ws.close(); 
+        // 4. Safety Check: Prevent "Cannot read properties of null"
+        if (ws === client) {
+            try { client.close(); } catch(e) {}
+        }
     };
 }
 
