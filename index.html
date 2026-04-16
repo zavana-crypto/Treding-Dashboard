@@ -38,7 +38,8 @@
   body { 
       background:var(--bg-base); color:var(--text-primary); 
       font-family:'IBM Plex Sans', sans-serif; margin:0; 
-      overflow: hidden; height: 100vh; display: flex; 
+      /* Peningkatan Tinggi Layar Presisi untuk iPhone Chrome/Safari */
+      overflow: hidden; height: 100vh; height: 100dvh; display: flex; 
       flex-direction: column; font-size: 14px; user-select: none; 
       -webkit-font-smoothing: antialiased; 
   }
@@ -76,9 +77,11 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
   .toolbar-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; align-items: center; justify-content: space-between; }
-  .toolbar-group { display: flex; gap: 8px; background: var(--bg-card); padding: 5px; border-radius: 6px; }
+  /* Baris Timeframe dapat di-swipe mulus di HP */
+  .toolbar-group { display: flex; gap: 8px; background: var(--bg-card); padding: 5px; border-radius: 6px; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .toolbar-group::-webkit-scrollbar { display: none; }
    
-  .tf-btn { background: transparent; color: var(--text-secondary); border: none; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 14px; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; transition: 0.2s; }
+  .tf-btn { background: transparent; color: var(--text-secondary); border: none; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 14px; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; transition: 0.2s; white-space: nowrap; }
   .tf-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
   .tf-btn.active { background: var(--bg-hover); color: var(--accent); font-weight: 700; box-shadow: 0 0 5px rgba(252, 213, 53, 0.2); }
 
@@ -88,7 +91,7 @@
 
   .strategy-badge { font-size: 13px; font-weight: 700; color: var(--text-secondary); font-family: 'JetBrains Mono'; background: var(--bg-card); padding: 8px 14px; border-radius: 4px; border: 1px solid var(--border); box-shadow: 0 0 8px rgba(0, 229, 255, 0.1); }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
    
   .card { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid transparent; position: relative; will-change: transform; }
   .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); border-color: var(--border); }
@@ -192,13 +195,36 @@
   .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; margin-bottom: 10px; font-size: 14px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center; font-weight: 500; }
   .toast.show { opacity: 1; }
 
+  /* =======================================================
+     OPTIMASI PRESISI KHUSUS IPHONE / MOBILE CHROME
+     ======================================================= */
   @media (max-width: 768px) {
       .navbar-top { display: none; }
-      .ai-report-box { grid-template-columns: 1fr; gap: 20px; }
-      .navbar-bottom { display: flex; }
-      .main-content { padding: 15px 10px; }
-      .grid { grid-template-columns: 1fr; } 
-      .app-footer { padding-bottom: 70px; border-top: none; flex-direction: column; gap: 8px; }
+      .ai-report-box { grid-template-columns: 1fr; gap: 20px; padding: 15px; }
+      
+      /* Integrasi Safe Area untuk iPhone */
+      .navbar-bottom { display: flex; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
+      
+      .main-content { padding: 10px 8px; }
+      .grid { grid-template-columns: 1fr; gap: 15px; } 
+      
+      /* Penyesuaian Ruang Bingkai agar tidak sesak di layar HP */
+      .card-header, .data-row, .macro-box, .market-note-box, .card-footer { padding: 12px 14px; }
+      .matrix-strip { padding: 6px 14px; }
+      
+      /* Penyesuaian Ketinggian Grafik Utama */
+      .chart-container { height: 210px; }
+      
+      /* Skala Teks Presisi */
+      .coin-title { font-size: 16px; }
+      .price-main { font-size: 18px; }
+      .d-label { font-size: 10px; }
+      .d-val { font-size: 13px; }
+      .macro-price { font-size: 13px; }
+      .tf-btn { padding: 8px 12px; font-size: 12px; }
+      .btn-trade { padding: 10px 0; font-size: 13px; }
+      
+      .app-footer { padding-bottom: calc(70px + env(safe-area-inset-bottom)); border-top: none; flex-direction: column; gap: 8px; text-align: center; }
   }
 </style>
 </head>
@@ -520,8 +546,8 @@ function renderGrid() {
             </div>
 
             <div class="card-footer">
-                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade buy" id="btn-buy-${s}">BUY <span id="score-buy-${s}" style="background:rgba(0,0,0,0.2); padding:2px 4px; border-radius:2px; margin-left:4px; font-size:12px; transition:0.3s;">0.0</span></a>
-                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade sell" id="btn-sell-${s}">SELL <span id="score-sell-${s}" style="background:rgba(0,0,0,0.2); padding:2px 4px; border-radius:2px; margin-left:4px; font-size:12px; transition:0.3s;">0.0</span></a>
+                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade buy" id="btn-buy-${s}">BUY <span id="score-buy-${s}" style="margin-left:4px; font-size:12px; transition:0.3s; font-family:'JetBrains Mono', monospace;">0.0</span></a>
+                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade sell" id="btn-sell-${s}">SELL <span id="score-sell-${s}" style="margin-left:4px; font-size:12px; transition:0.3s; font-family:'JetBrains Mono', monospace;">0.0</span></a>
             </div>
         `;
         grid.appendChild(card);
@@ -1175,21 +1201,25 @@ function updateCardUI(sym, res, tf) {
     if (scoreBuyEl) {
         scoreBuyEl.textContent = res.bScore ? res.bScore.toFixed(1) : '0.0';
         if (res.bScore >= profile.minScore) {
-            scoreBuyEl.style.color = '#000';
-            scoreBuyEl.style.background = '#fff';
+            scoreBuyEl.style.color = '#fff';
+            scoreBuyEl.style.fontWeight = '900';
+            scoreBuyEl.style.background = 'transparent';
         } else {
-            scoreBuyEl.style.color = 'inherit';
-            scoreBuyEl.style.background = 'rgba(0,0,0,0.2)';
+            scoreBuyEl.style.color = 'rgba(255,255,255,0.5)';
+            scoreBuyEl.style.fontWeight = 'normal';
+            scoreBuyEl.style.background = 'transparent';
         }
     }
     if (scoreSellEl) {
         scoreSellEl.textContent = res.sScore ? res.sScore.toFixed(1) : '0.0';
         if (res.sScore >= profile.minScore) {
-            scoreSellEl.style.color = '#000';
-            scoreSellEl.style.background = '#fff';
+            scoreSellEl.style.color = '#fff';
+            scoreSellEl.style.fontWeight = '900';
+            scoreSellEl.style.background = 'transparent';
         } else {
-            scoreSellEl.style.color = 'inherit';
-            scoreSellEl.style.background = 'rgba(0,0,0,0.2)';
+            scoreSellEl.style.color = 'rgba(255,255,255,0.5)';
+            scoreSellEl.style.fontWeight = 'normal';
+            scoreSellEl.style.background = 'transparent';
         }
     }
 }
