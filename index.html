@@ -1,60 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8" />
-<title>ZAVANA V25.21 PRO (OPTIMIZED)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>ZAVANA V25.90 QUANTUM AI TIMEFRAME SYNC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0b0e11">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<!-- Lightweight Charts for Main App -->
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<!-- Lightweight Charts CDN -->
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
-<!-- Chart.js for Docs Visualization -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- EmailJS SDK -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <style>
   :root{ 
-      /* BINANCE PALETTE */
       --bg-base: #0b0e11; 
       --bg-card: #1e2329; 
       --bg-hover: #2b3139;
       --text-primary: #eaecef; 
       --text-secondary: #848e9c; 
-      --accent: #FCD535; /* Binance Yellow */
+      --accent: #FCD535; 
       --accent-hover: #f0b90b;
       --binance-green: #0ecb81;
       --binance-red: #f6465d;
-      --gold: #FFD700; /* Gold Color */
+      --gold: #FFD700; 
       --border: #2b3139; 
       --card-radius: 6px; 
       --danger: #cf304a;
       --warning: #ffaa00;
+      --quantum-cyan: #00e5ff; 
+      --whale-blue: #2962ff;
   }
    
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
   
-  /* DESKTOP PACKAGING: App-like body */
   body { 
-      background:var(--bg-base); 
-      color:var(--text-primary); 
-      font-family:'IBM Plex Sans', sans-serif; 
-      margin:0; 
-      overflow: hidden; /* Prevent full page scroll */
-      height: 100vh; 
-      display: flex; 
-      flex-direction: column; 
-      font-size: 14px;
-      user-select: none; /* UX: Prevent text selection like an app */
-      -webkit-font-smoothing: antialiased; /* UX: Crisp fonts */
+      background:var(--bg-base); color:var(--text-primary); 
+      font-family:'IBM Plex Sans', sans-serif; margin:0; 
+      overflow: hidden; height: 100vh; display: flex; 
+      flex-direction: column; font-size: 14px; user-select: none; 
+      -webkit-font-smoothing: antialiased; 
   }
    
-  /* --- LAYOUT: DESKTOP HEADER --- */
   .navbar-top { height: 64px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-shrink: 0; }
   .brand { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px; }
-  .brand span { color: var(--text-primary); font-size: 13px; background: var(--bg-hover); padding: 3px 8px; border-radius: 4px; }
+  .brand span { color: var(--quantum-cyan); font-size: 12px; background: rgba(0, 229, 255, 0.1); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(0, 229, 255, 0.3); }
    
   .nav-links { display: flex; gap: 25px; height: 100%; }
   .nav-link { display: flex; align-items: center; color: var(--text-secondary); font-size: 15px; font-weight: 600; cursor: pointer; height: 100%; border-bottom: 3px solid transparent; transition: 0.2s; padding: 0 5px; }
@@ -63,99 +54,56 @@
    
   .nav-actions { display: flex; gap: 15px; align-items: center; }
 
-  /* --- FOOTER (HEALTH & COPYRIGHT) --- */
-  .app-footer {
-      background: var(--bg-base);
-      border-top: 1px solid var(--border);
-      padding: 8px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-      z-index: 90;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      color: #474d57;
-      letter-spacing: 0.5px;
-  }
+  .app-footer { background: var(--bg-base); border-top: 1px solid var(--border); padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 90; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #474d57; letter-spacing: 0.5px; }
   .health-indicator { display: flex; align-items: center; gap: 6px; }
   .health-dot { width: 6px; height: 6px; border-radius: 50%; background: #474d57; }
-  .health-dot.ok { background: var(--binance-green); box-shadow: 0 0 4px var(--binance-green); }
-  .health-dot.bad { background: var(--danger); box-shadow: 0 0 4px var(--danger); animation: blink-fast 0.5s infinite; }
+  .health-dot.ok { background: var(--binance-green); box-shadow: 0 0 8px var(--binance-green); animation: pulse-green 2s infinite; }
+  .health-dot.bad { background: var(--danger); box-shadow: 0 0 8px var(--danger); animation: blink-fast 0.5s infinite; }
 
-  /* --- LAYOUT: MOBILE BOTTOM NAV --- */
   .navbar-bottom { display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: var(--bg-card); border-top: 1px solid var(--border); z-index: 100; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
   .mobile-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 500; width: 100%; height: 100%; }
   .mobile-nav-item svg { width: 20px; height: 20px; fill: currentColor; }
   .mobile-nav-item.active { color: var(--text-primary); }
   .mobile-nav-item.active svg { fill: var(--accent); }
 
-  /* --- MAIN CONTENT (SCROLLABLE AREA) --- */
-  .main-content { 
-    flex: 1; 
-    padding: 25px 30px; 
-    margin: 0; 
-    width: 100%; 
-    max-width: 100%; 
-    overflow-y: auto; 
-    padding-bottom: 20px; 
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch; /* FIX: iOS Smooth Scroll */
-  }
-  
-  /* UX: Custom Scrollbar for Desktop */
+  .main-content { flex: 1; padding: 25px 30px; margin: 0; width: 100%; max-width: 100%; overflow-y: auto; padding-bottom: 20px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
   .main-content::-webkit-scrollbar { width: 8px; }
   .main-content::-webkit-scrollbar-track { background: var(--bg-base); }
   .main-content::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 4px; }
-  .main-content::-webkit-scrollbar-thumb:hover { background: #474d57; }
 
   .page { display: none; animation: fadeIn 0.2s ease; }
   .page.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* --- CONTROLS & TOOLBAR --- */
   .toolbar-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; align-items: center; justify-content: space-between; }
   .toolbar-group { display: flex; gap: 8px; background: var(--bg-card); padding: 5px; border-radius: 6px; }
    
   .tf-btn { background: transparent; color: var(--text-secondary); border: none; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 14px; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; transition: 0.2s; }
   .tf-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
-  .tf-btn.active { background: var(--bg-hover); color: var(--accent); font-weight: 700; }
+  .tf-btn.active { background: var(--bg-hover); color: var(--accent); font-weight: 700; box-shadow: 0 0 5px rgba(252, 213, 53, 0.2); }
 
   .action-btn { background: var(--bg-hover); color: var(--text-primary); border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
   .action-btn:hover { background: #3a4049; }
   .wakelock-btn.active { color: var(--accent); background: rgba(252, 213, 53, 0.15); border: 1px solid rgba(252, 213, 53, 0.3); }
-  .audio-btn.active { color: var(--binance-green); border: 1px solid var(--binance-green); }
-  .audio-btn.needed { animation: blink-slow 2s infinite; color: var(--warning); border: 1px solid var(--warning); }
 
-  .strategy-badge { font-size: 13px; font-weight: 700; color: var(--text-secondary); font-family: 'JetBrains Mono'; background: var(--bg-card); padding: 8px 14px; border-radius: 4px; border: 1px solid var(--border); }
+  .strategy-badge { font-size: 13px; font-weight: 700; color: var(--text-secondary); font-family: 'JetBrains Mono'; background: var(--bg-card); padding: 8px 14px; border-radius: 4px; border: 1px solid var(--border); box-shadow: 0 0 8px rgba(0, 229, 255, 0.1); }
 
-  /* --- GRID & CARDS (BIGGER) --- */
-  .grid { 
-      display: grid; 
-      /* Min-width increased to 360px to force larger cards on desktop */
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); 
-      gap: 20px; 
-  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
    
   .card { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid transparent; position: relative; }
   .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); border-color: var(--border); }
    
-  .card.sniper-mode { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(252, 213, 53, 0.2); }
+  .card.sniper-mode { border: 1px solid var(--quantum-cyan); box-shadow: 0 0 20px rgba(0, 229, 255, 0.15); }
+  .card.whale-mode { border: 1px solid var(--whale-blue); box-shadow: 0 0 20px rgba(41, 98, 255, 0.3); }
   .card.fomo-mode { border: 1px solid var(--danger); }
-  .card.fomo-mode .card-header { opacity: 0.7; }
    
-  /* TAGS */
   .sniper-tag { position: absolute; top: 0; right: 0; font-size: 10px; font-weight: 800; padding: 4px 10px; border-bottom-left-radius: 8px; z-index: 10; display: block; letter-spacing: 0.5px; }
-   
-  .tag-wait-bull { background: #2b3139; color: var(--text-secondary); } 
-  .tag-wait-bear { background: #2b3139; color: var(--text-secondary); } 
-  .tag-intent-buy { background: var(--accent); color: #000; animation: blink-slow 2s infinite; }
-  .tag-intent-sell { background: #ffaa00; color: #000; animation: blink-slow 2s infinite; }
+  .tag-wait { background: #2b3139; color: var(--text-secondary); } 
+  .tag-intent { background: var(--accent); color: #000; animation: blink-slow 2s infinite; }
   .tag-buy { background: var(--binance-green); color: #fff; animation: pulse-green 1s infinite; }
   .tag-sell { background: var(--binance-red); color: #fff; animation: pulse-red 1s infinite; }
-  .tag-fomo { background: var(--danger); color: #fff; }
-  .tag-news { background: #702525; color: #fff; animation: blink-fast 0.5s infinite; } 
-  .tag-cooldown { background: #5633a1; color: #fff; } 
+  .tag-whale { background: var(--whale-blue); color: #fff; animation: blink-fast 1s infinite; }
+  .tag-locked { background: #000; color: var(--quantum-cyan); border-left: 2px solid var(--quantum-cyan); font-family: 'JetBrains Mono'; }
 
   @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(14, 203, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0); } }
   @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(246, 70, 93, 0); } 100% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0); } }
@@ -171,103 +119,69 @@
   .price-change { font-size: 13px; font-weight: 500; margin-top: 2px;}
   .c-up { color: var(--binance-green); } .c-down { color: var(--binance-red); }
 
-  /* Matrix Bar */
   .matrix-strip { display: flex; gap: 3px; padding: 6px 20px; background: var(--bg-base); }
   .m-dot { flex: 1; height: 5px; border-radius: 2px; background: var(--bg-hover); transition: 0.3s; cursor: pointer; }
   .m-dot.bull { background: var(--binance-green); box-shadow: 0 0 5px var(--binance-green); }
   .m-dot.bear { background: var(--binance-red); box-shadow: 0 0 5px var(--binance-red); }
   .m-dot.active { height: 7px; margin-top: -1px; border: 1px solid #fff; }
    
-  /* Chart Area (TALLER) */
-  .chart-container { height: 240px; width: 100%; position: relative; background: var(--bg-base); border-bottom: 1px solid var(--bg-base); }
+  .chart-container { height: 260px; width: 100%; position: relative; background: var(--bg-base); border-bottom: 1px solid var(--bg-base); }
   .visual-arrow { position: absolute; top: 15px; right: 15px; font-size: 24px; z-index: 5; opacity: 0; pointer-events: none; font-weight: 900; }
   .visual-arrow.buy { color: var(--binance-green); opacity: 1; animation: bounceUp 1s infinite; }
   .visual-arrow.sell { color: var(--binance-red); opacity: 1; animation: bounceDown 1s infinite; }
-  .visual-arrow.prep { color: var(--accent); opacity: 1; animation: blink-arrow 0.5s infinite; text-shadow: 0 0 10px rgba(252, 213, 53, 0.5); }
-  .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; pointer-events: none; z-index: 5; font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(2px); }
+  .visual-arrow.prep { color: var(--quantum-cyan); opacity: 1; animation: blink-arrow 0.5s infinite; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+  .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; pointer-events: none; z-index: 5; font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(2px); border-left: 2px solid var(--quantum-cyan); }
   
   @keyframes bounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
   @keyframes blink-arrow { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
 
-  /* Data Row */
-  .data-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 14px 20px; gap: 10px; font-family: 'JetBrains Mono'; }
+  .data-row { display: grid; grid-template-columns: 1fr 1fr; padding: 14px 20px; gap: 15px; font-family: 'JetBrains Mono'; border-bottom: 1px solid var(--bg-base); }
   .data-item { display: flex; flex-direction: column; gap: 4px; }
   .d-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
-  .d-val { font-size: 14px; font-weight: 600; color: var(--text-primary); transition: color 0.2s; }
-  .market-note-box { padding: 12px 20px; background: rgba(43, 49, 57, 0.3); border-top: 1px solid var(--bg-base); font-size: 12px; color: var(--text-primary); font-family: 'IBM Plex Sans', sans-serif; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; }
-  .market-note-icon { font-style: normal; font-size: 14px; opacity: 0.8; margin-top: 1px; }
+  .d-val { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  
+  /* MACRO PROJECTION BOX */
+  .macro-box { padding: 12px 20px; background: rgba(41, 98, 255, 0.05); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-base); }
+  .macro-col { display: flex; flex-direction: column; }
+  .macro-title { font-size: 10px; font-weight: 800; color: var(--whale-blue); letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; }
+  .macro-price { font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; }
+  .macro-price.top { color: var(--binance-green); text-shadow: 0 0 8px rgba(14, 203, 129, 0.2); }
+  .macro-price.bot { color: var(--binance-red); text-shadow: 0 0 8px rgba(246, 70, 93, 0.2); }
 
-  /* Alarm Animations */
+  /* DYNAMIC AI NOTE BOX */
+  .market-note-box { padding: 14px 20px; background: rgba(43, 49, 57, 0.3); font-size: 12px; color: var(--text-primary); font-family: 'IBM Plex Sans', sans-serif; line-height: 1.6; display: flex; align-items: flex-start; gap: 10px; border-left: 3px solid var(--quantum-cyan); transition: all 0.3s ease; }
+  .market-note-box span { font-weight: 500; }
+  .market-note-box strong { color: var(--quantum-cyan); font-weight: 700; }
+  .market-note-icon { font-style: normal; font-size: 16px; margin-top: 2px; }
+
   @keyframes blink-slow { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-  @keyframes blink-fast { 0% { opacity: 1; transform: scale(1); } 25% { opacity: 0.5; transform: scale(1.1); } 50% { opacity: 1; transform: scale(1.2); filter: brightness(1.5); } 100% { opacity: 1; transform: scale(1); } }
-   
-  .alarm-icon { margin-left: 8px; font-size: 16px; display: none; cursor:help; }
-  .alarm-active-slow { display: inline-block; color: var(--binance-green); animation: blink-slow 2s infinite ease-in-out; }
-  .alarm-active-fast { display: inline-block; color: var(--accent); text-shadow: 0 0 12px var(--accent); animation: blink-fast 0.25s infinite; }
-  .alarm-sell-slow { display: inline-block; color: var(--binance-red); animation: blink-slow 2s infinite ease-in-out; }
-  .alarm-sell-fast { display: inline-block; color: #ff0000; text-shadow: 0 0 12px #ff0000; animation: blink-fast 0.25s infinite; }
-  .alarm-intent { display: inline-block; color: var(--accent); animation: blink-slow 1s infinite; }
+  @keyframes blink-fast { 0% { opacity: 1; transform: scale(1); } 25% { opacity: 0.5; transform: scale(1.1); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 
-  /* Action Footer */
   .card-footer { padding: 16px 20px; display: flex; gap: 15px; background: var(--bg-card); }
   .btn-trade { flex: 1; border: none; border-radius: 4px; padding: 12px 0; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; color: white; transition: 0.2s; opacity: 0.3; letter-spacing: 0.5px; }
   .btn-trade.buy { background: var(--binance-green); }
   .btn-trade.sell { background: var(--binance-red); }
   .btn-trade.active { opacity: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-  .btn-trade:hover { opacity: 0.9; }
 
-  /* Loading Overlay */
   #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-  .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+  .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--quantum-cyan); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-  /* MANIFESTO & DOCS STYLES */
-  .manifesto-box { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; color: var(--text-secondary); }
-  .man-col h4 { color: var(--accent); margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--bg-hover); padding-bottom: 10px; }
-  .man-item { margin-bottom: 12px; font-size: 13px; line-height: 1.5; }
-  .man-item b { color: var(--text-primary); }
-  .man-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px; }
-  .man-rule { margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed var(--bg-hover); color:var(--text-primary); font-weight:600; font-size:12px; }
+  /* DYNAMIC AI REPORT BOX STYLES */
+  .ai-report-box { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; color: var(--text-primary); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); position: relative; overflow: hidden; }
+  .ai-report-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--binance-green), var(--quantum-cyan), var(--whale-blue)); animation: scanline 3s linear infinite; }
+  @keyframes scanline { 0% { background-position: 0% 0; } 100% { background-position: 100% 0; } }
+  
+  .ai-col h4 { color: var(--quantum-cyan); margin: 0 0 15px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--bg-hover); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+  .ai-item { margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); transition: all 0.3s; }
+  .ai-item b { color: var(--text-primary); }
+  .ai-highlight-green { color: var(--binance-green); font-weight: bold; }
+  .ai-highlight-red { color: var(--binance-red); font-weight: bold; }
+  .ai-highlight-cyan { color: var(--quantum-cyan); font-weight: bold; }
+  .ai-highlight-whale { background: var(--whale-blue); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
 
-  /* --- DOCS SECTION CUSTOM CSS --- */
-  .docs-section { margin-top: 40px; border-top: 2px dashed var(--border); padding-top: 30px; }
-  .docs-header { text-align: center; margin-bottom: 30px; }
-  .docs-header h2 { color: var(--text-primary); font-size: 24px; margin: 0; }
-  .docs-header p { color: var(--text-secondary); font-size: 14px; margin-top: 8px; }
-  
-  .docs-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-  .docs-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; transition: 0.3s; }
-  .docs-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .docs-icon { font-size: 32px; margin-bottom: 15px; display: block; }
-  
-  .docs-logic-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 25px; margin-bottom: 30px; }
-  .logic-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
-  .logic-btn { background: var(--bg-hover); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; }
-  .logic-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
-  .chart-canvas-container { position: relative; height: 300px; width: 100%; max-width: 800px; margin: 0 auto; }
-  
-  /* SIMULATOR STYLES */
-  .sim-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; align-items: start; }
-  .sim-controls { background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
-  
-  /* Custom Slider */
-  input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: -8px; }
-  input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--bg-hover); border-radius: 2px; }
-  
-  .sim-score-display { text-align: center; margin-top: 20px; }
-  .sim-score-val { font-size: 32px; font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent); display:block; }
-  
-  /* Stepper */
-  .stepper-container { position: relative; padding-left: 20px; border-left: 2px solid var(--bg-hover); margin-left: 10px; }
-  .step-item { margin-bottom: 30px; position: relative; }
-  .step-dot { position: absolute; left: -29px; top: 0; width: 16px; height: 16px; background: var(--bg-base); border: 2px solid var(--accent); border-radius: 50%; }
-  .step-content h4 { color: var(--text-primary); margin: 0 0 5px 0; font-size: 14px; }
-  .step-content p { color: var(--text-secondary); margin: 0; font-size: 13px; }
-
-  /* --- TABLE & SETTINGS --- */
-  .table-wrapper { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .table-wrapper { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 20px; }
   table { width: 100%; border-collapse: collapse; min-width: 800px; }
   th { text-align: left; padding: 18px 24px; color: var(--text-secondary); font-size: 13px; font-weight: 600; background: var(--bg-base); border-bottom: 2px solid var(--border); }
   td { padding: 18px 24px; border-top: 1px solid var(--border); color: var(--text-primary); font-size: 14px; }
@@ -275,240 +189,84 @@
    
   .settings-box { max-width: 600px; margin: 40px auto; background: var(--bg-card); padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
   input, textarea, select { width: 100%; background: var(--bg-base); border: 1px solid #474d57; color: white; padding: 12px; border-radius: 4px; font-family: inherit; margin-bottom: 20px; font-size: 14px; }
-  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
-  label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; display: block; font-weight: 500; }
-  .btn-primary { width: 100%; background: var(--accent); color: #000; font-weight: 700; padding: 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
-  .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .btn-primary { width: 100%; background: var(--quantum-cyan); color: #000; font-weight: 700; padding: 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
 
-  /* Toast Notification */
   #toast-container { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 1000; pointer-events: none; }
   .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; margin-bottom: 10px; font-size: 14px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center; font-weight: 500; }
   .toast.show { opacity: 1; }
 
-  /* --- RESPONSIVE MEDIA QUERIES --- */
   @media (max-width: 768px) {
       .navbar-top { display: none; }
-      .manifesto-box, .docs-grid-3, .sim-container { grid-template-columns: 1fr; gap: 20px; }
+      .ai-report-box { grid-template-columns: 1fr; gap: 20px; }
       .navbar-bottom { display: flex; }
       .main-content { padding: 15px 10px; }
-      .grid { grid-template-columns: 1fr; } /* 1 Column on Mobile */
-      .card { border-radius: 8px; }
-      .chart-container { height: 220px; } 
-      .coin-title { font-size: 16px; }
-      .price-main { font-size: 18px; }
+      .grid { grid-template-columns: 1fr; } 
       .app-footer { padding-bottom: 70px; border-top: none; flex-direction: column; gap: 8px; }
-      .chart-canvas-container { height: 200px; }
   }
 </style>
 </head>
 <body>
 
-<!-- LOADING OVERLAY -->
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-family:'JetBrains Mono'; color:var(--text-secondary); font-size:14px; font-weight:600;">OPTIMIZING ENGINE...</div>
+    <div style="font-family:'JetBrains Mono'; color:var(--quantum-cyan); font-size:14px; font-weight:600; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);">INISIALISASI AI QUANTUM...</div>
 </div>
 
-<!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
 
-<!-- DESKTOP TOP HEADER -->
 <header class="navbar-top">
-    <div class="brand">ZAVANA<span>PRO V2</span></div>
+    <div class="brand">ZAVANA<span>V25.90 QUANTUM AI</span></div>
     <div class="nav-links">
         <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
-        <div class="nav-link" onclick="showPage('screener', this)">Markets</div>
+        <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
         <div class="nav-link" onclick="showPage('settings', this)">Settings</div>
     </div>
     <div class="nav-actions">
-        <!-- ADDED: Audio Init Button for Stability -->
         <button id="audioInitBtn" class="action-btn audio-btn needed" onclick="initAudioContext()">🔊 INIT AUDIO</button>
         <button id="wakeLockBtn" class="action-btn wakelock-btn" onclick="toggleWakeLock()">⚡ ACTIVE</button>
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
 <main class="main-content">
     
-    <!-- PAGE 1: DASHBOARD -->
     <div id="page-dashboard" class="page active">
         <div class="toolbar-container">
-            <div id="strategyLabel" class="strategy-badge">INIT SYSTEM...</div>
+            <div id="strategyLabel" class="strategy-badge" style="color: var(--quantum-cyan);">MODE: DAY (15m)</div>
             <div class="toolbar-group" id="tfToolbar"></div>
         </div>
 
-        <div class="grid" id="grid">
-            <!-- CARDS INJECTED HERE -->
-        </div>
+        <div class="grid" id="grid"></div>
 
-        <!-- MANIFESTO (AUDITED & REVISED) -->
-        <div class="manifesto-box">
-            <div class="man-col">
-                <h4>1. MEMBACA SIGNAL (SCORING)</h4>
-                <div class="man-item"><span class="man-tag" style="background:#2b3139; color:#fff;">8.0 - 8.3</span> <b>EARLY / FRESH:</b> Awal pergerakan. Resiko paling rendah, potensi profit panjang. Sangat disarankan untuk entry.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">8.4 - 8.7</span> <b>PRIME MOMENTUM:</b> Validasi kuat. Harga sudah bergerak menjauh dari support. Masuk segera, jangan tunda.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--danger); color:#fff;">8.8 - 9.0</span> <b>LATE / CLIMAX:</b> Harga sudah berjalan jauh. Risiko koreksi tinggi. Bukan zona entry ideal. Entry hanya untuk trader berpengalaman dengan risiko kecil, atau tunggu koreksi.</div>
+        <div class="ai-report-box" id="dynamicMarketAnalysis">
+            <div class="ai-col">
+                <h4>🌐 MAKROEKONOMI & SENTIMEN PASAR</h4>
+                <div id="dyn-market-state" class="ai-item">Sistem AI sedang memuat probabilitas tren...</div>
+                <div id="dyn-market-volatility" class="ai-item">...</div>
             </div>
-            <div class="man-col">
-                <h4>2. STRATEGI TIMEFRAME</h4>
-                <div class="man-rule">ATURAN: Gunakan satu timeframe per posisi. Jangan membatalkan sinyal TF utama dengan TF lebih kecil.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--binance-red);">SCALPING (1M/5M)</span> Hit & Run. Ambil profit 0.5% - 1.5%. Fokus kecepatan.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">DAY TRADE (15M/1H)</span> Tahan posisi sampai candle close atau target tercapai.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--binance-green);">SWING (4H/1D)</span> Santai. Abaikan noise. Keluar hanya jika trend berubah.</div>
+            <div class="ai-col">
+                <h4>🏢 RADAR ARUS MODAL (SMART MONEY)</h4>
+                <div id="dyn-whale-state" class="ai-item">Memindai aktivitas volume institusional...</div>
+                <div id="dyn-whale-advice" class="ai-item">...</div>
             </div>
-            <div class="man-col">
-                <h4>3. EXIT & RISK MANAGEMENT</h4>
-                <div class="man-item"><span class="man-tag" style="background:var(--binance-green);">HOLD</span> <b>TAHAN:</b> Trend masih sehat. Jangan terburu-buru TP. Biarkan profit berlari.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--accent); color:#000;">TAKE PARTIAL</span> <b>AMANKAN:</b> Harga kena Resistance/OB. Jual 50% aset, sisanya pasang SL di BEP.</div>
-                <div class="man-item"><span class="man-tag" style="background:var(--danger); color:#fff;">EXIT RISK</span> <b>BAHAYA:</b> Volatilitas ekstrem atau RSI jenuh. Keluar semua posisi (TP ALL) tanpa pengecualian. Sistem akan masuk COOLDOWN otomatis.</div>
+            <div class="ai-col">
+                <h4>🎯 PROYEKSI LOGARITMIK & RISIKO</h4>
+                <div id="dyn-warning-state" class="ai-item">Mengkalkulasi model regresi...</div>
+                <div id="dyn-target-state" class="ai-item">...</div>
             </div>
         </div>
-
-        <!-- NEW: ZAVANA INTERACTIVE DOCS & SIMULATOR -->
-        <div class="docs-section">
-            <div class="docs-header">
-                <h2>ZAVANA INTERACTIVE GUIDE</h2>
-                <p>Panduan visual, simulator, dan logika di balik "Smart Context Engine".</p>
-            </div>
-
-            <!-- 1. PHILOSOPHY GRID -->
-            <div class="docs-grid-3">
-                <div class="docs-card">
-                    <span class="docs-icon">🛡️</span>
-                    <h3 style="color:var(--text-primary); margin:0 0 10px 0;">Trust (Scoring)</h3>
-                    <p style="color:var(--text-secondary); font-size:13px; margin:0;">Transparansi skor 0-10. Anda tahu kapan harus masuk (Prime) dan kapan harus diam (Wait).</p>
-                </div>
-                <div class="docs-card">
-                    <span class="docs-icon">⚡</span>
-                    <h3 style="color:var(--text-primary); margin:0 0 10px 0;">Usability (Matrix)</h3>
-                    <p style="color:var(--text-secondary); font-size:13px; margin:0;">Satu layar, tanpa scroll berlebih. Klik "Matrix Strip" di kartu untuk ganti timeframe global.</p>
-                </div>
-                <div class="docs-card">
-                    <span class="docs-icon">🚀</span>
-                    <h3 style="color:var(--text-primary); margin:0 0 10px 0;">Optimized Core</h3>
-                    <p style="color:var(--text-secondary); font-size:13px; margin:0;">V25.20: Logic loop hanya menghitung candle terakhir saat realtime, menghemat 90% CPU.</p>
-                </div>
-            </div>
-
-            <!-- 2. LOGIC LAB CHART -->
-            <div class="docs-logic-box">
-                <h3 style="color:var(--accent); margin-top:0; text-align:center;">VISUALISASI KONTEKS PASAR</h3>
-                <p style="color:var(--text-secondary); font-size:13px; text-align:center; margin-bottom:20px;">Klik tombol di bawah untuk melihat bagaimana sistem membaca pola market.</p>
-                
-                <div class="logic-controls">
-                    <button class="logic-btn active" onclick="updateLogicChart('range', this)">RANGE (Sideways)</button>
-                    <button class="logic-btn" onclick="updateLogicChart('trend', this)">TREND (Momentum)</button>
-                    <button class="logic-btn" onclick="updateLogicChart('shock', this)">SHOCK (News Risk)</button>
-                </div>
-                
-                <div class="chart-canvas-container">
-                    <canvas id="logicChart"></canvas>
-                </div>
-                <div id="logic-explanation" style="text-align:center; margin-top:15px; color:var(--text-secondary); font-size:13px; font-style:italic;">
-                    Mode Sideways: ADX rendah, sistem mencari pemantulan pendek.
-                </div>
-            </div>
-
-            <!-- 3. SIMULATOR & SOP -->
-            <div class="sim-container">
-                <!-- LEFT: SIMULATOR CONTROLS -->
-                <div>
-                    <h3 style="color:var(--text-primary); margin-top:0;">Simulator Kartu</h3>
-                    <p style="color:var(--text-secondary); font-size:13px; margin-bottom:20px;">Geser slider untuk melihat respon visual kartu terhadap skor sinyal.</p>
-                    
-                    <div class="sim-controls">
-                        <label style="display:block; color:var(--text-secondary); font-size:12px; font-weight:700; margin-bottom:10px;">SIGNAL SCORE (0 - 10)</label>
-                        <input type="range" min="7.0" max="9.5" step="0.1" value="7.5" oninput="updateSimulator(this.value)">
-                        <div class="sim-score-display">
-                            <span class="sim-score-val" id="simScoreVal">7.5</span>
-                            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase;" id="simScoreText">WAITING SETUP</span>
-                        </div>
-                    </div>
-
-                    <!-- SIMULATED CARD DISPLAY -->
-                    <div class="card" id="simCard" style="margin-top:20px; border:2px solid transparent;">
-                        <div class="sniper-tag" id="simTag">WAIT</div>
-                        <div class="card-header">
-                            <div class="coin-meta">
-                                <div style="width:36px; height:36px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; color:black; font-weight:bold;">₿</div>
-                                <div>
-                                    <div class="coin-title">BTC/USDT</div>
-                                    <div class="coin-vol">Vol: SIMULATION</div>
-                                </div>
-                            </div>
-                            <div class="price-meta">
-                                <div class="price-main c-up">98,500.00</div>
-                                <div class="price-change c-up">+1.2%</div>
-                            </div>
-                        </div>
-                        <div class="matrix-strip">
-                            <div class="m-dot active"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div>
-                        </div>
-                        <div style="height:100px; background:var(--bg-base); position:relative; display:flex; align-items:center; justify-content:center;">
-                            <span style="color:var(--bg-hover); font-weight:bold;">CHART VISUAL</span>
-                            <div id="simArrow" style="font-size:24px; position:absolute; top:10px; right:10px; opacity:0.2;">➤</div>
-                            <div id="simMsg" class="visual-msg">WAITING</div>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn-trade buy" id="simBtnBuy" style="opacity:0.3;">BUY</button>
-                            <button class="btn-trade sell" id="simBtnSell" style="opacity:0.3;">SELL</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- RIGHT: SOP STEPPER -->
-                <div>
-                    <h3 style="color:var(--text-primary); margin-top:0;">S.O.P Eksekusi</h3>
-                    <div class="stepper-container">
-                        <div class="step-item">
-                            <div class="step-dot"></div>
-                            <div class="step-content">
-                                <h4>1. Inisialisasi</h4>
-                                <p>Tunggu sistem loading (2-3 detik) sampai indikator footer hijau "System: OK".</p>
-                            </div>
-                        </div>
-                        <div class="step-item">
-                            <div class="step-dot"></div>
-                            <div class="step-content">
-                                <h4>2. Pilih Timeframe (Matrix)</h4>
-                                <p>Klik titik pada bar Matrix di kartu mana saja untuk pindah mode global (Scalping 1m/5m vs Swing 1H/4H).</p>
-                            </div>
-                        </div>
-                        <div class="step-item">
-                            <div class="step-dot"></div>
-                            <div class="step-content">
-                                <h4>3. Cek Traffic Light</h4>
-                                <p><b>GELAP:</b> Wait.<br><b>KUNING:</b> Prepare.<br><b>HIJAU/MERAH + SKOR > 8.0:</b> Eksekusi.</p>
-                            </div>
-                        </div>
-                        <div class="step-item">
-                            <div class="step-dot"></div>
-                            <div class="step-content">
-                                <h4>4. Manajemen Risiko</h4>
-                                <p>Ikuti saran dinamis (HOLD, TAKE PARTIAL, EXIT RISK) yang muncul di kartu.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        <!-- END DOCS SECTION -->
-
     </div>
 
-    <!-- PAGE 2: MARKETS -->
     <div id="page-screener" class="page">
-        <h2 style="font-weight:500; margin-bottom:20px; font-size:24px;">Market Overview</h2>
+        <h2 style="font-weight:500; margin-bottom:20px; font-size:24px;">Market Matrix Overview</h2>
         <div class="table-wrapper" style="overflow-x:auto;">
             <table>
                 <thead>
                     <tr>
                         <th>Pair</th>
                         <th>Price</th>
-                        <th>Context</th>
-                        <th>Signal</th>
-                        <th>Advice</th>
+                        <th>State</th>
+                        <th>Smart Money Flow</th>
+                        <th>Matrix Advice</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -517,115 +275,112 @@
         </div>
     </div>
 
-    <!-- PAGE 3: SETTINGS -->
     <div id="page-settings" class="page">
         <div class="settings-box">
-            <h3 style="margin-top:0; border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:30px; font-size:20px;">Preferences</h3>
+            <h3 style="margin-top:0; border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:30px; font-size:20px;">Quantum Preferences</h3>
             
-            <!-- RISK PROFILE SELECTOR (V25.15) -->
             <label>Risk Profile (Configuration)</label>
             <select id="profileSelect">
-                <option value="CONSERVATIVE">Conservative (Strict ADX & Score)</option>
-                <option value="NORMAL" selected>Normal (Standard Balance)</option>
-                <option value="AGGRESSIVE">Aggressive (High Sensitivity)</option>
+                <option value="CONSERVATIVE">Conservative (Strict Institutional Filters)</option>
+                <option value="NORMAL" selected>Normal (Balanced Algorithm)</option>
+                <option value="AGGRESSIVE">Aggressive (High Frequency Scalping)</option>
             </select>
 
             <label>Watchlist (USDT Pairs, Comma Separated)</label>
             <textarea id="coinInput" rows="4"></textarea>
             
             <button class="btn-primary" onclick="saveSettings()">Save Configuration</button>
-            <div style="text-align:center; margin-top:20px; font-size:12px; color:var(--text-secondary);">
-                User ID: <span id="uidDisplay">Local Session</span>
-            </div>
         </div>
     </div>
 
 </main>
 
-<!-- FOOTER (HEALTH & COPYRIGHT) V25.15 -->
 <footer class="app-footer">
     <div class="health-indicator" id="healthMonitor">
-        <div class="health-dot ok" id="healthDot"></div>
-        <span id="healthText">System: OK</span>
+        <div class="health-dot bad" id="healthDot"></div>
+        <span id="healthText" style="color: var(--danger);">SYNC: Connecting...</span>
     </div>
-    <div>© ZAVANA 2026 <span>•</span> Trading memiliki risiko tinggi.</div>
+    <div>© ZAVANA QUANTUM AI 2026 <span>•</span> Institutional Timeframe Sync.</div>
 </footer>
 
-<!-- MOBILE BOTTOM NAV -->
 <nav class="navbar-bottom">
     <div class="mobile-nav-item active" onclick="showPage('dashboard', this)">
-        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg>
         <span>Home</span>
     </div>
     <div class="mobile-nav-item" onclick="showPage('screener', this)">
-        <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
-        <span>Markets</span>
+        <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"></path></svg>
+        <span>Matrix</span>
     </div>
     <div class="mobile-nav-item" onclick="showPage('settings', this)">
-        <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l2.49-1c-.23-.09-.49 0-.61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l2.49-1c-.23-.09-.49 0-.61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>
         <span>Config</span>
     </div>
 </nav>
 
 <script>
 /* =========================================
-   CORE CONFIG
+   CORE CONFIG & QUANTUM STATE
    ========================================= */
-const DEFAULT_COINS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "XAUTUSDT", "PAXGUSDT"]; 
+const DEFAULT_COINS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "XAUTUSDT", "PAXGUSDT", "ARKMUSDT", "LINKUSDT", "ONDOUSDT", "SUIUSDT"]; 
 let COINS;
 try {
-    COINS = JSON.parse(localStorage.getItem('zavana_coins'));
-    if (!Array.isArray(COINS) || COINS.length === 0) throw new Error("Empty coins");
+    COINS = JSON.parse(localStorage.getItem('zavana_coins_q_whale'));
+    if (!Array.isArray(COINS) || COINS.length === 0) throw new Error("Empty");
 } catch (e) {
     COINS = DEFAULT_COINS;
-    localStorage.setItem('zavana_coins', JSON.stringify(DEFAULT_COINS));
+    localStorage.setItem('zavana_coins_q_whale', JSON.stringify(DEFAULT_COINS));
 }
 COINS = COINS.map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
 
-// PROFILE CONFIG (V25.15)
-let CURRENT_PROFILE_KEY = localStorage.getItem('zavana_risk_profile') || 'NORMAL';
+let CURRENT_PROFILE_KEY = localStorage.getItem('zavana_risk_profile_q') || 'NORMAL';
 const RISK_PROFILES = {
-    'CONSERVATIVE': { minScore: 8.5, minAdx: 25, maxDist: 1.8 },
-    'NORMAL':       { minScore: 8.0, minAdx: 20, maxDist: 2.5 },
-    'AGGRESSIVE':   { minScore: 7.5, minAdx: 15, maxDist: 3.0 }
+    'CONSERVATIVE': { minScore: 8.5, minAdx: 25, maxDist: 1.5, weightMlt: 0.8 },
+    'NORMAL':       { minScore: 8.0, minAdx: 20, maxDist: 2.2, weightMlt: 1.0 },
+    'AGGRESSIVE':   { minScore: 7.2, minAdx: 18, maxDist: 2.8, weightMlt: 1.3 }
 };
 
-// TIMEFRAMES CONFIG
 const TIMEFRAMES = [
-  { label: '1m',  ws: '1m',  cc: 'histominute', limit: 500, agg: 1, type: 'HYPER' }, 
-  { label: '5m',  ws: '5m',  cc: 'histominute', limit: 500, agg: 5, type: 'SCALP' },
-  { label: '15m', ws: '15m', cc: 'histominute', limit: 500, agg: 15, type: 'DAY' },
-  { label: '1H',  ws: '1h',  cc: 'histohour',   limit: 500, agg: 1, type: 'DAY' },
-  { label: '4H',  ws: '4h',  cc: 'histohour',   limit: 500, agg: 4, type: 'SWING' },
-  { label: '1D',  ws: '1d',  cc: 'histoday',    limit: 500, agg: 1, type: 'INVEST' },
-  { label: '1W',  ws: '1w',  cc: 'histoday',    limit: 500, agg: 7, type: 'INVEST' }
+  { label: '1m',  ws: '1m',  limit: 1000, agg: 1, type: 'SCALP' }, 
+  { label: '5m',  ws: '5m',  limit: 1000, agg: 5, type: 'SCALP' },
+  { label: '15m', ws: '15m', limit: 1000, agg: 15, type: 'DAY' },
+  { label: '1H',  ws: '1h',  limit: 1000, agg: 60, type: 'DAY' },
+  { label: '4H',  ws: '4h',  limit: 1000, agg: 240, type: 'SWING' },
+  { label: '1D',  ws: '1d',  limit: 1000, agg: 1440, type: 'INVEST' },
+  { label: '1W',  ws: '1w',  limit: 1000, agg: 10080, type: 'MACRO' },
+  { label: '1M',  ws: '1M',  limit: 1000, agg: 43200, type: 'MACRO' } 
 ];
 
 let CURRENT_TF = TIMEFRAMES[2]; 
-let ws = null;
-let wsRetryTimer = null; 
-let lastSocketTime = Date.now(); // Health Monitor
+let pollingInterval = null; 
+let lastSocketTime = Date.now(); 
 
 const charts = new Map();
 const marketData = new Map();
+const indicatorCache = new Map(); 
 const MTF_MATRIX = new Map(); 
 const analysisResults = new Map(); 
-const cooldownMap = new Map(); // V25.15 Cooldown Logic
-const audioCooldown = new Map(); 
-const lastAnalysisTime = new Map(); 
-let wakeLock = null;
 let titleInterval = null;
-// MARKER CACHE FOR OPTIMIZATION
-const markerCache = new Map();
+let wakeLock = null;
 
-// GLOBAL ALERT TRACKER
 const activeAlerts = new Map(); 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
+const audioCooldown = new Map();
 
 /* =========================================
    UI & NAVIGATION
    ========================================= */
+window.showPage = function(pageId, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(`page-${pageId}`).classList.add('active');
+    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+    if(el && el.classList.contains('nav-link')) el.classList.add('active');
+    document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+    if(el && el.classList.contains('mobile-nav-item')) el.classList.add('active');
+    if(pageId === 'screener') updateScreenerTable();
+}
+
 function startApp() {
     try {
         renderToolbar();
@@ -633,18 +388,15 @@ function startApp() {
         initSettingsForm(); 
         changeTimeframe(CURRENT_TF);
         setInterval(updateScreenerTable, 2000); 
-        setInterval(updateHealthMonitor, 1000); // HEALTH CHECK TICKER
+        setInterval(updateHealthMonitor, 1000); 
         startMatrixScanner();
-        
-        // INIT DOCS
-        initLogicChart();
-        updateSimulator(7.5);
+        setInterval(updateDynamicMarketAnalysis, 3000);
         
         setTimeout(() => {
             document.getElementById('loading-overlay').style.display = 'none';
-        }, 1000);
+        }, 1200);
     } catch(e) {
-        console.error("App Crash:", e);
+        console.error("Quantum Init Error:", e);
         document.getElementById('loading-overlay').style.display = 'none';
         showToast("System Init Warning: Check Console");
     }
@@ -656,14 +408,14 @@ function updateHealthMonitor() {
     const dot = document.getElementById('healthDot');
     const txt = document.getElementById('healthText');
     
-    if (diff > 5000) { // > 5s latency
+    if (diff > 8000) {
         dot.className = 'health-dot bad';
-        txt.textContent = `WS: Lagging (${(diff/1000).toFixed(1)}s)`;
+        txt.textContent = `SYNC: Data Lag (${(diff/1000).toFixed(1)}s)`;
         txt.style.color = 'var(--danger)';
     } else {
         dot.className = 'health-dot ok';
-        txt.textContent = `WS: Connected (${diff}ms)`;
-        txt.style.color = '#474d57';
+        txt.textContent = `SYNC: Quantum Active (${diff}ms)`;
+        txt.style.color = '#00e5ff';
     }
 }
 
@@ -678,24 +430,6 @@ function showToast(message) {
         el.classList.remove('show');
         setTimeout(() => el.remove(), 300);
     }, 3000);
-}
-
-window.showPage = function(pageId, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(`page-${pageId}`).classList.add('active');
-    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-    if(el && el.classList.contains('nav-link')) el.classList.add('active');
-    document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
-    if(el && el.classList.contains('mobile-nav-item')) el.classList.add('active');
-    if(pageId === 'screener') updateScreenerTable();
-}
-
-window.quickSwitchTF = function(label) {
-    const tf = TIMEFRAMES.find(t => t.label === label);
-    if(tf) {
-        changeTimeframe(tf);
-        showToast(`Timeframe switched to ${tf.label}`);
-    }
 }
 
 function renderToolbar() {
@@ -729,11 +463,10 @@ function renderGrid() {
             <div class="sniper-tag" id="tag-${s}">INIT...</div>
             <div class="card-header">
                 <div class="coin-meta">
-                    <img src="${icon}" class="coin-icon" onerror="this.style.display='none'">
+                    <img src="${icon}" class="coin-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg=='">
                     <div>
                         <div class="coin-title" style="${isGold?'color:var(--gold)':''}">
-                            ${base}/USDT <span id="trend-arrow-${s}" style="font-weight:bold; font-size:14px; margin-left:4px;"></span>
-                            ${isGold ? '<span style="font-size:10px; background:#FFD700; color:black; padding:1px 3px; border-radius:2px; margin-left:4px;">GOLD</span>' : ''}
+                            ${base}/USDT
                         </div>
                         <div class="coin-vol">Vol: <span id="vol-${s}">--</span></div>
                     </div>
@@ -745,60 +478,63 @@ function renderGrid() {
             </div>
             
             <div class="matrix-strip">
-                ${TIMEFRAMES.map(t => `<div id="mtx-${s}-${t.label}" class="m-dot" title="Switch to ${t.label}" onclick="quickSwitchTF('${t.label}')"></div>`).join('')}
+                ${TIMEFRAMES.map(t => `<div id="mtx-${s}-${t.label}" class="m-dot" title="Switch to ${t.label}"></div>`).join('')}
             </div>
 
             <div class="chart-container">
                 <div id="chart-${s}" style="width:100%; height:100%"></div>
                 <div id="visual-${s}" class="visual-arrow">➤</div>
-                <div id="msg-${s}" class="visual-msg">WAITING FOR INTENT</div>
+                <div id="msg-${s}" class="visual-msg">MENGANALISIS PROBABILITAS...</div>
             </div>
             
             <div class="data-row">
                 <div class="data-item">
-                    <span class="d-label">Struct Dist.</span>
-                    <span class="d-val" id="dist-${s}">--</span>
-                </div>
-                <div class="data-item">
-                    <span class="d-label">Stop Loss</span>
+                    <span class="d-label">Stop Loss (D-ATR)</span>
                     <span class="d-val" id="sl-${s}">--</span>
                 </div>
                 <div class="data-item" style="text-align:right;">
-                    <span class="d-label">Take Profit</span>
-                    <div>
-                        <span class="d-val" id="tp-${s}" style="color:var(--binance-green);">--</span>
-                        <span id="alarm-${s}" class="alarm-icon">🔔</span>
-                    </div>
+                    <span class="d-label">Take Profit Zone</span>
+                    <span class="d-val" id="tp-${s}" style="color:var(--quantum-cyan);">--</span>
+                </div>
+            </div>
+
+            <!-- MACRO PROJECTION BOX -->
+            <div class="macro-box">
+                <div class="macro-col">
+                    <span class="macro-title">CYCLE TOP (TARGET DISTRIBUSI)</span>
+                    <span class="macro-price top" id="mac-top-${s}">$---</span>
+                </div>
+                <div class="macro-col" style="text-align:right;">
+                    <span class="macro-title">CYCLE BOTTOM (ZONA AKUMULASI)</span>
+                    <span class="macro-price bot" id="mac-bot-${s}">$---</span>
                 </div>
             </div>
             
-            <!-- NEW MARKET NOTE (V25.18) -->
             <div class="market-note-box">
-                <span class="market-note-icon">📝</span>
-                <span id="note-${s}">Menunggu analisis pasar...</span>
+                <span class="market-note-icon">🤖</span>
+                <span id="note-${s}">Menginisiasi engine AI untuk mendeteksi order flow...</span>
             </div>
 
             <div class="card-footer">
-                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade buy" id="btn-buy-${s}">BUY <span id="sc-buy-${s}">0.0</span></a>
-                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade sell" id="btn-sell-${s}">SELL <span id="sc-sell-${s}">0.0</span></a>
+                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade buy" id="btn-buy-${s}">BUY</a>
+                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade sell" id="btn-sell-${s}">SELL</a>
             </div>
         `;
         grid.appendChild(card);
         
-        // Chart Setup
         const cont = document.getElementById(`chart-${s}`);
         const chart = LightweightCharts.createChart(cont, {
             layout: { backgroundColor: '#0b0e11', textColor: '#848e9c', fontSize: 11, fontFamily: 'JetBrains Mono' }, 
             grid: { vertLines: { color: '#1e2329' }, horzLines: { color: '#1e2329' } },
-            rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.02, bottom: 0.02 } },
-            timeScale: { visible: false, borderVisible: false, rightOffset: 5 }, 
+            rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.05, bottom: 0.05 } },
+            timeScale: { visible: false, borderVisible: false, rightOffset: 12 }, 
             crosshair: { vertLine: { visible: false }, horzLine: { visible: false } },
-            handleScroll: false, handleScale: false
+            handleScroll: { mouseWheel: true, pressedMouseMove: true }, 
+            handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
         });
         const candleColorUp = isGold ? '#FFD700' : '#0ECB81'; 
         const series = chart.addCandlestickSeries({ upColor: candleColorUp, downColor: '#F6465D', borderVisible: false, wickVisible: true });
         
-        // RESTORED: SEPARATE SUPPORT AND RESISTANCE LINES FOR CLARITY
         const supportSeries = chart.addLineSeries({ color: '#0ECB81', lineWidth: 1, lineStyle: 2, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
         const resistSeries = chart.addLineSeries({ color: '#F6465D', lineWidth: 1, lineStyle: 2, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
         
@@ -818,17 +554,16 @@ function updateScreenerTable() {
         const res = analysisResults.get(sym) || {};
         const base = sym.replace('USDT','');
         
-        let intentClass = '';
-        if (res.intent === 'BULL_PREPARE') intentClass = 'c-up';
-        if (res.intent === 'BEAR_PREPARE') intentClass = 'c-down';
-        
         let sigClass = '';
         if (res.signal === 'BUY') sigClass = 'c-up';
         if (res.signal === 'SELL') sigClass = 'c-down';
-        if (res.isOverextended) sigClass = 'c-down';
+        
+        let whaleHtml = res.isWhale 
+            ? `<span style="background:var(--whale-blue); color:white; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">INSTITUTION INFLOW</span>` 
+            : `<span style="color:var(--text-secondary); font-size:11px;">Ritel Dominan</span>`;
 
         let adviceColor = 'var(--text-primary)';
-        if (res.exitAdvice === 'HOLD') adviceColor = 'var(--binance-green)';
+        if (res.exitAdvice === 'HOLD POSITION') adviceColor = 'var(--binance-green)';
         if (res.exitAdvice === 'TAKE PARTIAL') adviceColor = 'var(--accent)';
         if (res.exitAdvice === 'EXIT RISK') adviceColor = 'var(--danger)';
 
@@ -836,10 +571,10 @@ function updateScreenerTable() {
             <tr style="border-bottom:1px solid var(--border);">
                 <td><b style="color:var(--text-primary);">${base}</b></td>
                 <td style="font-family:'JetBrains Mono';">${res.price ? res.price.toFixed(res.price<1?4:2) : '---'}</td>
-                <td style="font-size:11px; font-weight:700;">${res.regime || '---'}</td>
-                <td class="${sigClass}" style="font-size:11px;">${res.isOverextended ? 'FOMO/SKIP' : (res.signal || 'WAIT')}</td>
+                <td style="font-size:11px; font-weight:700; color:var(--quantum-cyan);">${res.regime || '---'}</td>
+                <td>${whaleHtml}</td>
                 <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700; color:${adviceColor}">${res.exitAdvice || '--'}</td>
-                <td><a href="https://www.binance.com/en/trade/${base}_USDT" target="_blank" style="color:var(--accent); text-decoration:none;">VIEW</a></td>
+                <td><a href="https://www.binance.com/en/trade/${base}_USDT" target="_blank" style="color:var(--quantum-cyan); text-decoration:none; font-weight:bold;">TRADE</a></td>
             </tr>
         `;
     });
@@ -847,7 +582,7 @@ function updateScreenerTable() {
 }
 
 /* =========================================
-   DATA & STRATEGY (OPTIMIZED V25.20)
+   PERFORMANCE DATA LAYER
    ========================================= */
 async function changeTimeframe(tf) {
     CURRENT_TF = tf;
@@ -855,109 +590,78 @@ async function changeTimeframe(tf) {
     
     const sLabel = document.getElementById('strategyLabel');
     sLabel.textContent = `MODE: ${tf.type} (${tf.label})`;
-    sLabel.style.color = tf.type==='HYPER' ? 'var(--binance-red)' : 'var(--text-primary)';
+    sLabel.style.color = tf.type==='SCALP' ? 'var(--binance-red)' : (tf.type==='MACRO' ? 'var(--whale-blue)' : 'var(--quantum-cyan)');
     
-    // Clear old WS
-    if(ws) { try{ws.close();}catch(e){} ws = null; }
-    if(wsRetryTimer) { clearTimeout(wsRetryTimer); wsRetryTimer = null; }
+    if(pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+    indicatorCache.clear(); 
     
     for (const sym of COINS) {
-        await new Promise(r => setTimeout(r, 200)); // Faster Init
-        const hist = await fetchHistory(sym, tf.ws, 500); 
+        await new Promise(r => setTimeout(r, 100)); 
+        const hist = await fetchHistory(sym, tf.ws, 1000); 
+        
         if(hist && hist.length > 0) { 
             marketData.set(sym, hist);
             const cObj = charts.get(sym);
             if(cObj) {
+                // FIXED: Clear legacy support/resistance dots when switching TF to prevent "Cannot update oldest data"
+                cObj.supportSeries.setData([]);
+                cObj.resistSeries.setData([]);
                 cObj.series.setData(hist);
-                cObj.chart.timeScale().fitContent(); 
-                // FULL SCAN ON INIT/TF CHANGE
-                analyze(sym, hist, tf, false, true);
+                cObj.chart.timeScale().scrollToRealTime(); 
+                calculateMacroProjections(sym, hist);
+                analyzeQuantum(sym, hist, tf, false, true); 
             }
         }
     }
-    
-    connectWebSocket(tf);
+    connectWebSocket(tf); 
 }
 
-// STABILITY: Auto-Reconnecting WebSocket
 function connectWebSocket(tf) {
-    if (ws) { try{ ws.close(); }catch(e){} ws = null; }
+    if (pollingInterval) clearInterval(pollingInterval);
+    lastSocketTime = Date.now();
     
-    const streams = COINS.map(c => `${c.toLowerCase()}@kline_${tf.ws}`).join('/');
-    const client = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-    ws = client; 
-    
-    client.onopen = () => { console.log('WS Connected'); lastSocketTime = Date.now(); };
-    client.onmessage = (e) => {
-        lastSocketTime = Date.now(); 
-        try {
-            const msg = JSON.parse(e.data);
-            const k = msg.data.k;
-            const c = { time: k.t/1000, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v };
-            handleStream(msg.data.s, c);
-        } catch(err) {}
-    };
-    client.onclose = () => {
-        console.warn('WS Closed. Reconnecting...');
-        if (ws === client) {
-            ws = null;
-            wsRetryTimer = setTimeout(() => connectWebSocket(tf), 3000); 
+    pollingInterval = setInterval(async () => {
+        for (const sym of COINS) {
+            try {
+                const hist = await fetchHistory(sym, tf.ws, 1);
+                if (hist && hist.length > 0) {
+                    handleStream(sym, hist[0]);
+                }
+            } catch (err) {}
         }
-    };
+        lastSocketTime = Date.now();
+    }, 2500); 
 }
 
 async function fetchHistory(s, interval, lim) {
     try {
         const url = `https://api.binance.com/api/v3/klines?symbol=${s}&interval=${interval}&limit=${lim}`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Binance Blocked");
-        return await parseBinance(res);
+        if (!res.ok) throw new Error("API Blocked");
+        const raw = await res.json();
+        return raw.map(d => ({ time: d[0] / 1000, open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4]), volume: parseFloat(d[5]) }));
     } catch(e) { 
-        try {
-             const url = `https://api.binance.com/api/v3/klines?symbol=${s}&interval=${interval}&limit=${lim}`;
-             const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-             const res = await fetch(proxyUrl);
-             if (!res.ok) throw new Error("Proxy Blocked");
-             return await parseBinance(res);
-        } catch (e2) {
-             console.warn("Proxy failed, switching to backup...");
-             return await fetchHistoryBackup(s, interval, lim);
-        }
+        return [];
     }
 }
 
-async function parseBinance(res) {
-    const raw = await res.json();
-    return raw.map(d => ({ time: d[0] / 1000, open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4]), volume: parseFloat(d[5]) }));
-}
-
-async function fetchHistoryBackup(s, interval, lim) {
-    let endpoint = 'histominute'; let agg = 1;
-    if(interval.includes('h') || interval.includes('d')) endpoint = 'histohour';
-    try {
-        const base = s.replace('USDT','');
-        const res = await fetch(`https://min-api.cryptocompare.com/data/v2/${endpoint}?fsym=${base}&tsym=USDT&limit=${lim}&aggregate=${agg}`);
-        const j = await res.json();
-        return j.Data.Data.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close,volume:d.volumeto}));
-    } catch(e) { return []; }
-}
-
+let tickDebounce = {};
 function handleStream(sym, candle) {
     const arr = marketData.get(sym);
     if(!arr) return;
     const last = arr[arr.length-1];
-    
     let isNewCandle = false;
     
-    if (candle.time === last.time) {
+    // GUARD: Ignore older timestamp to prevent lightweight-charts crash
+    if (candle.time === last.time) { 
         arr[arr.length-1] = candle; 
     } else if (candle.time > last.time) {
         arr.push(candle); 
-        if(arr.length > 1000) arr.shift(); 
+        if(arr.length > 1500) arr.shift(); 
         isNewCandle = true; 
-        
-        let cd = cooldownMap.get(sym) || 0;
-        if (cd > 0) cooldownMap.set(sym, cd - 1);
+        indicatorCache.delete(sym); 
+    } else {
+        return; 
     }
     
     const pEl = document.getElementById(`price-${sym}`);
@@ -971,53 +675,92 @@ function handleStream(sym, candle) {
     }
 
     const cObj = charts.get(sym);
-    if(cObj) cObj.series.update(candle);
-    
-    // OPTIMIZED TRIGGER: Only analyze if new candle OR throttled tick
-    const now = Date.now();
-    const lastRun = lastAnalysisTime.get(sym) || 0;
+    if(cObj) {
+        try { cObj.series.update(candle); } catch (e) {}
+    }
     
     if (isNewCandle) {
-        // New Candle: Run Full Logic for this candle, but no need to rescan deep history if not needed.
-        // We set fullScan=false to only calculate for the LAST index
-        analyze(sym, arr, CURRENT_TF, false, false); 
-        lastAnalysisTime.set(sym, now);
-    } 
-    else if (now - lastRun > 2000) { 
-        // Tick Update: Also only calc last index
-        analyze(sym, arr, CURRENT_TF, false, false);
-        lastAnalysisTime.set(sym, now);
+        analyzeQuantum(sym, arr, CURRENT_TF, false, false); 
+    } else {
+        if(!tickDebounce[sym]) {
+            tickDebounce[sym] = setTimeout(() => {
+                analyzeQuantum(sym, arr, CURRENT_TF, false, false);
+                tickDebounce[sym] = null;
+            }, 500); 
+        }
     }
 }
 
 /* =========================================
-   REVISED ANALYZE FUNCTION (OPTIMIZED)
+   MACRO PREDICTION ENGINE (FIBONACCI LOG)
    ========================================= */
-// Added fullScan parameter to control loop depth
-function analyze(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
+function calculateMacroProjections(sym, data) {
+    if(data.length < 100) return;
+    
+    let maxP = data[0].high, minP = data[0].low;
+    for(let i=0; i<data.length; i++) {
+        if(data[i].high > maxP) maxP = data[i].high;
+        if(data[i].low < minP) minP = data[i].low;
+    }
+    
+    const range = maxP - minP;
+    const currentP = data[data.length-1].close;
+    let cycleTop, cycleBot;
+    
+    if (currentP > minP + (range * 0.5)) {
+        cycleTop = maxP + (range * 0.618);
+        cycleBot = maxP - (range * 0.382); 
+    } else {
+        cycleTop = minP + (range * 0.618);
+        cycleBot = minP - (range * 0.236);
+    }
+    
+    if (cycleBot <= 0) cycleBot = minP * 0.5; 
+
+    const topEl = document.getElementById(`mac-top-${sym}`);
+    const botEl = document.getElementById(`mac-bot-${sym}`);
+    if(topEl) topEl.textContent = `$${cycleTop.toFixed(cycleTop<1?4:2)}`;
+    if(botEl) botEl.textContent = `$${cycleBot.toFixed(cycleBot<1?4:2)}`;
+    
+    let currentRes = analysisResults.get(sym) || {};
+    currentRes.cycleTop = cycleTop;
+    currentRes.cycleBot = cycleBot;
+    analysisResults.set(sym, currentRes);
+}
+
+/* =========================================
+   TRUE QUANTUM ENGINE + HYSTERESIS FLICKER LOCK
+   ========================================= */
+function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
     if(data.length < 100) return; 
 
-    // Indicators need to be calculated for context regardless of loop depth
-    // (Optimization: In a real advanced engine, we would only calc incremental, but for JS this is fast enough)
-    const atrArray = calcATRArray(data, 14);
-    const sma20Array = calcSMAArray(data, 20);
-    const ema21Array = calcEMAArray(data, 21);
-    const rsiArray = calcRSIArray(data, 14);
-    const vStopArray = calcVolStopSeries(data, 20, 3.0);
-    const adxArray = calcADXArray(data, 14);
-    const smc = findOrderBlocksAdvanced(data, 5);
-    
-    const profile = RISK_PROFILES[CURRENT_PROFILE_KEY] || RISK_PROFILES.NORMAL;
-    const MAX_DIST_ATR = profile.maxDist; 
-    const MIN_SCORE = profile.minScore;
-    const MIN_ADX = profile.minAdx;
-    
-    let lastRes = {};
-    let newMarkers = [];
+    let cache = indicatorCache.get(sym);
+    if(!cache || fullScan) {
+        cache = {
+            atr: calcATRArray(data, 14),
+            sma: calcSMAArray(data, 20),
+            ema: calcEMAArray(data, 21),
+            rsi: calcRSIArray(data, 14),
+            vStop: calcVolStopSeries(data, 20, 3.0),
+            adx: calcADXArray(data, 14),
+            macd: calcMACDArray(data, 12, 26, 9),
+            volSma: calcSMAVolumeArray(data, 20), 
+            smc: findOrderBlocksAdvanced(data, 5)
+        };
+        indicatorCache.set(sym, cache);
+    } else {
+        const i = data.length - 1;
+        cache.atr[i] = calcSingleATR(data, i, cache.atr[i-1], 14);
+        cache.sma[i] = calcSingleSMA(data, i, 20);
+        cache.ema[i] = (data[i].close * (2/22)) + (cache.ema[i-1] * (1 - (2/22)));
+        cache.volSma[i] = calcSingleSMAVol(data, i, 20);
+        cache.smc = findOrderBlocksAdvanced(data, 5); 
+    }
 
-    // PERFORMANCE OPTIMIZATION:
-    // If fullScan is true (Timeframe Change), we loop back 100 candles to regenerate history markers.
-    // If fullScan is false (Realtime), we ONLY look at the last candle (data.length - 1).
+    const profile = RISK_PROFILES[CURRENT_PROFILE_KEY] || RISK_PROFILES.NORMAL;
+    
+    let lastState = analysisResults.get(sym) || { signal: "WAIT" }; 
+    let newMarkers = [];
     let startIndex = fullScan ? data.length - 100 : data.length - 1;
 
     for(let i = startIndex; i < data.length; i++) {
@@ -1025,30 +768,28 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = fa
         
         const current = data[i];
         const prev = data[i-1];
-        const atr = atrArray[i];
-        const sma20 = sma20Array[i];
-        const ema21 = ema21Array[i];
-        const rsi = rsiArray[i];
-        const rsiPrev = rsiArray[i-1];
-        const adx = adxArray[i]; 
+        const atr = cache.atr[i];
+        const sma20 = cache.sma[i];
+        const ema21 = cache.ema[i];
+        const rsi = cache.rsi[i];
+        const rsiPrev = cache.rsi[i-1];
+        const adx = cache.adx[i]; 
+        const macdHist = cache.macd[i].hist;
+        const macdHistPrev = cache.macd[i-1].hist;
+        
+        const isWhale = current.volume > (cache.volSma[i] * 2.5);
+        
         const supportBand = Math.max(sma20, ema21); 
         const resistBand = Math.min(sma20, ema21);
         
-        // --- 1. CONTEXT ANALYSIS ---
-        let regime = "NEUTRAL";
-        if (adx < MIN_ADX) regime = "RANGE"; 
-        else if (adx > 25) regime = "TREND";
-        else regime = "WEAK TREND";
-
-        // Volatility / Shock Check
+        let regime = "QUANTUM FLUX";
+        if (adx < profile.minAdx) regime = "KONSOLIDASI"; 
+        else if (adx > 25) regime = "TREND MOMENTUM";
+        
         const candleRange = current.high - current.low;
-        const isShock = candleRange > (atr * 3.0); 
+        const isShock = candleRange > (atr * 3.5); 
         
-        // Hint Generation
-        let hint = "";
-        if (adx < MIN_ADX) hint = "Low ADX";
-        
-        const isVStopBullish = vStopArray[i].uptrend;
+        const isVStopBullish = cache.vStop[i].uptrend;
         const isPriceBelowMAs = current.close < ema21 && current.close < sma20;
         const isPriceAboveMAs = current.close > ema21 && current.close > sma20;
         
@@ -1056,200 +797,247 @@ function analyze(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = fa
         if (isVStopBullish && isPriceBelowMAs) useBullishLogic = false; 
         if (!isVStopBullish && isPriceAboveMAs) useBullishLogic = true; 
         
-        let nearestSupport = smc.bullOB ? smc.bullOB.top : supportBand;
-        let nearestResist = smc.bearOB ? smc.bearOB.bottom : resistBand;
+        let nearestSupport = cache.smc.bullOB ? cache.smc.bullOB.top : supportBand;
+        let nearestResist = cache.smc.bearOB ? cache.smc.bearOB.bottom : resistBand;
         
         let intent = "NEUTRAL";
         let signal = "WAIT";
         let isOverextended = false;
+        
         let distRatio = 0;
-        
-        // Distance Check
         if (useBullishLogic) {
-            const distToSup = current.close - nearestSupport;
-            distRatio = distToSup / atr;
-            if (distRatio > MAX_DIST_ATR) isOverextended = true;
+            distRatio = (current.close - nearestSupport) / atr;
+            if (distRatio > profile.maxDist || (rsi > 85 && current.close < prev.close)) isOverextended = true;
         } else {
-            const distToRes = nearestResist - current.close;
-            distRatio = distToRes / atr;
-            if (distRatio > MAX_DIST_ATR) isOverextended = true;
+            distRatio = (nearestResist - current.close) / atr;
+            if (distRatio > profile.maxDist || (rsi < 15 && current.close > prev.close)) isOverextended = true;
         }
         
-        // Intent Logic
-        if (useBullishLogic && !isOverextended) {
-            if (distRatio <= 1.2) intent = "BULL_PREPARE";
-        } else if (!useBullishLogic && !isOverextended) {
-            if (distRatio <= 1.2) intent = "BEAR_PREPARE";
-        }
+        if (useBullishLogic && !isOverextended) intent = "BULL_PREPARE";
+        else if (!useBullishLogic && !isOverextended) intent = "BEAR_PREPARE";
         
-        // Scoring
-        let bScore = 0.0; let sScore = 0.0;
+        // ------------------------------------------------------------------------
+        // 1. FLUID PROBABILITY CALCULATION + MOMENTUM ACCELERATION
+        // ------------------------------------------------------------------------
+        let psiBull = 0.0; let psiBear = 0.0;
         
-        if (useBullishLogic) bScore += 4.0; else sScore += 4.0;
-        if (intent === "BULL_PREPARE") bScore += 2.0;
-        if (intent === "BEAR_PREPARE") sScore += 2.0;
+        if (useBullishLogic) psiBull += 3.5; else psiBear += 3.5;
 
         const isGreen = current.close > current.open;
         const isRed = current.close < current.open;
-        const strongCloseBuy = (current.close - current.low) / (current.high - current.low) > 0.6;
-        const strongCloseSell = (current.high - current.close) / (current.high - current.low) > 0.6;
+        const strongCloseBuy = (current.close - current.low) / (current.high - current.low) > 0.65;
+        const strongCloseSell = (current.high - current.close) / (current.high - current.low) > 0.65;
         
-        const rsiHookUp = (rsiPrev < 35 && rsi > rsiPrev) || (rsi < 45 && rsi > rsiPrev + 2);
-        const rsiHookDown = (rsiPrev > 65 && rsi < rsiPrev) || (rsi > 55 && rsi < rsiPrev - 2);
+        const rsiHookUp = (rsiPrev < 40 && rsi > rsiPrev);
+        const rsiHookDown = (rsiPrev > 60 && rsi < rsiPrev);
+        const macdCrossUp = macdHist > 0 && macdHist > macdHistPrev;
+        const macdCrossDown = macdHist < 0 && macdHist < macdHistPrev;
 
-        let decimalAdder = Math.min(distRatio, 1.8) / 2.0; 
-        if (Math.abs(rsi - rsiPrev) > 4) decimalAdder += 0.1; 
-        if (decimalAdder > 0.9) decimalAdder = 0.9;
+        const isMomentumAccelerating = Math.abs(macdHist) > Math.abs(macdHistPrev) * 1.1;
+
+        let distScore = Math.max(0, 2.0 - distRatio);
         
-        const bodySize = Math.abs(current.close - current.open);
-        const isBodySolid = bodySize > (atr * 0.2); 
-
-        // Penalties
-        let adxPenalty = 0.0;
-        if (adx < MIN_ADX) adxPenalty = 2.0; 
-        if (isShock) { adxPenalty += 10.0; hint = "NEWS RISK"; }
-
         if (intent === "BULL_PREPARE") {
-            if (isGreen) bScore += 1.0;
-            if (rsiHookUp) bScore += 1.0;
-            if (strongCloseBuy) bScore += 0.5;
-            bScore += decimalAdder;
-            if (!isBodySolid && decimalAdder > 0.5) bScore -= 0.5;
-            bScore -= adxPenalty;
-            if (bScore >= MIN_SCORE) signal = "BUY"; 
+            psiBull += distScore;
+            if (adx > 25 && macdHist > 0) psiBull += 1.5; 
+            if (isMomentumAccelerating && macdHist > 0) psiBull += 0.5; 
+            
+            if (isGreen) psiBull += 0.5;
+            if (strongCloseBuy) psiBull += 0.5;
+            if (rsiHookUp) psiBull += 1.0 * profile.weightMlt;
+            if (macdCrossUp) psiBull += 1.0 * profile.weightMlt;
+            else if (macdHist > 0) psiBull += 0.5; 
+
+            if (isWhale) psiBull += 1.5; 
+            
+            if (adx < profile.minAdx) psiBull -= 1.5; 
+            if (isShock) psiBull -= 10.0;
+            
+            if (psiBull >= profile.minScore) signal = "BUY"; 
         }
         
-        if (intent === "BEAR_PREPARE" || (!useBullishLogic && isRed)) {
-            if(intent === "NEUTRAL" && !useBullishLogic && isPriceBelowMAs) sScore += 1.0; 
-            if (isRed) sScore += 1.0;
-            if (rsiHookDown) sScore += 1.0; 
-            if (strongCloseSell) sScore += 0.5;
-            sScore += decimalAdder;
-            if (!isBodySolid && decimalAdder > 0.5) sScore -= 0.5;
-            sScore -= adxPenalty;
-            if (sScore >= MIN_SCORE) signal = "SELL"; 
+        if (intent === "BEAR_PREPARE") {
+            psiBear += distScore;
+            if (adx > 25 && macdHist < 0) psiBear += 1.5;
+            if (isMomentumAccelerating && macdHist < 0) psiBear += 0.5; 
+
+            if (isRed) psiBear += 0.5;
+            if (strongCloseSell) psiBear += 0.5;
+            if (rsiHookDown) psiBear += 1.0 * profile.weightMlt; 
+            if (macdCrossDown) psiBear += 1.0 * profile.weightMlt;
+            else if (macdHist < 0) psiBear += 0.5;
+
+            if (isWhale) psiBear += 1.5; 
+            
+            if (adx < profile.minAdx) psiBear -= 1.5;
+            if (isShock) psiBear -= 10.0;
+            
+            if (psiBear >= profile.minScore) signal = "SELL"; 
         }
 
-        // Exit Advice
+        // ------------------------------------------------------------------------
+        // 2. MACRO HYSTERESIS LOCK
+        // ------------------------------------------------------------------------
+        if (i === data.length - 1 && tf.agg >= 60) {
+            const oldSignal = MTF_MATRIX.get(`${sym}_${tf.label}`) || "WAIT";
+            
+            if (oldSignal === "BUY") {
+                if (current.close > ema21 && psiBear < profile.minScore) {
+                    signal = "BUY"; 
+                    psiBull = Math.max(psiBull, profile.minScore + 0.5); 
+                }
+            } else if (oldSignal === "SELL") {
+                if (current.close < ema21 && psiBull < profile.minScore) {
+                    signal = "SELL";
+                    psiBear = Math.max(psiBear, profile.minScore + 0.5);
+                }
+            }
+        }
+
         let exitAdvice = "NEUTRAL";
         if (useBullishLogic) { 
-            const obTop = smc.bearOB ? smc.bearOB.bottom : 999999;
-            const isObHit = current.close >= obTop;
-            if (rsi > 75 || distRatio > 2.0) exitAdvice = "EXIT RISK"; 
-            else if (rsi > 65 || distRatio > 1.2 || isObHit) exitAdvice = "TAKE PARTIAL"; 
-            else exitAdvice = "HOLD"; 
+            const isObHit = cache.smc.bearOB && current.close >= cache.smc.bearOB.bottom;
+            if (isOverextended) exitAdvice = "EXIT RISK"; 
+            else if (rsi > 70 || distRatio > 1.5 || isObHit) exitAdvice = "TAKE PARTIAL"; 
+            else exitAdvice = "HOLD POSITION"; 
         } else { 
-            const obBot = smc.bullOB ? smc.bullOB.top : 0;
-            const isObHit = current.close <= obBot;
-            if (rsi < 25 || distRatio > 2.0) exitAdvice = "EXIT RISK"; 
-            else if (rsi < 35 || distRatio > 1.2 || isObHit) exitAdvice = "TAKE PARTIAL"; 
-            else exitAdvice = "HOLD"; 
+            const isObHit = cache.smc.bullOB && current.close <= cache.smc.bullOB.top;
+            if (isOverextended) exitAdvice = "EXIT RISK"; 
+            else if (rsi < 30 || distRatio > 1.5 || isObHit) exitAdvice = "TAKE PARTIAL"; 
+            else exitAdvice = "HOLD POSITION"; 
         }
         
-        // Cooldown Check
-        if(i === data.length - 1) {
-            let cd = cooldownMap.get(sym) || 0;
-            if (cd > 0) { signal = "COOLDOWN"; hint = `Wait ${cd} Candles`; }
-            else if (isShock || exitAdvice === "EXIT RISK") cooldownMap.set(sym, 3);
+        if (i === data.length - 1) { 
+            if (intent === "BULL_PREPARE") newMarkers.push({ time: current.time, position: 'belowBar', color: '#00e5ff', shape: 'arrowUp', size: 1 });
+            else if (intent === "BEAR_PREPARE") newMarkers.push({ time: current.time, position: 'aboveBar', color: '#00e5ff', shape: 'arrowDown', size: 1 });
         }
 
-        // Marker Generation
-        let m = null;
-        if (signal === "BUY") m = { time: current.time, position: 'belowBar', color: '#0ECB81', shape: 'arrowUp', text: 'GO' };
-        else if (signal === "SELL") m = { time: current.time, position: 'aboveBar', color: '#F6465D', shape: 'arrowDown', text: 'GO' };
-        
-        // FIX: Hanya tampilkan panah kuning (PREPARE) di candle terakhir, jangan di histori
-        else if (i === data.length - 1) { 
-            if (intent === "BULL_PREPARE") m = { time: current.time, position: 'belowBar', color: '#FCD535', shape: 'arrowUp', size: 1 };
-            else if (intent === "BEAR_PREPARE") m = { time: current.time, position: 'aboveBar', color: '#FCD535', shape: 'arrowDown', size: 1 };
-        }
-        
-        if (m) newMarkers.push(m);
-
         if(i === data.length - 1) {
-            // Save state for UI
-            let matrixSig = "WAIT";
-            if (lastRes.signal === "BUY" || (intent === "BULL_PREPARE" && useBullishLogic)) matrixSig = "BUY";
-            else if (lastRes.signal === "SELL" || (intent === "BEAR_PREPARE" && !useBullishLogic)) matrixSig = "SELL";
-            MTF_MATRIX.set(`${sym}_${tf.label}`, matrixSig);
+            MTF_MATRIX.set(`${sym}_${tf.label}`, signal);
             
             let tp = 0, sl = 0;
-            if (signal === "BUY") { sl = nearestSupport - atr; tp = smc.bearOB ? smc.bearOB.bottom : current.close + (atr * 3); }
-            else if (signal === "SELL") { sl = nearestResist + atr; tp = smc.bullOB ? smc.bullOB.top : current.close - (atr * 3); }
-            else { sl = useBullishLogic ? nearestSupport : nearestResist; tp = useBullishLogic ? current.close + (atr*3) : current.close - (atr*3); }
+            const dAtr = atr * 1.5; 
+            if (signal === "BUY") { sl = nearestSupport - dAtr; tp = cache.smc.bearOB ? cache.smc.bearOB.bottom : current.close + (dAtr * 2); }
+            else if (signal === "SELL") { sl = nearestResist + dAtr; tp = cache.smc.bullOB ? cache.smc.bullOB.top : current.close - (dAtr * 2); }
+            else { sl = useBullishLogic ? nearestSupport - dAtr : nearestResist + dAtr; tp = useBullishLogic ? current.close + (dAtr*2) : current.close - (dAtr*2); }
             
-            let note = generateMarketNote(regime, isShock, adx, distRatio, tf);
-            lastRes = { 
-                signal, intent, isOverextended, distRatio, price: current.close, tp, sl, 
-                bScore, sScore, exitAdvice, regime, sizing: "1.0x", hint, isShock, note 
-            };
+            let isLocked = tf.agg >= 60 && signal === MTF_MATRIX.get(`${sym}_${tf.label}`);
+            
+            let note = generateDynamicAINote(regime, isShock, isOverextended, isWhale, tf, isLocked, rsi, adx, psiBull, psiBear, distRatio);
+            
+            let cTop = lastState.cycleTop || 0;
+            let cBot = lastState.cycleBot || 0;
+
+            lastState = { signal, intent, isOverextended, distRatio, price: current.close, tp, sl, bScore: psiBull, sScore: psiBear, exitAdvice, regime, isShock, isWhale, note, cycleTop: cTop, cycleBot: cBot };
         }
     }
 
-    analysisResults.set(sym, lastRes);
-    if (isBackground) { updateMatrixUI(sym); return; }
-    
-    // VISUALS: MERGE OLD MARKERS WITH NEW
-    const cObj = charts.get(sym);
-    if(cObj) {
-        let nearestSupport = smc.bullOB ? smc.bullOB.top : 0;
-        let nearestResist = smc.bearOB ? smc.bearOB.bottom : 0;
-        cObj.supportSeries.setData(data.map(d => ({ time: d.time, value: nearestSupport })));
-        cObj.resistSeries.setData(data.map(d => ({ time: d.time, value: nearestResist })));
-        
-        // Cache Management
-        let cached = markerCache.get(sym) || [];
-        if(fullScan) {
-            // Rebuild Cache completely
-            cached = newMarkers; 
-        } else {
-            // Realtime Update: Remove last marker if it matches current time (overwrite) then append new
-            // Simplified: Just keep cache that is OLDER than current candle time, then add newMarkers
-            const lastTime = data[data.length-1].time;
-            cached = cached.filter(m => m.time < lastTime);
-            cached = [...cached, ...newMarkers];
-        }
-        markerCache.set(sym, cached);
-        
-        let obMarkers = [];
-        if (smc.bullOB) obMarkers.push({ time: smc.bullOB.time, position: 'belowBar', color: 'cyan', shape: 'circle', text: 'OB' });
-        if (smc.bearOB) obMarkers.push({ time: smc.bearOB.time, position: 'aboveBar', color: 'orange', shape: 'circle', text: 'OB' });
-        
-        cObj.series.setMarkers([...obMarkers, ...cached]);
+    if (isBackground) { 
+        MTF_MATRIX.set(`${sym}_${tf.label}`, lastState.signal);
+        updateMatrixUI(sym); 
+        return; 
     }
     
-    updateCardUI(sym, lastRes);
+    analysisResults.set(sym, lastState);
+    
+    const cObj = charts.get(sym);
+    if(cObj) {
+        let nearestSupport = cache.smc.bullOB ? cache.smc.bullOB.top : 0;
+        let nearestResist = cache.smc.bearOB ? cache.smc.bearOB.bottom : 0;
+        
+        // FIXED: Clear vs Update issue on Timeframe switch
+        if (fullScan) {
+            cObj.supportSeries.setData([{ time: data[data.length-1].time, value: nearestSupport }]);
+            cObj.resistSeries.setData([{ time: data[data.length-1].time, value: nearestResist }]);
+        } else {
+            try {
+                cObj.supportSeries.update({ time: data[data.length-1].time, value: nearestSupport });
+                cObj.resistSeries.update({ time: data[data.length-1].time, value: nearestResist });
+            } catch(e) {}
+        }
+        
+        let obMarkers = [];
+        if (cache.smc.bullOB) obMarkers.push({ time: cache.smc.bullOB.time, position: 'belowBar', color: 'cyan', shape: 'circle', text: 'Q-SUP' });
+        if (cache.smc.bearOB) obMarkers.push({ time: cache.smc.bearOB.time, position: 'aboveBar', color: 'orange', shape: 'circle', text: 'Q-RES' });
+        
+        cObj.series.setMarkers([...obMarkers, ...newMarkers]);
+    }
+    
+    updateCardUI(sym, lastState, tf);
     updateMatrixUI(sym);
     
-    if (lastRes.signal !== "WAIT" && lastRes.signal !== "COOLDOWN") {
-        activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${lastRes.signal} ${sym}` });
-        triggerAlert(sym, lastRes.signal); 
-    } else if (lastRes.isShock) {
-        activeAlerts.set(sym, { type: 'INTENT', msg: `⚠️ NEWS RISK ${sym}` });
-    } else if (lastRes.intent !== "NEUTRAL") {
-        activeAlerts.set(sym, { type: 'INTENT', msg: `⚠️ PREP ${sym}` });
-        triggerAlert(sym, "PREPARE");
+    if (lastState.signal !== "WAIT" && lastState.signal !== undefined) {
+        activeAlerts.set(sym, { type: 'SIGNAL', msg: `🚨 ${lastState.signal} ${sym}` });
+        triggerAlert(sym, lastState.signal); 
+    } else if (lastState.intent !== "NEUTRAL" && !lastState.isOverextended) {
+        activeAlerts.set(sym, { type: 'INTENT', msg: `⚛️ PREP ${sym}` });
     } else {
         activeAlerts.delete(sym); 
     }
     updateTitleAlert(); 
 }
 
-/* =========================================
-   MARKET NOTE GENERATOR
-   ========================================= */
-function generateMarketNote(regime, isShock, adx, distRatio, tf) {
+// ------------------------------------------------------------------------
+// FUNGSI AI GENERATOR CATATAN MARKET SPESIFIK TIMEFRAME (TIMEFRAME-AWARE)
+// ------------------------------------------------------------------------
+function generateDynamicAINote(regime, isShock, isOverextended, isWhale, tf, isLocked, rsi, adx, psiBull, psiBear, distRatio) {
     const prefix = `[${tf.label}]`;
-    if (isShock) return `${prefix} BAHAYA: Volatilitas ekstrem. Hindari entry, market tidak stabil.`;
-    if (regime === "RANGE") {
-        if (tf.type === 'INVEST' || tf.type === 'SWING') return `${prefix} Fase Akumulasi. Bagus untuk posisi jangka panjang.`;
-        else return `${prefix} Sideways. Fokus scalping pemantulan pendek (Ping-pong).`;
+    const tType = tf.type; 
+    
+    if (isShock) {
+        if (tType === 'SCALP') return `${prefix} AI-SYNC: Peringatan Flash-crash / Pump instan! Tahan aktivitas scalping demi mitigasi risiko.`;
+        return `${prefix} AI-SYNC: Volatilitas makro ekstrem (Black Swan). Menangguhkan kalkulasi entri.`;
     }
-    if (regime === "TREND" || regime === "WEAK TREND") {
-        if (distRatio > 1.8) return `${prefix} Overextended. Harga sudah lari jauh. Waspada koreksi.`;
-        return `${prefix} Momentum Kuat. Fokus entry searah tren (Follow Trend).`;
+    
+    let insight = "";
+    let action = "";
+
+    if (isOverextended && isWhale) {
+        insight = `RSI di level jenuh (<strong>${rsi.toFixed(1)}</strong>) disertai distribusi volume institusi masif.`;
+        if (tType === 'SCALP') action = `<span style="color:var(--danger)">Risiko banting harga instan! Segera Take Profit kilat.</span>`;
+        else if (tType === 'DAY' || tType === 'SWING') action = `<span style="color:var(--danger)">Risiko reversal intraday tajam. Evaluasi titik Trailing Stop Anda.</span>`;
+        else action = `<span style="color:var(--danger)">Distribusi Paus Makro! Puncak siklus terindikasi, siapkan strategi Exit Portfolio.</span>`;
+    } else if (isOverextended) {
+        insight = `Deviasi harga mencapai <strong>${distRatio.toFixed(1)}x ATR</strong> dari ekuilibrium.`;
+        if (tType === 'SCALP') action = `Fase Overbought teknikal. Rawan untuk scalp long, tunggu retracement.`;
+        else action = `Harga melampaui valuasi wajar. Hindari akumulasi investasi jangka panjang di pucuk.`;
+    } else if (isWhale) {
+        insight = `Aliran modal (Smart Money) melonjak signifikan merobek rerata historis.`;
+        if (tType === 'SCALP') action = `<span style="color:var(--whale-blue)">Volatilitas likuiditas mikro! Peluang scalp riding (momentum kilat) terbuka lebar.</span>`;
+        else if (tType === 'DAY' || tType === 'SWING') action = `<span style="color:var(--whale-blue)">Akumulasi institusi intraday. Probabilitas Breakout menengah sangat tinggi.</span>`;
+        else action = `<span style="color:var(--whale-blue)">Paus Makro memborong aset. Fondasi sangat kuat untuk HOLD investasi jangka panjang.</span>`;
+    } else if (isLocked) {
+        let dir = psiBull > psiBear ? "Bullish" : "Bearish";
+        insight = `Struktur tren <strong>${dir}</strong> telah dipertahankan oleh Hysteresis Lock.`;
+        action = `<span style="color:var(--binance-green)">Abaikan fluktuasi noise riak kecil. Tahan (Hold) posisi makro Anda dengan tenang.</span>`;
+    } else if (regime.includes("KONSOLIDASI")) {
+        insight = `Indeks ADX pada level rendah (<strong>${adx.toFixed(1)}</strong>). Pasar berada di zona ekuilibrium.`;
+        if (tType === 'SCALP') action = `Fase sideways mikro. Cocok untuk strategi ping-pong cepat (beli support, jual resist).`;
+        else action = `Menunggu injeksi likuiditas makro untuk konfirmasi arah penembusan selanjutnya.`;
+    } else {
+        let dominance = psiBull > psiBear ? "Apresiasi (Bullish)" : "Depresiasi (Bearish)";
+        let score = Math.max(psiBull, psiBear).toFixed(1);
+        insight = `Indikator momentum berakselerasi stabil dengan tingkat konfluensi skor <strong>${score}</strong>.`;
+        if (tType === 'SCALP') action = `<span style="color:var(--quantum-cyan)">Momentum HFT valid. Eksekusi kilat (Hit & Run) sangat direkomendasikan saat ini!</span>`;
+        else if (tType === 'DAY' || tType === 'SWING') action = `<span style="color:var(--quantum-cyan)">Konfluensi intraday solid. Momentum searah ideal untuk di-hold hari ini.</span>`;
+        else action = `<span style="color:var(--quantum-cyan)">Tren institusi jangka panjang sejalan. Pertahankan portfolio investasi secara strategis.</span>`;
     }
-    return `${prefix} Netral. Menunggu konfirmasi arah.`;
+
+    return `${prefix} AI-SYNC: <span>${insight}</span> <br/> ↳ ${action}`;
+}
+
+function flashTitle(msg, isUrgent) {
+    if(!msg) { 
+        if(titleInterval) clearInterval(titleInterval); 
+        document.title = "ZAVANA V25.90 QUANTUM AI"; 
+        return; 
+    }
+    if(titleInterval) clearInterval(titleInterval);
+    let state = false;
+    titleInterval = setInterval(() => {
+        document.title = state ? msg : (isUrgent ? "🔴 ACTION REQUIRED" : "⚠️ MARKET ALERT");
+        state = !state;
+    }, 1000);
 }
 
 function updateTitleAlert() {
@@ -1260,9 +1048,288 @@ function updateTitleAlert() {
     flashTitle(urgentMsg, !!urgentMsg);
 }
 
+window.initAudioContext = function() {
+    if(!audioCtx) audioCtx = new AudioContext(); 
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const osc=audioCtx.createOscillator(); const g=audioCtx.createGain(); 
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.frequency.setValueAtTime(600,audioCtx.currentTime); 
+    g.gain.setValueAtTime(0.1,audioCtx.currentTime); 
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.1);
+    osc.start(); osc.stop(audioCtx.currentTime+0.1);
+    
+    const btn = document.getElementById('audioInitBtn');
+    if(btn) {
+        btn.classList.remove('needed');
+        btn.classList.add('active');
+        btn.textContent = "🔊 AUDIO ON";
+    }
+    showToast("Terminal Audio Initialized");
+}
+
+function triggerAlert(sym, type) {
+    const now = Date.now();
+    if(now - (audioCooldown.get(sym)||0) > 60000) {
+        if(typeof Notification !== 'undefined' && Notification.permission==='granted') new Notification(`ZAVANA ${type}: ${sym}`);
+        playBeep(); audioCooldown.set(sym, now);
+    }
+}
+
+async function playBeep() {
+    if(!audioCtx) return; 
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const osc=audioCtx.createOscillator(), g=audioCtx.createGain(); 
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.frequency.setValueAtTime(880,audioCtx.currentTime); 
+    g.gain.setValueAtTime(0.05,audioCtx.currentTime); 
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+    osc.start(); osc.stop(audioCtx.currentTime+0.2); 
+}
+
+function updateCardUI(sym, res, tf) {
+    const card = document.getElementById(`card-${sym}`);
+    if(!card) return;
+    const msgEl = document.getElementById(`msg-${sym}`);
+    const visualEl = document.getElementById(`visual-${sym}`);
+    const alarmEl = document.getElementById(`alarm-${sym}`);
+    const noteEl = document.getElementById(`note-${sym}`);
+    
+    if(noteEl) noteEl.innerHTML = res.note;
+
+    card.classList.remove('fomo-mode', 'sniper-mode', 'whale-mode');
+    let tag = card.querySelector('.sniper-tag');
+    if(tag) tag.className = 'sniper-tag';
+    if(visualEl) { visualEl.className = 'visual-arrow'; visualEl.textContent = '➤'; }
+    if(alarmEl) alarmEl.className = 'alarm-icon';
+
+    if (res.isShock) {
+        card.classList.add('fomo-mode');
+        if(tag) { tag.textContent = 'RISIKO EKSTREM'; tag.classList.add('tag-news'); }
+        if(msgEl) { msgEl.textContent = `VOLATILITAS ANOMALI! TAHAN ENTRY.`; msgEl.style.color = '#ff4444'; }
+        return;
+    }
+    
+    if (res.isOverextended) {
+        card.classList.add('fomo-mode');
+        if(tag) { tag.textContent = 'ZONA OVERBOUGHT (SKIP)'; tag.classList.add('tag-fomo'); }
+        if(msgEl) { msgEl.textContent = `DEVIASI EKSTREM. RISIKO RETRACEMENT TINGGI.`; msgEl.style.color = '#ff4444'; }
+        return; 
+    }
+
+    let adviceColor = '#848e9c';
+    if (res.exitAdvice === 'HOLD POSITION') adviceColor = '#0ecb81'; 
+    if (res.exitAdvice === 'TAKE PARTIAL') adviceColor = '#FCD535';
+    if (res.exitAdvice.includes('EXIT')) adviceColor = '#cf304a';
+
+    const isLocked = tf && tf.agg >= 60; 
+
+    if (res.signal === 'BUY') {
+        if(tag) { 
+            tag.textContent = isLocked ? 'MACRO BUY 🔒' : 'EXECUTE BUY'; 
+            tag.className = `sniper-tag ${isLocked ? 'tag-locked' : 'tag-buy'}`; 
+        }
+        if(msgEl) { msgEl.textContent = `P-SCORE: ${res.bScore.toFixed(1)} | ENTRY OPTIMAL`; msgEl.style.color = 'var(--quantum-cyan)'; }
+        if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
+        if(alarmEl) alarmEl.className = 'alarm-icon alarm-active-fast';
+        card.classList.add('sniper-mode');
+    } else if (res.signal === 'SELL') {
+        if(tag) { 
+            tag.textContent = isLocked ? 'MACRO SELL 🔒' : 'EXECUTE SELL'; 
+            tag.className = `sniper-tag ${isLocked ? 'tag-locked' : 'tag-sell'}`; 
+        }
+        if(msgEl) { msgEl.textContent = `P-SCORE: ${res.sScore.toFixed(1)} | ENTRY OPTIMAL`; msgEl.style.color = 'var(--quantum-cyan)'; }
+        if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
+        if(alarmEl) alarmEl.className = 'alarm-icon alarm-sell-fast';
+        card.classList.add('sniper-mode');
+    } else if (res.intent === 'BULL_PREPARE') {
+        if(tag) { tag.textContent = 'PREPARE BUY'; tag.classList.add('tag-intent-buy'); }
+        if(msgEl) { msgEl.textContent = `BULLISH SENTIMENT (${res.bScore.toFixed(1)})`; msgEl.style.color = adviceColor; }
+        if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow prep'; }
+    } else if (res.intent === 'BEAR_PREPARE') {
+        if(tag) { tag.textContent = 'PREPARE SELL'; tag.classList.add('tag-intent-sell'); }
+        if(msgEl) { msgEl.textContent = `BEARISH SENTIMENT (${res.sScore.toFixed(1)})`; msgEl.style.color = adviceColor; }
+        if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow prep'; }
+    } else {
+        if(res.isWhale) {
+            if(tag) { tag.textContent = 'INSTITUSI BERGERAK 🏢'; tag.classList.add('tag-whale'); }
+            if(msgEl) { msgEl.textContent = `MENGANALISIS ARUS MODAL SMART MONEY...`; msgEl.style.color = 'var(--whale-blue)'; }
+            card.classList.add('whale-mode');
+        } else {
+            if(tag) { tag.textContent = 'INDIKATOR NETRAL'; tag.classList.add('tag-wait-bull'); }
+            if(msgEl) { msgEl.textContent = `EVALUASI MATRIKS | ${res.exitAdvice}`; msgEl.style.color = adviceColor; }
+        }
+    }
+    
+    const tpEl = document.getElementById(`tp-${sym}`);
+    const slEl = document.getElementById(`sl-${sym}`);
+    if(tpEl) tpEl.textContent = res.tp.toFixed(res.price<1?4:2);
+    if(slEl) slEl.textContent = res.sl.toFixed(res.price<1?4:2);
+}
+
+function updateMatrixUI(sym) {
+    TIMEFRAMES.forEach(tf => {
+        const el = document.getElementById(`mtx-${sym}-${tf.label}`);
+        if(el) {
+            const rawSig = MTF_MATRIX.get(`${sym}_${tf.label}`) || 'WAIT';
+            const sig = rawSig.replace('_SURGE', '');
+            el.className = 'm-dot';
+            if (sig === 'BUY') el.classList.add('bull');
+            else if (sig === 'SELL') el.classList.add('bear');
+            if(tf.label === CURRENT_TF.label) el.classList.add('active');
+        }
+    });
+}
+
+function startMatrixScanner() {
+    let coinIdx = 0, tfIdx = 0;
+    setInterval(async () => {
+        if(COINS.length === 0) return;
+        const sym = COINS[coinIdx];
+        const tf = TIMEFRAMES[tfIdx];
+        if(tf.label !== CURRENT_TF.label) {
+            try {
+                const hist = await fetchHistory(sym, tf.ws, 100); 
+                if(hist.length > 50) analyzeQuantum(sym, hist, tf, true, false); 
+            } catch(e) {}
+        }
+        tfIdx++;
+        if(tfIdx >= TIMEFRAMES.length) { tfIdx = 0; coinIdx++; if(coinIdx >= COINS.length) coinIdx = 0; }
+    }, 5000); 
+}
+
 /* =========================================
-   MATH HELPERS (UNCHANGED FOR STABILITY)
+   DYNAMIC AI MARKET INTELLIGENCE REPORT
    ========================================= */
+function updateDynamicMarketAnalysis() {
+    const elMarket = document.getElementById('dyn-market-state');
+    const elVol = document.getElementById('dyn-market-volatility');
+    const elWhale = document.getElementById('dyn-whale-state');
+    const elWhaleAdvice = document.getElementById('dyn-whale-advice');
+    const elWarning = document.getElementById('dyn-warning-state');
+    const elTarget = document.getElementById('dyn-target-state');
+
+    if (!elMarket || analysisResults.size === 0) return;
+
+    let buyCount = 0;
+    let sellCount = 0;
+    let whaleCoins = [];
+    let overextendedCoins = [];
+    let btcData = analysisResults.get('BTCUSDT');
+
+    analysisResults.forEach((res, sym) => {
+        if (res.signal === 'BUY') buyCount++;
+        if (res.signal === 'SELL') sellCount++;
+        if (res.isWhale) whaleCoins.push(sym.replace('USDT', ''));
+        if (res.isOverextended) overextendedCoins.push(sym.replace('USDT', ''));
+    });
+
+    const totalCoins = analysisResults.size;
+    const buyRatio = buyCount / totalCoins;
+    const sellRatio = sellCount / totalCoins;
+
+    // 1. KONDISI PASAR GLOBAL
+    let marketStr = "";
+    let tfTypeName = CURRENT_TF.type === 'SCALP' ? 'Jangka Pendek (Scalping)' : (CURRENT_TF.type === 'DAY' ? 'Harian (Intraday)' : 'Jangka Panjang (Makro)');
+    
+    if (buyRatio >= 0.5) {
+        marketStr = `Sentimen ${tfTypeName}: <span class="ai-highlight-green">🟢 BULLISH DOMINANCE</span><br><b>${buyCount}</b> dari <b>${totalCoins}</b> aset utama berpotensi mengalami apresiasi harga pada siklus ini.`;
+    } else if (sellRatio >= 0.5) {
+        marketStr = `Sentimen ${tfTypeName}: <span class="ai-highlight-red">🔴 BEARISH DOMINANCE</span><br><b>${sellCount}</b> dari <b>${totalCoins}</b> aset utama menunjukkan probabilitas depresiasi.`;
+    } else {
+        marketStr = `Sentimen ${tfTypeName}: <span style="color:var(--warning)">⚖️ MARKET SIDEWAYS</span><br>Struktur pasar terkonsolidasi. Penyesuaian eksekusi disarankan untuk siklus ini.`;
+    }
+    elMarket.innerHTML = marketStr;
+
+    if (btcData && btcData.isShock) {
+        elVol.innerHTML = `Indeks Volatilitas: <span class="ai-highlight-red">RISIKO EKSTREM (ANOMALI)</span>. Eksposur disarankan untuk diminimalisir.`;
+    } else {
+        elVol.innerHTML = `Indeks Volatilitas: <b>Normal</b>. Rasio *Risk-to-Reward* berada pada rentang yang kondusif.`;
+    }
+
+    // 2. RADAR ARUS MODAL
+    if (whaleCoins.length > 0) {
+        let coinBadges = whaleCoins.map(c => `<span class="ai-highlight-whale">${c}</span>`).join(" ");
+        elWhale.innerHTML = `Lonjakan volume institusional (Block Trades) terdeteksi secara masif pada aset:<br><br>${coinBadges}`;
+        elWhaleAdvice.innerHTML = `Berdasarkan kalkulasi probabilitas matriks, arus modal ini mengindikasikan potensi penembusan level resistensi struktural (Breakout).`;
+    } else {
+        elWhale.innerHTML = `Volume institusional stabil. Likuiditas pasar saat ini dikendalikan oleh ekuilibrium transaksi ritel standar.`;
+        elWhaleAdvice.innerHTML = `Rekomendasi algoritma: Ikuti sinyal *moving average* sebagai indikator probabilitas utama.`;
+    }
+
+    // 3. PROYEKSI & PERINGATAN
+    if (overextendedCoins.length > 0) {
+        let overBadges = overextendedCoins.map(c => `<b>${c}</b>`).join(", ");
+        elWarning.innerHTML = `⚠️ <span class="ai-highlight-red">ZONA DISTRIBUSI (OVERBOUGHT):</span><br>${overBadges} mengalami deviasi positif ekstrem dari harga wajar. <b>Risiko koreksi substansial sangat tinggi</b>.`;
+    } else {
+        elWarning.innerHTML = `✅ Rasio deviasi harga terhadap rata-rata pergerakan eksponensial dalam batas toleransi wajar.`;
+    }
+
+    if (btcData && btcData.cycleTop && btcData.cycleBot) {
+        elTarget.innerHTML = `<b>Proyeksi Regresi Logaritmik Market Leader (BTC):</b><br>
+        Target Ekstensi Profit: <span class="ai-highlight-green">$${Math.round(btcData.cycleTop).toLocaleString()}</span><br>
+        Target Bottom / Akumulasi: <span class="ai-highlight-red">$${Math.round(btcData.cycleBot).toLocaleString()}</span><br>
+        <i style="font-size:11px; opacity:0.8;">Gunakan kalkulasi siklus di atas sebagai acuan pivot makro.</i>`;
+    }
+}
+
+function initSettingsForm() {
+    document.getElementById('coinInput').value = COINS.join(', ');
+    document.getElementById('profileSelect').value = CURRENT_PROFILE_KEY;
+}
+
+window.saveSettings = function() {
+    const raw = document.getElementById('coinInput').value;
+    COINS = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
+    localStorage.setItem('zavana_coins_q_whale', JSON.stringify(COINS));
+    localStorage.setItem('zavana_risk_profile_q', document.getElementById('profileSelect').value);
+    location.reload(); 
+}
+
+async function toggleWakeLock() {
+    if ('wakeLock' in navigator) {
+        try { wakeLock ? (await wakeLock.release(), wakeLock=null) : (wakeLock=await navigator.wakeLock.request('screen')); } catch(e){}
+        const btn = document.getElementById('wakeLockBtn');
+        if(wakeLock) { btn.classList.add('active'); btn.innerHTML = '⚡ ON'; } else { btn.classList.remove('active'); btn.innerHTML = '⚡ OFF'; }
+    }
+}
+
+/* KUMPULAN INDIKATOR MATEMATIS */
+function calcSMAVolumeArray(data, period) {
+    let results = [];
+    for (let i = 0; i < data.length; i++) {
+        if (i < period - 1) { results.push(data[i].volume); continue; }
+        let sum = 0; for (let j = 0; j < period; j++) sum += data[i - j].volume;
+        results.push(sum / period);
+    }
+    return results;
+}
+function calcSingleSMAVol(data, i, period) {
+    let sum = 0; for(let j=0; j<period; j++) sum += data[i-j].volume;
+    return sum / period;
+}
+function calcMACDArray(data, fast, slow, signal) {
+    let emaFast = calcEMAArray(data, fast);
+    let emaSlow = calcEMAArray(data, slow);
+    let macdLine = [];
+    for(let i=0; i<data.length; i++) macdLine.push(emaFast[i] - emaSlow[i]);
+    
+    let signalLine = []; let k = 2 / (signal + 1); let emaSig = macdLine[0];
+    signalLine.push(emaSig);
+    for(let i=1; i<macdLine.length; i++) { emaSig = (macdLine[i] * k) + (emaSig * (1 - k)); signalLine.push(emaSig); }
+    
+    let res = [];
+    for(let i=0; i<data.length; i++) res.push({ line: macdLine[i], sig: signalLine[i], hist: macdLine[i] - signalLine[i] });
+    return res;
+}
+function calcSingleATR(data, i, prevAtr, period) {
+    const tr = Math.max(data[i].high - data[i].low, Math.abs(data[i].high - data[i-1].close), Math.abs(data[i].low - data[i-1].close));
+    return ((prevAtr * (period - 1)) + tr) / period;
+}
+function calcSingleSMA(data, i, period) {
+    let sum = 0; for(let j=0; j<period; j++) sum += data[i-j].close;
+    return sum / period;
+}
 function calcADXArray(data, period) {
     if(data.length < period * 2) return new Array(data.length).fill(0);
     let tr = [], dmPlus = [], dmMinus = [];
@@ -1297,7 +1364,6 @@ function calcADXArray(data, period) {
     for(let i=0; i<adxVals.length; i++) result[i+offset] = adxVals[i];
     return result;
 }
-
 function calcVolStopSeries(data, length, factor) {
     let results = [];
     let max = data[0].close; let min = data[0].close;
@@ -1379,277 +1445,6 @@ function findOrderBlocksAdvanced(data, periods = 5) {
         if(bullOB && bearOB) break;
     }
     return { bullOB, bearOB };
-}
-
-function updateCardUI(sym, res) {
-    const card = document.getElementById(`card-${sym}`);
-    if(!card) return;
-    const setText = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
-    const tag = card.querySelector('.sniper-tag');
-    const msgEl = document.getElementById(`msg-${sym}`);
-    const visualEl = document.getElementById(`visual-${sym}`);
-    const alarmEl = document.getElementById(`alarm-${sym}`);
-    
-    card.classList.remove('fomo-mode', 'sniper-mode');
-    if(tag) tag.className = 'sniper-tag';
-    if(visualEl) { visualEl.className = 'visual-arrow'; visualEl.textContent = '➤'; }
-    if(alarmEl) alarmEl.className = 'alarm-icon';
-
-    setText(`note-${sym}`, res.note);
-
-    if (res.isShock) {
-        card.classList.add('fomo-mode');
-        if(tag) { tag.textContent = 'NEWS RISK'; tag.classList.add('tag-news'); }
-        if(msgEl) { msgEl.textContent = `VOL SHOCK! WAIT.`; msgEl.style.color = '#ff4444'; }
-        return;
-    }
-    if (res.signal === 'COOLDOWN') {
-        if(tag) { tag.textContent = 'COOLDOWN'; tag.classList.add('tag-cooldown'); }
-        if(msgEl) { msgEl.textContent = `${res.hint}`; msgEl.style.color = '#848e9c'; }
-        return;
-    }
-    if (res.isOverextended) {
-        card.classList.add('fomo-mode');
-        if(tag) { tag.textContent = 'OVEREXTENDED (SKIP)'; tag.classList.add('tag-fomo'); }
-        if(msgEl) { msgEl.textContent = `TOO FAR (${res.distRatio.toFixed(1)}x ATR)`; msgEl.style.color = '#ff4444'; }
-        return; 
-    }
-
-    let adviceColor = '#848e9c';
-    if (res.exitAdvice === 'HOLD') adviceColor = '#0ecb81'; 
-    if (res.exitAdvice === 'TAKE PARTIAL') adviceColor = '#FCD535';
-    if (res.exitAdvice === 'EXIT RISK') adviceColor = '#cf304a';
-
-    if (res.signal === 'BUY') {
-        if(tag) { tag.textContent = 'EXECUTE BUY'; tag.classList.add('tag-buy'); }
-        if(msgEl) { msgEl.textContent = `BUY SCORE: ${res.bScore.toFixed(1)}`; msgEl.style.color = adviceColor; }
-        if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
-        if(alarmEl) alarmEl.className = 'alarm-icon alarm-active-fast';
-        card.classList.add('sniper-mode');
-    } else if (res.signal === 'SELL') {
-        if(tag) { tag.textContent = 'EXECUTE SELL'; tag.classList.add('tag-sell'); }
-        if(msgEl) { msgEl.textContent = `SELL SCORE: ${res.sScore.toFixed(1)}`; msgEl.style.color = adviceColor; }
-        if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
-        if(alarmEl) alarmEl.className = 'alarm-icon alarm-sell-fast';
-        card.classList.add('sniper-mode');
-    } else if (res.intent === 'BULL_PREPARE') {
-        if(tag) { tag.textContent = 'PREPARE BUY'; tag.classList.add('tag-intent-buy'); }
-        if(msgEl) { msgEl.textContent = `BULLISH (${res.bScore.toFixed(1)})`; msgEl.style.color = adviceColor; }
-        if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow prep'; }
-    } else if (res.intent === 'BEAR_PREPARE') {
-        if(tag) { tag.textContent = 'PREPARE SELL'; tag.classList.add('tag-intent-sell'); }
-        if(msgEl) { msgEl.textContent = `BEARISH (${res.sScore.toFixed(1)})`; msgEl.style.color = adviceColor; }
-        if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow prep'; }
-    } else {
-        if(tag) { tag.textContent = 'WAITING SETUP'; tag.classList.add('tag-wait-bull'); }
-        if(msgEl) { msgEl.textContent = `SCANNING | ${res.exitAdvice}`; msgEl.style.color = adviceColor; }
-    }
-    
-    const btnBuy = document.getElementById(`btn-buy-${sym}`);
-    if(btnBuy) btnBuy.className = `btn-trade buy ${res.signal==='BUY'?'active':''}`;
-    const btnSell = document.getElementById(`btn-sell-${sym}`);
-    if(btnSell) btnSell.className = `btn-trade sell ${res.signal==='SELL'?'active':''}`;
-    
-    setText(`sc-buy-${sym}`, res.bScore ? res.bScore.toFixed(1) : '0.0');
-    setText(`sc-sell-${sym}`, res.sScore ? res.sScore.toFixed(1) : '0.0');
-    setText(`e-${sym}`, res.price.toFixed(res.price<1?4:2));
-    setText(`dist-${sym}`, res.distRatio.toFixed(1) + 'x ATR');
-    setText(`tp-${sym}`, res.tp.toFixed(res.price<1?4:2));
-    setText(`sl-${sym}`, res.sl.toFixed(res.price<1?4:2));
-}
-
-function updateMatrixUI(sym) {
-    TIMEFRAMES.forEach(tf => {
-        const el = document.getElementById(`mtx-${sym}-${tf.label}`);
-        if(el) {
-            const rawSig = MTF_MATRIX.get(`${sym}_${tf.label}`) || 'WAIT';
-            const sig = rawSig.replace('_SURGE', '');
-            el.className = 'm-dot';
-            if (sig === 'BUY') el.classList.add('bull');
-            else if (sig === 'SELL') el.classList.add('bear');
-            if(tf.label === CURRENT_TF.label) el.classList.add('active');
-        }
-    });
-}
-
-function startMatrixScanner() {
-    let coinIdx = 0, tfIdx = 0;
-    setInterval(async () => {
-        if(COINS.length === 0) return;
-        const sym = COINS[coinIdx];
-        const tf = TIMEFRAMES[tfIdx];
-        if(tf.label !== CURRENT_TF.label) {
-            try {
-                const hist = await fetchHistory(sym, tf.ws, 200);
-                // Background Matrix Scan: Full logic but not rendered
-                if(hist.length > 50) analyze(sym, hist, tf, true, false); 
-            } catch(e) {}
-        }
-        tfIdx++;
-        if(tfIdx >= TIMEFRAMES.length) { tfIdx = 0; coinIdx++; if(coinIdx >= COINS.length) coinIdx = 0; }
-    }, 1000); 
-}
-
-/* =========================================
-   SETTINGS & UTILS
-   ========================================= */
-function initSettingsForm() {
-    document.getElementById('coinInput').value = COINS.join(', ');
-}
-
-window.saveSettings = function() {
-    const raw = document.getElementById('coinInput').value;
-    COINS = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-    localStorage.setItem('zavana_coins', JSON.stringify(COINS));
-    location.reload(); 
-}
-
-async function toggleWakeLock() {
-    if ('wakeLock' in navigator) {
-        try { wakeLock ? (await wakeLock.release(), wakeLock=null) : (wakeLock=await navigator.wakeLock.request('screen')); } catch(e){}
-        const btn = document.getElementById('wakeLockBtn');
-        if(wakeLock) { btn.classList.add('active'); btn.innerHTML = '⚡ ON'; } else { btn.classList.remove('active'); btn.innerHTML = '⚡ OFF'; }
-    }
-}
-
-// BROWSER TITLE FLASHING
-function flashTitle(msg, isUrgent) {
-    if(!msg) { 
-        if(titleInterval) clearInterval(titleInterval); 
-        document.title = "ZAVANA V25.20 PRO"; 
-        return; 
-    }
-    if(titleInterval) clearInterval(titleInterval);
-    let state = false;
-    titleInterval = setInterval(() => {
-        document.title = state ? msg : (isUrgent ? "🔴 ACTION REQUIRED" : "⚠️ MARKET ALERT");
-        state = !state;
-    }, 1000);
-}
-
-// AUDIO ENGINE (FIXED V25.20)
-window.initAudioContext = function() {
-    if(!audioCtx) audioCtx = new AudioContext(); 
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    
-    // Play test beep
-    const osc=audioCtx.createOscillator(); const g=audioCtx.createGain(); 
-    osc.connect(g); g.connect(audioCtx.destination);
-    osc.frequency.setValueAtTime(600,audioCtx.currentTime); 
-    g.gain.setValueAtTime(0.1,audioCtx.currentTime); 
-    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.1);
-    osc.start(); osc.stop(audioCtx.currentTime+0.1);
-    
-    const btn = document.getElementById('audioInitBtn');
-    btn.classList.remove('needed');
-    btn.classList.add('active');
-    btn.textContent = "🔊 AUDIO ON";
-    showToast("Audio System Initialized");
-}
-
-function triggerAlert(sym, type) {
-    const now = Date.now();
-    if(now - (audioCooldown.get(sym)||0) > 60000) {
-        if(Notification.permission==='granted') new Notification(`ZAVANA ${type}: ${sym}`);
-        playBeep(); audioCooldown.set(sym, now);
-    }
-}
-async function playBeep() {
-    if(!audioCtx) return; 
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    const osc=audioCtx.createOscillator(), g=audioCtx.createGain(); osc.connect(g); g.connect(audioCtx.destination);
-    osc.frequency.setValueAtTime(880,audioCtx.currentTime); g.gain.setValueAtTime(0.05,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
-    osc.start(); osc.stop(audioCtx.currentTime+0.2); 
-}
-
-/* =========================================
-   DOCS & SIMULATOR LOGIC
-   ========================================= */
-let logicChart;
-function initLogicChart() {
-    if(!document.getElementById('logicChart')) return;
-    const ctx = document.getElementById('logicChart').getContext('2d');
-    const generateRangeData = () => Array.from({length: 50}, (_, i) => Math.sin(i * 0.5) * 20 + 50 + (Math.random() * 5));
-    const generateTrendData = () => Array.from({length: 50}, (_, i) => 20 + (i * 1.5) + (Math.sin(i) * 5));
-    const generateShockData = () => Array.from({length: 50}, (_, i) => (i > 35 && i < 45) ? 50 + (Math.random() * 80 - 40) : 50 + (Math.random() * 5));
-
-    const config = {
-        type: 'line',
-        data: {
-            labels: Array.from({length: 50}, (_, i) => i),
-            datasets: [{
-                label: 'Price Action', data: generateRangeData(), borderColor: '#848e9c', borderWidth: 2, pointRadius: 0, tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } },
-            scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } }, animation: { duration: 1000 }
-        }
-    };
-    logicChart = new Chart(ctx, config);
-    window.logicChart = logicChart;
-    window.generateRangeData = generateRangeData;
-    window.generateTrendData = generateTrendData;
-    window.generateShockData = generateShockData;
-}
-
-window.updateLogicChart = function(mode, btn) {
-    if(!window.logicChart) return;
-    document.querySelectorAll('.logic-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const explanation = document.getElementById('logic-explanation');
-    let newData, color, text;
-    if (mode === 'range') {
-        newData = window.generateRangeData(); color = '#848e9c';
-        text = "<strong>RANGE (Sideways):</strong> ADX Rendah (<20). Sistem menyarankan strategi Ping-pong/Scalping pendek. Skor diperketat.";
-    } else if (mode === 'trend') {
-        newData = window.generateTrendData(); color = '#0ecb81';
-        text = "<strong>TREND (Momentum):</strong> ADX Tinggi (>25). Sistem agresif mencari pullback/breakout. Skor entry lebih longgar.";
-    } else if (mode === 'shock') {
-        newData = window.generateShockData(); color = '#f6465d';
-        text = "<strong>SHOCK (News/Crash):</strong> Volatilitas > 3x ATR. Sistem masuk mode <strong>NEWS RISK</strong>. Sinyal diblokir otomatis.";
-    }
-    window.logicChart.data.datasets[0].data = newData;
-    window.logicChart.data.datasets[0].borderColor = color;
-    window.logicChart.update();
-    explanation.innerHTML = text;
-}
-
-window.updateSimulator = function(val) {
-    const score = parseFloat(val);
-    document.getElementById('simScoreVal').innerText = score.toFixed(1);
-    const simCard = document.getElementById('simCard');
-    const simTag = document.getElementById('simTag');
-    const simMsg = document.getElementById('simMsg');
-    const simArrow = document.getElementById('simArrow');
-    const simBtnBuy = document.getElementById('simBtnBuy');
-    const simScoreText = document.getElementById('simScoreText');
-    simCard.className = 'card';
-    simBtnBuy.style.opacity = '0.3'; simArrow.style.opacity = '0.2'; simArrow.innerText = '➤';
-    
-    if (score < 8.0) {
-        simCard.classList.remove('sniper-mode', 'fomo-mode');
-        simTag.innerText = "WAIT"; simTag.className = "sniper-tag tag-wait-bull";
-        simMsg.innerText = "SCANNING"; simMsg.style.color = "var(--text-secondary)";
-        simScoreText.innerText = "WAITING SETUP"; simScoreText.style.color = "var(--text-secondary)";
-    } else if (score >= 8.0 && score <= 8.3) {
-        simCard.classList.add('sniper-mode');
-        simTag.innerText = "EXECUTE BUY"; simTag.className = "sniper-tag tag-buy";
-        simMsg.innerText = "SCORE: " + score.toFixed(1) + " | SAFE"; simMsg.style.color = "var(--binance-green)";
-        simScoreText.innerText = "EARLY ENTRY"; simScoreText.style.color = "var(--binance-green)";
-        simBtnBuy.style.opacity = '1'; simArrow.style.opacity = '1'; simArrow.innerText = '▲'; simArrow.style.color = "var(--binance-green)";
-    } else if (score >= 8.4 && score <= 8.7) {
-        simCard.classList.add('sniper-mode'); simCard.style.borderColor = "var(--accent)";
-        simTag.innerText = "STRONG BUY"; simTag.className = "sniper-tag tag-intent-buy";
-        simMsg.innerText = "SCORE: " + score.toFixed(1) + " | AGG"; simMsg.style.color = "var(--accent)";
-        simScoreText.innerText = "PRIME MOMENTUM"; simScoreText.style.color = "var(--accent)";
-        simBtnBuy.style.opacity = '1'; simArrow.style.opacity = '1'; simArrow.innerText = '▲'; simArrow.style.color = "var(--accent)";
-    } else {
-        simCard.classList.add('fomo-mode');
-        simTag.innerText = "SKIP / RISKY"; simTag.className = "sniper-tag tag-fomo";
-        simMsg.innerText = "TOO FAR"; simMsg.style.color = "var(--danger)";
-        simScoreText.innerText = "OVEREXTENDED"; simScoreText.style.color = "var(--danger)";
-    }
 }
 
 const checkLib = setInterval(() => { if (typeof LightweightCharts !== 'undefined') { clearInterval(checkLib); startApp(); } }, 200);
