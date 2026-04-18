@@ -73,10 +73,6 @@
   .tf-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
   .tf-btn.active { background: var(--bg-hover); color: var(--accent); font-weight: 700; box-shadow: 0 0 5px rgba(252, 213, 53, 0.2); }
 
-  .action-btn { background: var(--bg-hover); color: var(--text-primary); border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .action-btn:hover { background: #3a4049; }
-  .wakelock-btn.active { color: var(--accent); background: rgba(252, 213, 53, 0.15); border: 1px solid rgba(252, 213, 53, 0.3); }
-
   .strategy-badge { font-size: 13px; font-weight: 700; color: var(--text-primary); font-family: 'JetBrains Mono'; background: var(--bg-card); padding: 8px 14px; border-radius: 4px; border: 1px solid var(--border); }
 
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
@@ -177,7 +173,6 @@
   .ai-item { margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); transition: all 0.3s; }
   .ai-item b { color: var(--text-primary); }
 
-  /* CSS KHUSUS UNTUK MERAPIKAN TAMPILAN PROYEKSI & CATATAN AI */
   .proyeksi-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #2b3139; }
   .proyeksi-row:last-child { border-bottom: none; padding-bottom: 0; }
   .proyeksi-label { font-size: 12px; color: var(--text-secondary); }
@@ -255,11 +250,11 @@
                 <div id="dyn-news-state">Loading...</div>
             </div>
             <div class="ai-col">
-                <h4>📊 PROYEKSI BTC (MINGGUAN & BULANAN)</h4>
+                <h4>📊 PROYEKSI SIKLUS BULANAN</h4>
                 <div id="dyn-btc-short">Loading...</div>
             </div>
             <div class="ai-col">
-                <h4>🎯 PROYEKSI BTC (TAHUNAN) & MARKET CYCLE</h4>
+                <h4>🎯 TARGET TAHUNAN & WHALE</h4>
                 <div id="dyn-btc-long">Loading...</div>
             </div>
         </div>
@@ -1229,7 +1224,7 @@ function startMatrixScanner() {
 
 /* =========================================
    DIKEMBALIKAN KE ASLI: AI REPORT BAR BAWAH 
-   + PREDIKSI REAL-TIME BTC
+   + PREDIKSI REAL-TIME BTC DENGAN SIKLUS TANGGAL PASTI
    ========================================= */
 function updateDynamicMarketAnalysis() {
     const elNews = document.getElementById('dyn-news-state');
@@ -1287,19 +1282,20 @@ function updateDynamicMarketAnalysis() {
     const nextMonthYear = currentMonthIdx === 11 ? currentYear + 1 : currentYear;
     const nextMonthName = months[nextMonthIdx];
 
-    let fasePasar = currentDay <= 10 ? "Akumulasi Awal Bulan" : 
-                    currentDay <= 21 ? "Konsolidasi Pertengahan Bulan" : 
-                                       "Distribusi Akhir Bulan";
-
-    const volEndOfMonth = baseAtr * Math.sqrt(daysRemaining * 96);
+    // LOGIKA SIKLUS TANGGAL PASTI:
+    // Puncak momentum biasanya pertengahan bulan (tgl 15-20), Dasar/Shakeout akhir bulan (tgl 25-28)
+    const volEndOfMonthHigh = baseAtr * Math.sqrt(Math.max(1, 20 - currentDay) * 96); // Target Peak Cycle
+    const volEndOfMonthLow = baseAtr * Math.sqrt(daysRemaining * 96); // Target Expiry Expiration
+    
     const volNextMonth = baseAtr * Math.sqrt(daysInMonth * 96); 
     const volYear = baseAtr * Math.sqrt(35040); 
 
     const driftM = isBull ? 1.4 : 0.7;
     const driftY = isBull ? 1.8 : 0.9;
 
-    const eomHigh = currentBTC + (volEndOfMonth * driftM);
-    const eomLow = currentBTC - (volEndOfMonth * (2 - driftM));
+    // Target Harga Akhir Bulan yang Pasti (Dibedakan Waktunya)
+    const eomHigh = currentBTC + (volEndOfMonthHigh * driftM);
+    const eomLow = currentBTC - (volEndOfMonthLow * (2 - driftM));
 
     const nextMonthHigh = currentBTC + (volNextMonth * driftM);
     const nextMonthLow = currentBTC - (volNextMonth * (2 - driftM));
@@ -1307,62 +1303,55 @@ function updateDynamicMarketAnalysis() {
     const yearlyHigh = currentBTC + (volYear * driftY); 
     const yearlyLow = Math.max(currentBTC * 0.3, currentBTC - (volYear * 0.8));
 
-    // EST Date logic for real-time tracking
-    const estNextMonthHighDate = `Pertengahan ${nextMonthName} ${nextMonthYear}`;
-    const estNextMonthLowDate = `Akhir ${nextMonthName} ${nextMonthYear}`;
-    let estYearlyHighDate = isBull ? `November ${currentYear}` : `Februari ${currentYear}`;
-    let estYearlyLowDate = isBull ? `Januari ${currentYear}` : `Desember ${currentYear}`;
-
     elBtcShort.innerHTML = `
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Target Tutup Bulan (High)</span>
+            <span class="proyeksi-label">Puncak Momentum Bulanan</span>
             <div class="proyeksi-val">
                 <span class="proyeksi-price up">${formatPrecision(eomHigh)}</span>
-                <span class="proyeksi-date">Est: Akhir ${currentMonthName}</span>
+                <span class="proyeksi-date">Est: Tgl 15-20 ${currentMonthName}</span>
             </div>
         </div>
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Target Tutup Bulan (Low)</span>
+            <span class="proyeksi-label">Dasar Opsi/Shakeout (Low)</span>
             <div class="proyeksi-val">
                 <span class="proyeksi-price down">${formatPrecision(eomLow)}</span>
-                <span class="proyeksi-date">Est: Akhir ${currentMonthName}</span>
+                <span class="proyeksi-date">Est: Tgl 25-28 ${currentMonthName}</span>
             </div>
         </div>
         <div class="ai-divider" style="margin: 5px 0;"></div>
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Proyeksi Bln Depan (High)</span>
+            <span class="proyeksi-label">Target Bulan Depan (High)</span>
             <div class="proyeksi-val">
                 <span class="proyeksi-price up">${formatPrecision(nextMonthHigh)}</span>
-                <span class="proyeksi-date">Est: ${estNextMonthHighDate}</span>
+                <span class="proyeksi-date">Est: Pertengahan ${nextMonthName}</span>
             </div>
         </div>
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Proyeksi Bln Depan (Low)</span>
+            <span class="proyeksi-label">Target Bulan Depan (Low)</span>
             <div class="proyeksi-val">
                 <span class="proyeksi-price down">${formatPrecision(nextMonthLow)}</span>
-                <span class="proyeksi-date">Est: ${estNextMonthLowDate}</span>
+                <span class="proyeksi-date">Est: Akhir ${nextMonthName}</span>
             </div>
         </div>
     `;
 
     elBtcLong.innerHTML = `
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Tahunan (Proyeksi Puncak)</span>
+            <span class="proyeksi-label">Tahunan (Target Puncak)</span>
             <div class="proyeksi-val">
                 <span class="proyeksi-price up">${formatPrecision(yearlyHigh)}</span>
-                <span class="proyeksi-date">Est: ${estYearlyHighDate}</span>
+                <span class="proyeksi-date">Est: Q4 ${currentYear}</span>
             </div>
         </div>
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Tahunan (Proyeksi Dasar)</span>
+            <span class="proyeksi-label">Tahunan (Titik Dasar)</span>
             <div class="proyeksi-val">
                 <span class="proyeksi-price down">${formatPrecision(yearlyLow)}</span>
-                <span class="proyeksi-date">Est: ${estYearlyLowDate}</span>
+                <span class="proyeksi-date">Est: Siklus Akumulasi</span>
             </div>
         </div>
         <div class="ai-divider">
-            <div class="ai-item" style="margin-bottom: 8px;">Fase Siklus Bulanan: <b>${fasePasar}</b></div>
-            <div class="ai-item" style="margin-bottom: 0;">Market Maker: <b>${isBull?'AKUMULASI':'DISTRIBUSI'}</b></div>
+            <div class="ai-item" style="margin-bottom: 0; color:var(--accent);"><b>STRATEGI HOLD:</b> Pasang Limit Long di area <b>${formatPrecision(eomLow)}</b> untuk hold hingga Q4. Hindari masuk di fase tgl 20 ke atas (rawan koreksi expiry).</div>
         </div>
     `;
 }
