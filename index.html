@@ -127,7 +127,7 @@
   @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
   @keyframes blink-arrow { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
 
-  /* NEW COMPACT POSITION TRACKER - BINANCE STYLE */
+  /* COMPACT POSITION TRACKER */
   .pos-tracker-box { padding: 12px 16px; background: #1a1e24; border-top: 1px solid #2b3139; border-bottom: 1px solid var(--bg-base); }
   .pos-title { font-size: 11px; color: var(--text-primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
   .tracker-row { display: flex; gap: 12px; margin-bottom: 8px; }
@@ -166,20 +166,27 @@
   .btn-trade.active { opacity: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transform: scale(1.02); }
 
   #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-  .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--quantum-cyan); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
   .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--text-secondary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-  .ai-report-box { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; color: var(--text-primary); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); position: relative; overflow: hidden; }
+  .ai-report-box { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; color: var(--text-primary); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); position: relative; overflow: hidden; }
   .ai-report-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--border); }
   
-  .ai-col h4 { color: var(--text-primary); margin: 0 0 15px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--bg-hover); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+  .ai-col { background: var(--bg-base); padding: 20px; border-radius: 6px; border: 1px solid #1e2329; display: flex; flex-direction: column; }
+  .ai-col h4 { color: var(--text-primary); margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px dashed var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
   .ai-item { margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); transition: all 0.3s; }
   .ai-item b { color: var(--text-primary); }
-  .ai-highlight-green { color: var(--binance-green); font-weight: bold; }
-  .ai-highlight-red { color: var(--binance-red); font-weight: bold; }
-  .ai-highlight-cyan { color: var(--quantum-cyan); font-weight: bold; }
-  .ai-highlight-whale { background: var(--whale-blue); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+
+  /* CSS KHUSUS UNTUK MERAPIKAN TAMPILAN PROYEKSI & CATATAN AI */
+  .proyeksi-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #2b3139; }
+  .proyeksi-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .proyeksi-label { font-size: 12px; color: var(--text-secondary); }
+  .proyeksi-val { text-align: right; }
+  .proyeksi-price { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; }
+  .proyeksi-price.up { color: var(--binance-green); }
+  .proyeksi-price.down { color: var(--danger); }
+  .proyeksi-date { font-size: 10px; color: #5e6673; display: block; margin-top: 2px; font-weight: 500; }
+  .ai-divider { margin: 15px 0 0 0; border-top: 1px solid var(--border); padding-top: 15px; }
 
   .table-wrapper { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 20px; }
   table { width: 100%; border-collapse: collapse; min-width: 800px; }
@@ -189,7 +196,7 @@
    
   .settings-box { max-width: 600px; margin: 40px auto; background: var(--bg-card); padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
   input[type="text"], textarea, select { width: 100%; background: var(--bg-base); border: 1px solid #474d57; color: white; padding: 12px; border-radius: 4px; font-family: inherit; margin-bottom: 20px; font-size: 14px; }
-  .btn-primary { width: 100%; background: var(--quantum-cyan); color: #000; font-weight: 700; padding: 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+  .btn-primary { width: 100%; background: var(--text-primary); color: #000; font-weight: 700; padding: 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
 
   #toast-container { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 1000; pointer-events: none; }
   .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; margin-bottom: 10px; font-size: 14px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center; font-weight: 500; }
@@ -499,7 +506,7 @@ function renderPosBox(sym) {
             <div class="pos-active-state show" style="flex-direction:column; align-items:stretch;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #2b3139; padding-bottom:8px;">
                     <span style="font-size:11px; color:var(--text-secondary); font-weight:bold;">
-                        <span style="color:${typeColor}">${typeText}</span> • <span style="color:var(--accent);">${marginBadge}</span>
+                        <span style="color:${typeColor}">${typeText}</span> • <span style="color:var(--text-primary);">${marginBadge}</span>
                     </span>
                     <button class="btn-pos clear" style="padding:0 8px; height: 24px; font-size:10px; flex:none;" onclick="clearPos('${sym}')">TUTUP</button>
                 </div>
@@ -1259,18 +1266,27 @@ function updateDynamicMarketAnalysis() {
     const activeNews1 = newsEvents[Math.floor(Date.now() / 30000) % newsEvents.length];
 
     elNews.innerHTML = `
-        <div class="ai-item">${activeNews1}</div>
-        <div class="ai-item">Korelasi Makro: USDT ${macroOpposite}, mendorong harga BTC menjadi <b>${macroTrend}</b>.</div>
-        <div class="ai-item" style="margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">Sistem Tracker: <b>Memantau ${totalPos} Posisi Terbuka.</b></div>
+        <div class="ai-item" style="flex: 1;">${activeNews1}</div>
+        <div class="ai-item" style="flex: 1;">Korelasi Makro: USDT ${macroOpposite}, mendorong harga BTC menjadi <b>${macroTrend}</b>.</div>
+        <div class="ai-item ai-divider" style="margin-bottom: 0;">Sistem Tracker: <b>Memantau ${totalPos} Posisi Terbuka.</b></div>
     `;
 
     const baseAtr = btcData.atr || (currentBTC * 0.005);
 
     const now = new Date();
     const currentDay = now.getDate();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const currentYear = now.getFullYear();
+    const currentMonthIdx = now.getMonth();
+    const daysInMonth = new Date(currentYear, currentMonthIdx + 1, 0).getDate();
     const daysRemaining = Math.max(1, daysInMonth - currentDay); 
     
+    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const currentMonthName = months[currentMonthIdx];
+    
+    const nextMonthIdx = (currentMonthIdx + 1) % 12;
+    const nextMonthYear = currentMonthIdx === 11 ? currentYear + 1 : currentYear;
+    const nextMonthName = months[nextMonthIdx];
+
     let fasePasar = currentDay <= 10 ? "Akumulasi Awal Bulan" : 
                     currentDay <= 21 ? "Konsolidasi Pertengahan Bulan" : 
                                        "Distribusi Akhir Bulan";
@@ -1291,32 +1307,63 @@ function updateDynamicMarketAnalysis() {
     const yearlyHigh = currentBTC + (volYear * driftY); 
     const yearlyLow = Math.max(currentBTC * 0.3, currentBTC - (volYear * 0.8));
 
+    // EST Date logic for real-time tracking
+    const estNextMonthHighDate = `Pertengahan ${nextMonthName} ${nextMonthYear}`;
+    const estNextMonthLowDate = `Akhir ${nextMonthName} ${nextMonthYear}`;
+    let estYearlyHighDate = isBull ? `November ${currentYear}` : `Februari ${currentYear}`;
+    let estYearlyLowDate = isBull ? `Januari ${currentYear}` : `Desember ${currentYear}`;
+
     elBtcShort.innerHTML = `
-        <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Target Tutup Bulan Ini (High):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(eomHigh)}</b>
+        <div class="proyeksi-row">
+            <span class="proyeksi-label">Target Tutup Bulan (High)</span>
+            <div class="proyeksi-val">
+                <span class="proyeksi-price up">${formatPrecision(eomHigh)}</span>
+                <span class="proyeksi-date">Est: Akhir ${currentMonthName}</span>
+            </div>
         </div>
-        <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Target Tutup Bulan Ini (Low):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(eomLow)}</b>
+        <div class="proyeksi-row">
+            <span class="proyeksi-label">Target Tutup Bulan (Low)</span>
+            <div class="proyeksi-val">
+                <span class="proyeksi-price down">${formatPrecision(eomLow)}</span>
+                <span class="proyeksi-date">Est: Akhir ${currentMonthName}</span>
+            </div>
         </div>
-        <div class="ai-item" style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">
-            <span>Proyeksi Bulan Depan (High):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(nextMonthHigh)}</b>
+        <div class="ai-divider" style="margin: 5px 0;"></div>
+        <div class="proyeksi-row">
+            <span class="proyeksi-label">Proyeksi Bln Depan (High)</span>
+            <div class="proyeksi-val">
+                <span class="proyeksi-price up">${formatPrecision(nextMonthHigh)}</span>
+                <span class="proyeksi-date">Est: ${estNextMonthHighDate}</span>
+            </div>
         </div>
-        <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Proyeksi Bulan Depan (Low):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(nextMonthLow)}</b>
+        <div class="proyeksi-row">
+            <span class="proyeksi-label">Proyeksi Bln Depan (Low)</span>
+            <div class="proyeksi-val">
+                <span class="proyeksi-price down">${formatPrecision(nextMonthLow)}</span>
+                <span class="proyeksi-date">Est: ${estNextMonthLowDate}</span>
+            </div>
         </div>
     `;
 
     elBtcLong.innerHTML = `
-        <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Tahunan (Proyeksi Puncak):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(yearlyHigh)}</b>
+        <div class="proyeksi-row">
+            <span class="proyeksi-label">Tahunan (Proyeksi Puncak)</span>
+            <div class="proyeksi-val">
+                <span class="proyeksi-price up">${formatPrecision(yearlyHigh)}</span>
+                <span class="proyeksi-date">Est: ${estYearlyHighDate}</span>
+            </div>
         </div>
-        <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Tahunan (Proyeksi Dasar):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(yearlyLow)}</b>
+        <div class="proyeksi-row">
+            <span class="proyeksi-label">Tahunan (Proyeksi Dasar)</span>
+            <div class="proyeksi-val">
+                <span class="proyeksi-price down">${formatPrecision(yearlyLow)}</span>
+                <span class="proyeksi-date">Est: ${estYearlyLowDate}</span>
+            </div>
         </div>
-        <div class="ai-item" style="margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">
-            Fase Siklus Bulanan: <b>${fasePasar}</b>
+        <div class="ai-divider">
+            <div class="ai-item" style="margin-bottom: 8px;">Fase Siklus Bulanan: <b>${fasePasar}</b></div>
+            <div class="ai-item" style="margin-bottom: 0;">Market Maker: <b>${isBull?'AKUMULASI':'DISTRIBUSI'}</b></div>
         </div>
-        <div class="ai-item">Aktivitas Market Maker: Trend makro saat ini <b>${isBull?'AKUMULASI':'DISTRIBUSI'}</b>.</div>
     `;
 }
 
