@@ -332,14 +332,16 @@ let binanceSocket = null;
 
 const TIMEFRAMES = [
   { label: '1m',  ws: '1m',  limit: 400, agg: 1, type: 'SCALP' }, 
-  { label: '5m',  ws: '5m',  limit: 400, agg: 5, type: 'SCALP' },
   { label: '15m', ws: '15m', limit: 400, agg: 15, type: 'DAY' },
   { label: '1H',  ws: '1h',  limit: 400, agg: 60, type: 'DAY' },
   { label: '4H',  ws: '4h',  limit: 400, agg: 240, type: 'SWING' },
-  { label: '1D',  ws: '1d',  limit: 400, agg: 1440, type: 'INVEST' }
+  { label: '6H',  ws: '6h',  limit: 400, agg: 360, type: 'SWING' },
+  { label: '1D',  ws: '1d',  limit: 400, agg: 1440, type: 'INVEST' },
+  { label: '1W',  ws: '1w',  limit: 400, agg: 10080, type: 'MACRO' },
+  { label: '1M',  ws: '1M',  limit: 400, agg: 43200, type: 'MACRO' }
 ];
 
-let CURRENT_TF = TIMEFRAMES[2]; 
+let CURRENT_TF = TIMEFRAMES[1]; // Diatur agar default tetap di 15m saat pertama kali dibuka
 let pollingInterval = null; 
 let lastSocketTime = Date.now(); 
 
