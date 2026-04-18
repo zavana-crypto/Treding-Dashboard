@@ -382,10 +382,10 @@ function updateHealthMonitor() {
     const diff = now - lastSocketTime;
     const dot = document.getElementById('healthDot');
     const txt = document.getElementById('healthText');
-    if (diff > 8000) {
-        dot.className = 'health-dot bad'; txt.textContent = `SYNC: Lag (${(diff/1000).toFixed(1)}s)`; txt.style.color = 'var(--danger)';
+    if (diff > 10000) {
+        dot.className = 'health-dot bad'; txt.textContent = `SYNC: Terputus, Reconnecting...`; txt.style.color = 'var(--danger)';
     } else {
-        dot.className = 'health-dot ok'; txt.textContent = `SYNC: CONNECTED (${diff}ms)`; txt.style.color = 'var(--binance-green)';
+        dot.className = 'health-dot ok'; txt.textContent = `SYNC: LIVE (Fast Polling)`; txt.style.color = 'var(--binance-green)';
     }
 }
 
@@ -638,10 +638,17 @@ function renderGrid() {
                 crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false 
             }));
         }
+
+        // --- 2. INDIKATOR SMART SRv2 + TREND FILTERS ---
+        const ema50Series = chart.addLineSeries({ color: 'rgba(255, 165, 0, 0.8)', lineWidth: 1, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
+        const ema200Series = chart.addLineSeries({ color: 'rgba(41, 98, 255, 0.8)', lineWidth: 2, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
+        const vwapSeries = chart.addLineSeries({ color: 'rgba(128, 0, 128, 0.6)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
+        const srv2ResSeries = chart.addLineSeries({ color: 'rgba(246, 70, 93, 0.8)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
+        const srv2SupSeries = chart.addLineSeries({ color: 'rgba(14, 203, 129, 0.8)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
         
         new ResizeObserver(e => { if(e[0]) chart.applyOptions({ width: e[0].contentRect.width, height: e[0].contentRect.height }); }).observe(cont);
         
-        charts.set(s, { chart, series, liqLowSeries, liqHighSeries, markersHash: "" });
+        charts.set(s, { chart, series, liqLowSeries, liqHighSeries, ema50Series, ema200Series, vwapSeries, srv2ResSeries, srv2SupSeries, markersHash: "" });
         marketData.set(s, []);
         renderPosBox(s);
     });
@@ -674,25 +681,26 @@ async function changeTimeframe(tf) {
             }
         }));
     }
-    connectWebSocket(tf); 
+    startPolling(tf); 
 }
 
-function connectWebSocket(tf) {
+function startPolling(tf) {
     if (pollingInterval) clearInterval(pollingInterval);
     lastSocketTime = Date.now();
-    
+
     pollingInterval = setInterval(() => {
-        const timeNow = Date.now();
         COINS.forEach((sym, index) => {
             setTimeout(async () => {
                 try {
                     const hist = await fetchHistory(sym, tf.ws, 2);
-                    if (hist && hist.length > 0) handleStream(sym, hist[hist.length - 1]);
+                    if (hist && hist.length > 0) {
+                        lastSocketTime = Date.now();
+                        handleStream(sym, hist[hist.length - 1]);
+                    }
                 } catch (err) {}
-            }, index * 100); 
+            }, index * 100);
         });
-        lastSocketTime = timeNow;
-    }, 2500); 
+    }, 1500); // Polling super cepat (1.5 detik) untuk simulasi real-time di Canvas
 }
 
 async function fetchHistory(s, interval, lim) {
@@ -745,6 +753,71 @@ function handleStream(sym, candle) {
     }
     
     if(userPositions[sym]) renderPosBox(sym);
+}
+
+// Math Utility (Standard)
+function calcATRArray(data, period) {
+    let results = []; let trs = [];
+    for(let i=0; i<data.length; i++) {
+        if(i===0) trs.push(data[i].high - data[i].low);
+        else trs.push(Math.max(data[i].high - data[i].low, Math.abs(data[i].high - data[i-1].close), Math.abs(data[i].low - data[i-1].close)));
+    }
+    for (let i = 0; i < trs.length; i++) {
+        if (i < period - 1) { results.push(trs[i]); continue; }
+        let sum = 0; for (let j = 0; j < period; j++) sum += trs[i - j];
+        results.push(sum / period);
+    }
+    return results;
+}
+function calcRSIArray(data, period) {
+    let results = []; let gains = []; let losses = [];
+    for(let i=1; i<data.length; i++) {
+        const change = data[i].close - data[i-1].close;
+        gains.push(change > 0 ? change : 0); losses.push(change < 0 ? Math.abs(change) : 0);
+    }
+    let avgGain = 0, avgLoss = 0;
+    for(let i=0; i<period; i++) { avgGain += gains[i]; avgLoss += losses[i]; }
+    avgGain /= period; avgLoss /= period;
+    for(let i=0; i<period; i++) results.push(50); 
+    results.push(100 - (100 / (1 + (avgGain/avgLoss))));
+    for(let i=period; i<data.length-1; i++) {
+        avgGain = ((avgGain * (period-1)) + gains[i]) / period;
+        avgLoss = ((avgLoss * (period-1)) + losses[i]) / period;
+        if(avgLoss === 0) results.push(100); else results.push(100 - (100 / (1 + (avgGain/avgLoss))));
+    }
+    return results;
+}
+function calcEMA(data, period) {
+    let emaArr = new Array(data.length).fill(0);
+    let k = 2 / (period + 1);
+    let ema = data[0].close;
+    for (let i = 0; i < data.length; i++) {
+        ema = (data[i].close - ema) * k + ema;
+        emaArr[i] = ema;
+    }
+    return emaArr;
+}
+function calcVWAP(data) {
+    let vwapArr = new Array(data.length).fill(0);
+    let cumVol = 0;
+    let cumPV = 0;
+    for (let i = 0; i < data.length; i++) {
+        let typical = (data[i].high + data[i].low + data[i].close) / 3;
+        cumVol += data[i].volume;
+        cumPV += typical * data[i].volume;
+        vwapArr[i] = cumVol === 0 ? typical : cumPV / cumVol;
+    }
+    return vwapArr;
+}
+function calcSMA_Vol(data, period) {
+    let smaArr = new Array(data.length).fill(0);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+        sum += data[i].volume;
+        if (i >= period) sum -= data[i - period].volume;
+        smaArr[i] = i >= period - 1 ? sum / period : sum / (i + 1);
+    }
+    return smaArr;
 }
 
 /* =========================================
@@ -826,34 +899,100 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     // 1. Eksekusi Indikator Tunggal (Liquidity Swings)
     const liqSwings = calcLuxAlgoLiquiditySwings(data, 14); 
     
-    const activeUncrossedHighs = liqSwings.activeHighs.filter(h => !h.crossed);
-    const activeUncrossedLows = liqSwings.activeLows.filter(l => !l.crossed);
+    // 2. Eksekusi Indikator Smart SRv2 & Trend Filters (PineScript v1.0)
+    const ema50Arr = calcEMA(data, 50);
+    const ema200Arr = calcEMA(data, 200);
+    const vwapArr = calcVWAP(data);
+    const volSMAArr = calcSMA_Vol(data, 20);
 
-    // Ambil level support/resistance absolut terdekat
-    const curLiqHigh = activeUncrossedHighs.length > 0 ? activeUncrossedHighs[activeUncrossedHighs.length - 1].top : current.close * 1.05;
-    const curLiqLow = activeUncrossedLows.length > 0 ? activeUncrossedLows[activeUncrossedLows.length - 1].btm : current.close * 0.95;
+    const ema50 = ema50Arr[i];
+    const ema200 = ema200Arr[i];
+    const vwap = vwapArr[i];
+    const volSMA = volSMAArr[i];
+    
+    const atrArr = calcATRArray(data, 14);
+    const atr = atrArr[i];
+    const rsiArr = calcRSIArray(data, 14);
+    const rsi = rsiArr[i];
 
-    const takerBuy = current.takerBuy || 0;
-    const takerSell = current.volume - takerBuy;
-    const volDelta = takerBuy - takerSell;
+    // Hitung Pivot SR (kiri 5, kanan 5)
+    let srLevels = [];
+    for(let j = Math.max(5, data.length - 100); j <= i - 5; j++) {
+        let isPH = true; let isPL = true;
+        for(let k = 1; k <= 5; k++) {
+            if(data[j-k].high > data[j].high || data[j+k].high >= data[j].high) isPH = false;
+            if(data[j-k].low < data[j].low || data[j+k].low <= data[j].low) isPL = false;
+        }
+        if(isPH) srLevels.push(data[j].high);
+        if(isPL) srLevels.push(data[j].low);
+    }
+    srLevels = [...new Set(srLevels)].slice(-40); // Simpan 40 terbaru
+
+    let nearestResistance = null;
+    let nearestSupport = null;
+    let bestRDist = Infinity;
+    let bestSDist = Infinity;
+    for(let lvl of srLevels) {
+        if(lvl > current.close && (lvl - current.close) < bestRDist) { nearestResistance = lvl; bestRDist = lvl - current.close; }
+        if(lvl <= current.close && (current.close - lvl) < bestSDist) { nearestSupport = lvl; bestSDist = current.close - lvl; }
+    }
+
+    // Hitung Arah Liquidity Swing (Bullish/Bearish) Length = 5
+    let lastSwingHigh = null, prevSwingHigh = null;
+    let lastSwingLow = null, prevSwingLow = null;
+    for(let j = 5; j <= i - 5; j++) {
+        let isPH = true; let isPL = true;
+        for(let k = 1; k <= 5; k++) {
+            if(data[j-k].high > data[j].high || data[j+k].high >= data[j].high) isPH = false;
+            if(data[j-k].low < data[j].low || data[j+k].low <= data[j].low) isPL = false;
+        }
+        if(isPH) { prevSwingHigh = lastSwingHigh; lastSwingHigh = data[j].high; }
+        if(isPL) { prevSwingLow = lastSwingLow; lastSwingLow = data[j].low; }
+    }
+    let bullishLiquidity = lastSwingLow !== null && prevSwingLow !== null && (lastSwingLow > prevSwingLow);
+    let bearishLiquidity = lastSwingHigh !== null && prevSwingHigh !== null && (lastSwingHigh < prevSwingHigh);
+
+    // Filter Logic & Candle Strength
+    let volSpike = current.volume > volSMA * 1.8;
+    let body = Math.abs(current.close - current.open);
+    let range = current.high - current.low;
+    let candleBodyStrong = body >= range * 0.6;
+    let emaBull = ema50 > ema200;
+    let emaBear = ema50 < ema200;
+    let vwapDistanceOK = Math.abs(current.close - vwap) / vwap > 0.002;
+    let rsiNeutral = rsi >= 40 && rsi <= 60;
+
+    // Sinyal Logic (PineScript: Breakout & Reversal)
+    let prevC = data[i-1].close;
+    let breakoutBuy = nearestResistance !== null && (prevC <= nearestResistance && current.close > nearestResistance) && bullishLiquidity;
+    let breakoutSell = nearestSupport !== null && (prevC >= nearestSupport && current.close < nearestSupport) && bearishLiquidity;
+
+    let touchSupport = nearestSupport !== null && Math.abs(current.close - nearestSupport) / (nearestSupport||1) < 0.003;
+    let touchResistance = nearestResistance !== null && Math.abs(current.close - nearestResistance) / (nearestResistance||1) < 0.003;
+
+    let reversalBuy = touchSupport && candleBodyStrong && volSpike && bullishLiquidity && (current.close > current.open);
+    let reversalSell = touchResistance && candleBodyStrong && volSpike && bearishLiquidity && (current.close < current.open);
+
+    let buySignal = breakoutBuy || reversalBuy;
+    let sellSignal = breakoutSell || reversalSell;
+
+    let validBuy = buySignal && emaBull && vwapDistanceOK && volSpike;
+    let validSell = sellSignal && emaBear && vwapDistanceOK && volSpike;
+
+    let conflict = (buySignal && sellSignal) || (!validBuy && buySignal) || (!validSell && sellSignal);
+    let neutralMarket = rsiNeutral || (Math.abs(ema50 - ema200) / ema200 < 0.01);
+
+    let dontBuy = !validBuy || neutralMarket || conflict;
+    let dontSell = !validSell || neutralMarket || conflict;
 
     let signal = "WAIT";
+    if (validBuy && !dontBuy) signal = "BUY";
+    if (validSell && !dontSell) signal = "SELL";
 
-    // Deteksi Liquidity Sweep
-    let isBullSweep = false; let isBearSweep = false;
+    const curLiqHigh = nearestResistance !== null ? nearestResistance : (current.close * 1.05);
+    const curLiqLow = nearestSupport !== null ? nearestSupport : (current.close * 0.95);
 
-    // Memeriksa jika ada sapuan likuiditas terbaru
-    for(let l of liqSwings.activeLows) {
-        if(current.low < l.btm && current.close > l.btm && volDelta > 0) isBullSweep = true;
-    }
-    for(let h of liqSwings.activeHighs) {
-        if(current.high > h.top && current.close < h.top && volDelta < 0) isBearSweep = true;
-    }
-
-    if (isBullSweep) signal = "BUY";
-    if (isBearSweep) signal = "SELL";
-
-    // Pembuatan Catatan AI Berdasarkan Liquidity Swings Saja
+    // Pembuatan Catatan AI 
     let aiNote = "";
     let exitAdvice = "NEUTRAL";
     const userPos = userPositions[sym];
@@ -868,41 +1007,45 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
         if (pnl > 0) {
             if (type === 'BUY' && currPrice >= curLiqHigh) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga mencapai <strong>Liquidity Swing High (${formatPrecision(curLiqHigh)})</strong>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Amankan profit (TP).</span>`;
+                aiNote = `Harga mencapai <strong>SRv2 Resistance (${formatPrecision(curLiqHigh)})</strong>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Amankan profit (TP).</span>`;
             } else if (type === 'SELL' && currPrice <= curLiqLow) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga mencapai <strong>Liquidity Swing Low (${formatPrecision(curLiqLow)})</strong>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Amankan profit (TP).</span>`;
+                aiNote = `Harga mencapai <strong>SRv2 Support (${formatPrecision(curLiqLow)})</strong>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Amankan profit (TP).</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Belum ada Swing level yang tersapu. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
+                aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Tren ditahan filter EMA. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
             }
         } else {
-            if (type === 'BUY' && currPrice < curLiqLow) {
+            if (type === 'BUY' && currPrice < curLiqLow - (atr * 1.5)) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Liquidity Low tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
-            } else if (type === 'SELL' && currPrice > curLiqHigh) {
+                aiNote = `Support tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
+            } else if (type === 'SELL' && currPrice > curLiqHigh + (atr * 1.5)) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Liquidity High tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
+                aiNote = `Resistance tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Liquidity Swing masih menahan harga. <span style="color:var(--text-primary)">Tahan emosi.</span>`;
+                aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Smart SRv2 masih aktif menahan harga. <span style="color:var(--text-primary)">Tahan emosi.</span>`;
             }
         }
     } else {
-        if (signal === "BUY") {
-            aiNote = `<strong>Liquidity Sweep (Bullish)!</strong> Harga memantul dari Swing Low. Saran: <span style="color:var(--binance-green)">OPEN LONG di area ${formatPrecision(currPrice)}.</span> Target: ${formatPrecision(curLiqHigh)}.`;
-        } else if (signal === "SELL") {
-            aiNote = `<strong>Liquidity Sweep (Bearish)!</strong> Harga ditolak dari Swing High. Saran: <span style="color:var(--danger)">OPEN SHORT di area ${formatPrecision(currPrice)}.</span> Target: ${formatPrecision(curLiqLow)}.`;
+        if (validBuy && !dontBuy) {
+            aiNote = `<strong>Buy Confirmed by Smart SRv2+Liquidity!</strong> EMA Bullish, Vol Spike OK. Saran: <span style="color:var(--binance-green)">OPEN LONG di area ${formatPrecision(currPrice)}.</span>`;
+        } else if (validSell && !dontSell) {
+            aiNote = `<strong>Sell Confirmed by Smart SRv2+Liquidity!</strong> EMA Bearish, Vol Spike OK. Saran: <span style="color:var(--danger)">OPEN SHORT di area ${formatPrecision(currPrice)}.</span>`;
+        } else if (buySignal && dontBuy) {
+            aiNote = `<span style="color:var(--warning)"><strong>JANGAN BUY!</strong></span> Sinyal awal muncul tapi kondisi pasar / filter trend melarang masuk.`;
+        } else if (sellSignal && dontSell) {
+            aiNote = `<span style="color:var(--warning)"><strong>JANGAN SELL!</strong></span> Sinyal awal muncul tapi kondisi pasar / filter trend melarang masuk.`;
         } else {
             let distToLow = ((currPrice - curLiqLow) / curLiqLow) * 100;
             let distToHigh = ((curLiqHigh - currPrice) / curLiqHigh) * 100;
-            aiNote = `Harga di dalam range (Jarak Support ${distToLow.toFixed(1)}%, Resist ${distToHigh.toFixed(1)}%). Menunggu Sweep. Saran: <span style="color:var(--text-secondary)">Pasang Limit Order di dekat ${formatPrecision(curLiqLow)} atau ${formatPrecision(curLiqHigh)}.</span>`;
+            aiNote = `Menunggu set-up Smart SRv2. EMA50>EMA200: <strong>${emaBull?"Yes":"No"}</strong> | Vol Spike: <strong>${volSpike?"Yes":"No"}</strong> | Liq: <strong>${bullishLiquidity?"Bull":"Bear"}</strong>.`;
         }
     }
 
     MTF_MATRIX.set(`${sym}_${tf.label}`, signal);
     
-    let lastState = { signal, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta, tp: curLiqHigh, sl: curLiqLow, exitAdvice, note: aiNote };
+    let lastState = { signal, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta: (current.takerBuy||0)-((current.volume-(current.takerBuy||0))), tp: curLiqHigh, sl: curLiqLow, exitAdvice, note: aiNote };
 
     if (isBackground) { MTF_MATRIX.set(`${sym}_${tf.label}`, signal); updateMatrixUI(sym); return; }
     
@@ -912,36 +1055,46 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     if(cObj) {
         requestAnimationFrame(() => {
             try {
-                // Tampilkan maksimal 15 Garis Liquidity Swings agar grafik tetap rapi
+                // Tampilkan maksimal 15 Garis Liquidity Swings (LuxAlgo)
                 const numLines = 15;
                 const recentHighs = liqSwings.activeHighs.slice(-numLines);
                 const recentLows = liqSwings.activeLows.slice(-numLines);
 
                 for(let k=0; k<numLines; k++) {
                     if (recentHighs[k]) {
-                        // Merender Garis Lurus Horizontal
+                        let sIdx = recentHighs[k].startIndex;
+                        let leftIdx = Math.max(0, sIdx - 4);
+                        let rightIdx = Math.min(data.length - 1, sIdx + 10);
                         cObj.liqHighSeries[k].setData([
-                            {time: data[recentHighs[k].startIndex].time, value: recentHighs[k].top},
-                            {time: data[recentHighs[k].endIndex].time, value: recentHighs[k].top}
+                            {time: data[leftIdx].time, value: recentHighs[k].top},
+                            {time: data[rightIdx].time, value: recentHighs[k].top}
                         ]);
-                    } else {
-                        cObj.liqHighSeries[k].setData([]);
-                    }
+                    } else { cObj.liqHighSeries[k].setData([]); }
 
                     if (recentLows[k]) {
-                        // Merender Garis Lurus Horizontal
+                        let sIdx = recentLows[k].startIndex;
+                        let leftIdx = Math.max(0, sIdx - 4);
+                        let rightIdx = Math.min(data.length - 1, sIdx + 10);
                         cObj.liqLowSeries[k].setData([
-                            {time: data[recentLows[k].startIndex].time, value: recentLows[k].btm},
-                            {time: data[recentLows[k].endIndex].time, value: recentLows[k].btm}
+                            {time: data[leftIdx].time, value: recentLows[k].btm},
+                            {time: data[rightIdx].time, value: recentLows[k].btm}
                         ]);
-                    } else {
-                        cObj.liqLowSeries[k].setData([]);
-                    }
+                    } else { cObj.liqLowSeries[k].setData([]); }
                 }
+
+                // Render Smart SRv2 & Trend Filters
+                if (nearestResistance) cObj.srv2ResSeries.setData([{time: data[Math.max(0, data.length-30)].time, value: nearestResistance}, {time: current.time, value: nearestResistance}]);
+                if (nearestSupport) cObj.srv2SupSeries.setData([{time: data[Math.max(0, data.length-30)].time, value: nearestSupport}, {time: current.time, value: nearestSupport}]);
+
+                cObj.ema50Series.setData(ema50Arr.map((v, idx) => ({time: data[idx].time, value: v})));
+                cObj.ema200Series.setData(ema200Arr.map((v, idx) => ({time: data[idx].time, value: v})));
+                cObj.vwapSeries.setData(vwapArr.map((v, idx) => ({time: data[idx].time, value: v})));
                 
                 let markers = [];
-                if (signal === "BUY") markers.push({ time: current.time, position: 'belowBar', color: '#0ecb81', shape: 'arrowUp', text: 'LIQ SWEEP' });
-                if (signal === "SELL") markers.push({ time: current.time, position: 'aboveBar', color: '#f6465d', shape: 'arrowDown', text: 'LIQ SWEEP' });
+                if (validBuy && !dontBuy) markers.push({ time: current.time, position: 'belowBar', color: '#0ecb81', shape: 'arrowUp', text: 'BUY' });
+                if (validSell && !dontSell) markers.push({ time: current.time, position: 'aboveBar', color: '#f6465d', shape: 'arrowDown', text: 'SELL' });
+                if (buySignal && dontBuy) markers.push({ time: current.time, position: 'belowBar', color: '#848e9c', shape: 'arrowUp', text: 'JANGAN BUY' });
+                if (sellSignal && dontSell) markers.push({ time: current.time, position: 'aboveBar', color: '#848e9c', shape: 'arrowDown', text: 'JANGAN SELL' });
                 cObj.series.setMarkers(markers);
             } catch(e) {}
         });
@@ -1050,9 +1203,9 @@ function updateDynamicMarketAnalysis() {
 
     let totalPos = Object.keys(userPositions).length;
     
-    elMarket.innerHTML = `Sistem memantau <b>${totalPos} Posisi Terbuka</b>. Semua indikator lawas dinonaktifkan.`;
-    elVol.innerHTML = `Hanya <b>Liquidity Swings (LuxAlgo Logic)</b> yang aktif merender zona harga dengan tingkat akurasi PineScript.`;
-    elTarget.innerHTML = `<b>Pesan Sistem:</b> Setelah order aktif, AI akan mengeksekusi perhitungan PNL menggunakan Leverage Binance Futures yang Anda pilih.`;
+    elMarket.innerHTML = `Sistem memantau <b>${totalPos} Posisi Terbuka</b>. <b>Smart SRv2 + Liquidity Swings v1.0</b> Aktif Penuh.`;
+    elVol.innerHTML = `Filter EMA50/200, VWAP, & Volume Spike mencegah sinyal palsu. Munculnya label <b>"JANGAN BUY/SELL"</b> berarti kondisi belum konfirm.`;
+    elTarget.innerHTML = `<b>Pesan Sistem:</b> Tampilan Liquidity Swings (LuxAlgo) dipertahankan sesuai request, ditumpuk dengan deteksi SRv2 Dinamis.`;
 }
 
 function initSettingsForm() {
