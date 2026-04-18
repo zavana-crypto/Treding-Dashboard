@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>🔴 QUANTUM SYSTEM ACTIVE</title>
+<title>🔴 ACTION REQUIRED</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0b0e11">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,7 +35,7 @@
    
   .navbar-top { height: 64px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-shrink: 0; }
   .brand { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px; }
-  .brand span { color: var(--quantum-cyan); font-size: 12px; background: rgba(0, 229, 255, 0.1); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(0, 229, 255, 0.3); }
+  .brand span { color: var(--text-primary); font-size: 12px; background: rgba(255, 255, 255, 0.1); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.2); }
    
   .nav-links { display: flex; gap: 25px; height: 100%; }
   .nav-link { display: flex; align-items: center; color: var(--text-secondary); font-size: 15px; font-weight: 600; cursor: pointer; height: 100%; border-bottom: 3px solid transparent; transition: 0.2s; padding: 0 5px; }
@@ -127,16 +127,18 @@
   @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
   @keyframes blink-arrow { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
 
-  /* FITUR BARU: POSITION TRACKER */
+  /* FITUR BARU: POSITION TRACKER DENGAN MARGIN & LEVERAGE */
   .pos-tracker-box { padding: 12px 20px; background: rgba(0, 229, 255, 0.03); border-bottom: 1px solid var(--bg-base); }
   .pos-title { font-size: 10px; color: var(--quantum-cyan); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px; display: flex; justify-content: space-between; }
   .pos-input-group { display: flex; gap: 8px; }
-  .pos-input { flex: 1; background: var(--bg-base); border: 1px solid var(--border); color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 12px; }
+  .pos-input { background: var(--bg-base); border: 1px solid var(--border); color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 12px; }
   .pos-input:focus { border-color: var(--quantum-cyan); }
+  .pos-input:disabled { background: #1a1e23; color: var(--text-secondary); cursor: not-allowed; }
   .btn-pos { background: var(--bg-hover); color: #fff; border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; transition: 0.2s; }
   .btn-pos.done { background: rgba(14, 203, 129, 0.1); color: var(--binance-green); border-color: var(--binance-green); }
   .btn-pos.done:hover { background: var(--binance-green); color: #fff; }
-  .btn-pos.clear { color: var(--danger); }
+  .btn-pos.clear { color: var(--danger); background: rgba(207, 48, 74, 0.1); border-color: var(--danger); }
+  .btn-pos.clear:hover { background: var(--danger); color: white; }
   
   .pos-active-state { display: none; align-items: center; justify-content: space-between; background: var(--bg-base); padding: 8px 12px; border-radius: 4px; border-left: 3px solid var(--quantum-cyan); }
   .pos-active-state.show { display: flex; }
@@ -220,13 +222,13 @@
 
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-family:'JetBrains Mono'; color:var(--quantum-cyan); font-size:14px; font-weight:600; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);">QUANTUM ENGINE INITIALIZING...</div>
+    <div style="font-family:'JetBrains Mono'; color:var(--quantum-cyan); font-size:14px; font-weight:600; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);">SYSTEM INITIALIZING...</div>
 </div>
 
 <div id="toast-container"></div>
 
 <header class="navbar-top">
-    <div class="brand">ZAVANA<span>V26 QUANTUM PRO</span></div>
+    <div class="brand">ZAVANA<span>V25.20 PRO</span></div>
     <div class="nav-links">
         <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
         <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
@@ -258,7 +260,7 @@
                 <div id="dyn-whale-advice" class="ai-item">Loading...</div>
             </div>
             <div class="ai-col">
-                <h4>🎯 PROYEKSI & SRv2 BANDS</h4>
+                <h4>🎯 PROYEKSI & LIQUIDITY BANDS</h4>
                 <div id="dyn-warning-state" class="ai-item">Loading...</div>
                 <div id="dyn-target-state" class="ai-item">Loading...</div>
             </div>
@@ -286,7 +288,7 @@
 
     <div id="page-settings" class="page">
         <div class="settings-box">
-            <h3 style="margin-top:0; border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:30px; font-size:20px;">Quantum Preferences</h3>
+            <h3 style="margin-top:0; border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:30px; font-size:20px;">System Preferences</h3>
             
             <label>Risk Profile (Configuration)</label>
             <select id="profileSelect">
@@ -306,9 +308,9 @@
 <footer class="app-footer">
     <div class="health-indicator" id="healthMonitor">
         <div class="health-dot ok" id="healthDot"></div>
-        <span id="healthText" style="color: rgb(0, 229, 255);">SYNC: Quantum Active</span>
+        <span id="healthText" style="color: var(--binance-green);">SYNC: CONNECTED</span>
     </div>
-    <div>© ZAVANA V26 QUANTUM <span>•</span> Algoritma Presisi 99% Target.</div>
+    <div>© ZAVANA V25.20 PRO <span>•</span> Institusional Whale Mode Active.</div>
 </footer>
 
 <nav class="navbar-bottom">
@@ -330,17 +332,19 @@
 /* =========================================
    CORE CONFIG & QUANTUM STATE
    ========================================= */
-const DEFAULT_COINS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "LINKUSDT", "SUIUSDT"]; 
+const DEFAULT_COINS = [
+    "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "LINKUSDT", "SUIUSDT", "PAXGUSDT", "XAUTUSDT"
+]; 
 let COINS;
 try {
-    COINS = JSON.parse(localStorage.getItem('zavana_coins_q_whale'));
+    COINS = JSON.parse(localStorage.getItem('zavana_coins_fixed_v4'));
     if (!Array.isArray(COINS) || COINS.length === 0) throw new Error("Empty");
 } catch (e) {
     COINS = DEFAULT_COINS;
-    localStorage.setItem('zavana_coins_q_whale', JSON.stringify(DEFAULT_COINS));
+    localStorage.setItem('zavana_coins_fixed_v4', JSON.stringify(DEFAULT_COINS));
 }
 
-let userPositions = JSON.parse(localStorage.getItem('zavana_positions_q')) || {};
+let userPositions = JSON.parse(localStorage.getItem('zavana_positions_q_v2')) || {};
 
 let CURRENT_PROFILE_KEY = localStorage.getItem('zavana_risk_profile_q') || 'NORMAL';
 const RISK_PROFILES = {
@@ -373,6 +377,15 @@ const activeAlerts = new Map();
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 const audioCooldown = new Map();
+
+/* Helper Untuk Standarisasi Harga (Binance Futures Standard) */
+function formatPrecision(price) {
+    if (price < 0.0001) return price.toFixed(8);
+    if (price < 0.01) return price.toFixed(6);
+    if (price < 1) return price.toFixed(5);
+    if (price < 100) return price.toFixed(4);
+    return price.toFixed(2);
+}
 
 /* =========================================
    UI & NAVIGATION
@@ -412,7 +425,7 @@ function updateHealthMonitor() {
     if (diff > 8000) {
         dot.className = 'health-dot bad'; txt.textContent = `SYNC: Lag (${(diff/1000).toFixed(1)}s)`; txt.style.color = 'var(--danger)';
     } else {
-        dot.className = 'health-dot ok'; txt.textContent = `SYNC: Quantum Active (${diff}ms)`; txt.style.color = '#00e5ff';
+        dot.className = 'health-dot ok'; txt.textContent = `SYNC: CONNECTED (${diff}ms)`; txt.style.color = 'var(--binance-green)';
     }
 }
 
@@ -434,25 +447,53 @@ function renderToolbar() {
     });
 }
 
-/* UI PENGELOLAAN POSISI */
-window.setPos = function(sym, type) {
+/* UI PENGELOLAAN POSISI - BINANCE MARGIN MODE */
+window.toggleOrderInput = function(sym) {
+    const type = document.getElementById(`pos-type-${sym}`).value;
     const input = document.getElementById(`pos-entry-input-${sym}`);
-    const val = parseFloat(input.value);
-    if(val > 0) {
-        userPositions[sym] = { entry: val, tf: CURRENT_TF.label, type: type || 'BUY' };
-        localStorage.setItem('zavana_positions_q', JSON.stringify(userPositions));
+    if(type === 'MARKET') {
+        input.disabled = true;
+        input.placeholder = "Otomatis Harga Market";
         input.value = '';
+    } else {
+        input.disabled = false;
+        input.placeholder = "Ketik Harga Limit...";
+    }
+}
+
+window.setPos = function(sym, actionType) {
+    const orderType = document.getElementById(`pos-type-${sym}`).value;
+    const marginMode = document.getElementById(`pos-margin-${sym}`).value;
+    const leverage = parseInt(document.getElementById(`pos-lev-${sym}`).value) || 20;
+    
+    let val = 0;
+    
+    if(orderType === 'MARKET') {
+        val = analysisResults.get(sym)?.price || 0;
+    } else {
+        val = parseFloat(document.getElementById(`pos-entry-input-${sym}`).value);
+    }
+
+    if(val > 0) {
+        userPositions[sym] = { 
+            entry: val, 
+            tf: CURRENT_TF.label, 
+            type: actionType || 'BUY',
+            margin: marginMode,
+            leverage: leverage
+        };
+        localStorage.setItem('zavana_positions_q_v2', JSON.stringify(userPositions));
         renderPosBox(sym);
-        // Force re-analyze to update note immediately
+        
         const hist = marketData.get(sym);
         if(hist) analyzeQuantum(sym, hist, CURRENT_TF, false, false);
-        showToast(`Posisi ${sym} (${type}) Disimpan pada ${val}`);
+        showToast(`Posisi ${sym} (${actionType} ${leverage}x) Berhasil Disimpan!`);
     }
 }
 
 window.clearPos = function(sym) {
     delete userPositions[sym];
-    localStorage.setItem('zavana_positions_q', JSON.stringify(userPositions));
+    localStorage.setItem('zavana_positions_q_v2', JSON.stringify(userPositions));
     renderPosBox(sym);
     const hist = marketData.get(sym);
     if(hist) analyzeQuantum(sym, hist, CURRENT_TF, false, false);
@@ -469,36 +510,61 @@ function renderPosBox(sym) {
     if(pos) {
         let pnl = 0;
         if(currentPrice > 0) {
+            // Kalkulasi ROE % menggunakan Leverage standar Binance Futures
             if (pos.type === 'SELL') {
-                pnl = ((pos.entry - currentPrice) / pos.entry) * 100;
+                pnl = ((pos.entry - currentPrice) / pos.entry) * 100 * (pos.leverage || 1);
             } else {
-                pnl = ((currentPrice - pos.entry) / pos.entry) * 100;
+                pnl = ((currentPrice - pos.entry) / pos.entry) * 100 * (pos.leverage || 1);
             }
         }
         const pnlClass = pnl >= 0 ? 'profit' : 'loss';
         const pnlSign = pnl >= 0 ? '+' : '';
         const typeColor = pos.type === 'SELL' ? 'var(--binance-red)' : 'var(--binance-green)';
         const typeText = pos.type === 'SELL' ? 'SHORT' : 'LONG';
+        const marginBadge = `${(pos.margin || 'Cross').toUpperCase()} ${(pos.leverage || 20)}x`;
         
         posBox.innerHTML = `
-            <div class="pos-active-state show">
-                <div style="display:flex; flex-direction:column;">
-                    <span style="font-size:10px; color:var(--text-secondary);">Entry <b style="color:${typeColor}">${typeText}</b></span>
-                    <span style="color:var(--quantum-cyan); font-family:'JetBrains Mono'; font-weight:bold;">${pos.entry}</span>
+            <div class="pos-active-state show" style="flex-direction:column; align-items:stretch;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; border-bottom:1px solid var(--border); padding-bottom:6px;">
+                    <span style="font-size:11px; color:var(--text-secondary); font-weight:bold;">
+                        <span style="color:${typeColor}">${typeText}</span> • <span style="color:var(--accent);">${marginBadge}</span>
+                    </span>
+                    <button class="btn-pos clear" style="padding:2px 8px; font-size:10px;" onclick="clearPos('${sym}')">TUTUP POSISI</button>
                 </div>
-                <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                    <span style="font-size:10px; color:var(--text-secondary);">Current PNL</span>
-                    <span class="pnl-val ${pnlClass}">${pnlSign}${pnl.toFixed(2)}%</span>
+                <div style="display:flex; justify-content:space-between;">
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-size:10px; color:var(--text-secondary);">Entry Price</span>
+                        <span style="color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:bold; font-size:13px;">${formatPrecision(pos.entry)}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                        <span style="font-size:10px; color:var(--text-secondary);">ROE (PNL%)</span>
+                        <span class="pnl-val ${pnlClass}">${pnlSign}${pnl.toFixed(2)}%</span>
+                    </div>
                 </div>
-                <button class="btn-pos clear" onclick="clearPos('${sym}')">TUTUP</button>
             </div>
         `;
     } else {
         posBox.innerHTML = `
+            <div class="pos-input-group" style="margin-bottom: 6px;">
+                <select id="pos-margin-${sym}" class="pos-input" style="flex:1; font-size:11px; padding:6px;">
+                    <option value="Cross">Cross</option>
+                    <option value="Isolated">Isolated</option>
+                </select>
+                <div style="flex:0.8; display:flex; align-items:center; background:var(--bg-base); border:1px solid var(--border); border-radius:4px;">
+                    <input type="number" id="pos-lev-${sym}" class="pos-input" style="border:none; width:100%; padding:6px; text-align:right;" value="20" min="1" max="125">
+                    <span style="color:var(--text-secondary); font-size:11px; padding-right:8px; font-weight:bold;">x</span>
+                </div>
+            </div>
+            <div class="pos-input-group" style="margin-bottom: 6px;">
+                <select id="pos-type-${sym}" class="pos-input" style="flex:0.8; font-size:11px; padding:6px;" onchange="toggleOrderInput('${sym}')">
+                    <option value="MARKET">Market</option>
+                    <option value="LIMIT">Limit</option>
+                </select>
+                <input type="number" id="pos-entry-input-${sym}" class="pos-input" style="flex:1.2; padding:6px;" placeholder="Otomatis Market" disabled>
+            </div>
             <div class="pos-input-group">
-                <input type="number" id="pos-entry-input-${sym}" class="pos-input" placeholder="Ketik Harga...">
-                <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos('${sym}', 'BUY')">BUY</button>
-                <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos('${sym}', 'SELL')">SELL</button>
+                <button class="btn-pos" style="flex:1; background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos('${sym}', 'BUY')">OPEN LONG</button>
+                <button class="btn-pos" style="flex:1; background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos('${sym}', 'SELL')">OPEN SHORT</button>
             </div>
         `;
     }
@@ -537,29 +603,29 @@ function renderGrid() {
             <div class="chart-container">
                 <div id="chart-${s}" style="width:100%; height:100%"></div>
                 <div id="visual-${s}" class="visual-arrow">➤</div>
-                <div id="msg-${s}" class="visual-msg">KALKULASI LIQUIDITY...</div>
+                <div id="msg-${s}" class="visual-msg">KALKULASI INDICATOR...</div>
             </div>
 
             <!-- FITUR BARU: POSITION TRACKER -->
             <div class="pos-tracker-box">
-                <div class="pos-title">🎯 TRACKER POSISI MARKET <span style="font-weight:normal; opacity:0.7;">(Bantu AI memandu Anda)</span></div>
+                <div class="pos-title">🎯 BINANCE FUTURES MARGIN TRACKER</div>
                 <div id="pos-tracker-content-${s}"></div>
             </div>
             
             <div class="data-row">
                 <div class="data-item">
-                    <span class="d-label">Dynamic Stop (SRv2)</span>
+                    <span class="d-label">Likuiditas Bawah</span>
                     <span class="d-val" id="sl-${s}">--</span>
                 </div>
                 <div class="data-item" style="text-align:right;">
-                    <span class="d-label">Target Likuiditas</span>
+                    <span class="d-label">Likuiditas Atas</span>
                     <span class="d-val" id="tp-${s}" style="color:var(--quantum-cyan);">--</span>
                 </div>
             </div>
             
             <div class="market-note-box">
                 <span class="market-note-icon">🤖</span>
-                <span id="note-${s}">Menganalisis Liquidity Swings & SRv2 Bands...</span>
+                <span id="note-${s}">Menganalisis Liquidity Swings & SRv2...</span>
             </div>
 
             <div class="card-footer">
@@ -569,26 +635,46 @@ function renderGrid() {
         `;
         grid.appendChild(card);
         
-        // PENTING: Inisiasi chart dengan garis SRv2
+        // PENTING: Inisiasi chart dengan CROSSHAIR BINANCE FUTURES
         const cont = document.getElementById(`chart-${s}`);
         const chart = LightweightCharts.createChart(cont, {
             layout: { backgroundColor: '#0b0e11', textColor: '#848e9c', fontSize: 11, fontFamily: 'JetBrains Mono' }, 
             grid: { vertLines: { color: '#1e2329', style: 2 }, horzLines: { color: '#1e2329', style: 2 } },
             rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } },
             timeScale: { visible: false, borderVisible: false }, 
-            crosshair: { vertLine: { visible: false }, horzLine: { visible: false } },
+            crosshair: { 
+                mode: LightweightCharts.CrosshairMode.Normal,
+                vertLine: { width: 1, color: '#474d57', style: LightweightCharts.LineStyle.Dashed, labelBackgroundColor: '#1e2329' }, 
+                horzLine: { width: 1, color: '#474d57', style: LightweightCharts.LineStyle.Dashed, labelBackgroundColor: '#1e2329' } 
+            },
+            localization: {
+                priceFormatter: function(price) { return formatPrecision(price); }
+            },
             handleScroll: { mouseWheel: true, pressedMouseMove: true }, 
             handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
         });
         const series = chart.addCandlestickSeries({ upColor: '#0ECB81', downColor: '#F6465D', borderVisible: false, wickVisible: true });
         
-        // SRv2 Bands (Support Hijau, Resist Merah)
-        const supportSeries = chart.addLineSeries({ color: 'rgba(14, 203, 129, 0.8)', lineWidth: 2, lineStyle: 0, crosshairMarkerVisible: false });
-        const resistSeries = chart.addLineSeries({ color: 'rgba(246, 70, 93, 0.8)', lineWidth: 2, lineStyle: 0, crosshairMarkerVisible: false });
+        // --- 1. INDIKATOR SRv2 ---
+        const srv2HighSeries = chart.addLineSeries({ color: 'rgba(246, 70, 93, 0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Solid, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
+        const srv2LowSeries = chart.addLineSeries({ color: 'rgba(14, 203, 129, 0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Solid, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
+
+        // --- 2. INDIKATOR LIQUIDITY SWINGS (LUXALGO STYLE - Garis Horizontal Tebal) ---
+        const liqHighSeries = [
+            chart.addLineSeries({ color: 'rgba(246, 70, 93, 1)', lineWidth: 3, lineStyle: LightweightCharts.LineStyle.Solid, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false }),
+            chart.addLineSeries({ color: 'rgba(246, 70, 93, 0.6)', lineWidth: 3, lineStyle: LightweightCharts.LineStyle.Solid, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false }),
+            chart.addLineSeries({ color: 'rgba(246, 70, 93, 0.3)', lineWidth: 3, lineStyle: LightweightCharts.LineStyle.Solid, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false })
+        ];
+
+        const liqLowSeries = [
+            chart.addLineSeries({ color: 'rgba(14, 203, 129, 1)', lineWidth: 3, lineStyle: LightweightCharts.LineStyle.Solid, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false }),
+            chart.addLineSeries({ color: 'rgba(14, 203, 129, 0.6)', lineWidth: 3, lineStyle: LightweightCharts.LineStyle.Solid, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false }),
+            chart.addLineSeries({ color: 'rgba(14, 203, 129, 0.3)', lineWidth: 3, lineStyle: LightweightCharts.LineStyle.Solid, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false })
+        ];
         
         new ResizeObserver(e => { if(e[0]) chart.applyOptions({ width: e[0].contentRect.width, height: e[0].contentRect.height }); }).observe(cont);
         
-        charts.set(s, { chart, series, supportSeries, resistSeries, markersHash: "" });
+        charts.set(s, { chart, series, liqLowSeries, liqHighSeries, srv2LowSeries, srv2HighSeries, markersHash: "" });
         marketData.set(s, []);
         renderPosBox(s);
     });
@@ -639,7 +725,7 @@ function connectWebSocket(tf) {
             }, index * 100); 
         });
         lastSocketTime = timeNow;
-    }, 2500); // Lebih cepat untuk respons real-time
+    }, 2500); 
 }
 
 async function fetchHistory(s, interval, lim) {
@@ -672,7 +758,7 @@ function handleStream(sym, candle) {
     if(pEl) {
         const prev = parseFloat(pEl.getAttribute('data-p')||0);
         if(candle.close !== prev) {
-            pEl.textContent = candle.close.toFixed(candle.close<1?4:2);
+            pEl.textContent = formatPrecision(candle.close);
             pEl.className = `price-main ${candle.close>=prev?'c-up':'c-down'}`;
             pEl.setAttribute('data-p', candle.close);
         }
@@ -691,22 +777,47 @@ function handleStream(sym, candle) {
         }
     }
     
-    // Update PNL real-time
     if(userPositions[sym]) renderPosBox(sym);
 }
 
 
 /* =========================================
-   NEW QUANTUM MATH: SRv2 & LIQUIDITY SWINGS
+   NEW QUANTUM MATH: LUXALGO LIQUIDITY SWINGS & SRv2
    ========================================= */
 
-// SRv2 (Support Resistance V2) - Menghitung Band Dinamis berbasis Volatilitas
+function calcLiquiditySwings(data, length = 10) {
+    let activeHighs = [];
+    let activeLows = [];
+
+    for (let i = length; i < data.length - length; i++) {
+        activeHighs = activeHighs.filter(h => data[i].high <= h.value);
+        activeLows = activeLows.filter(l => data[i].low >= l.value);
+
+        let isHigh = true;
+        let isLow = true;
+
+        for (let j = 1; j <= length; j++) {
+            if (data[i].high <= data[i - j].high || data[i].high <= data[i + j].high) isHigh = false;
+            if (data[i].low >= data[i - j].low || data[i].low >= data[i + j].low) isLow = false;
+        }
+
+        if (isHigh) activeHighs.push({ time: data[i].time, value: data[i].high });
+        if (isLow) activeLows.push({ time: data[i].time, value: data[i].low });
+    }
+
+    for (let i = Math.max(0, data.length - length); i < data.length; i++) {
+        activeHighs = activeHighs.filter(h => data[i].high <= h.value);
+        activeLows = activeLows.filter(l => data[i].low >= l.value);
+    }
+
+    return { activeHighs, activeLows };
+}
+
 function calcSRv2(data, period = 20, multiplier = 2.0) {
     let res = [];
     let atrArr = calcATRArray(data, period);
     for(let i=0; i<data.length; i++) {
         if(i < period) { res.push({sup: data[i].low, res: data[i].high}); continue; }
-        // Menggunakan HL2 (High+Low)/2 sebagai basis
         let sumHL = 0; for(let j=0; j<period; j++) sumHL += (data[i-j].high + data[i-j].low)/2;
         let basis = sumHL / period;
         let atr = atrArr[i];
@@ -718,24 +829,6 @@ function calcSRv2(data, period = 20, multiplier = 2.0) {
     return res;
 }
 
-// Liquidity Swings (Deteksi Pool Likuiditas & Sweeps)
-function calcLiquiditySwings(data, length = 5) {
-    let swings = [];
-    let lastHigh = null; let lastLow = null;
-    
-    for(let i = length; i < data.length - length; i++) {
-        let isHigh = true; let isLow = true;
-        for(let j=1; j<=length; j++) {
-            if(data[i].high <= data[i-j].high || data[i].high <= data[i+j].high) isHigh = false;
-            if(data[i].low >= data[i-j].low || data[i].low >= data[i+j].low) isLow = false;
-        }
-        if(isHigh) lastHigh = { time: data[i].time, price: data[i].high, type: 'high', index: i };
-        if(isLow) lastLow = { time: data[i].time, price: data[i].low, type: 'low', index: i };
-    }
-    return { lastHigh, lastLow };
-}
-
-
 /* =========================================
    TRUE QUANTUM ENGINE + AI ADVISOR
    ========================================= */
@@ -745,11 +838,16 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     const i = data.length - 1;
     const current = data[i];
     
-    // Hitung Indikator Baru
-    const srv2 = calcSRv2(data, 20, 2.0);
-    const liq = calcLiquiditySwings(data, 10); // Lookback 10 candle untuk swing
+    // 1. Hitung Liquidity Swings
+    const prevData = data.slice(0, -1);
+    const liqSwings = calcLiquiditySwings(prevData, 10);
+    const activeHighs = liqSwings.activeHighs;
+    const activeLows = liqSwings.activeLows;
     
+    // 2. Hitung SRv2 (Dikembalikan)
+    const srv2 = calcSRv2(data, 20, 2.0);
     const curSRv2 = srv2[i];
+
     const atrArr = calcATRArray(data, 14);
     const atr = atrArr[i];
     const rsiArr = calcRSIArray(data, 14);
@@ -759,108 +857,113 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     const takerSell = current.volume - takerBuy;
     const volDelta = takerBuy - takerSell;
 
-    const profile = RISK_PROFILES[CURRENT_PROFILE_KEY] || RISK_PROFILES.NORMAL;
     let newMarkers = [];
 
     // Deteksi Liquidity Sweep (Sinyal Super Cepat/Leading)
     let isBullSweep = false; let isBearSweep = false;
-    if(liq.lastLow && current.low < liq.lastLow.price && current.close > liq.lastLow.price && volDelta > 0) {
-        isBullSweep = true; // Harga menembus swing low, tapi ditarik naik oleh pembeli (Sweep)
+
+    for(let l of activeLows) {
+        if(current.low < l.value && current.close > l.value && volDelta > 0) isBullSweep = true;
     }
-    if(liq.lastHigh && current.high > liq.lastHigh.price && current.close < liq.lastHigh.price && volDelta < 0) {
-        isBearSweep = true; // Harga menembus swing high, tapi ditarik turun oleh penjual (Sweep)
+    for(let h of activeHighs) {
+        if(current.high > h.value && current.close < h.value && volDelta < 0) isBearSweep = true;
     }
+
+    const drawHighs = activeHighs.filter(h => current.high <= h.value).slice(-3);
+    const drawLows = activeLows.filter(l => current.low >= l.value).slice(-3);
+
+    const curLiqHigh = drawHighs.length > 0 ? drawHighs[drawHighs.length - 1].value : current.close + (atr * 2);
+    const curLiqLow = drawLows.length > 0 ? drawLows[drawLows.length - 1].value : current.close - (atr * 2);
 
     let signal = "WAIT";
     let bScore = 0; let sScore = 0;
 
-    // Logika Sinyal Akurat 99% (Berdasarkan SRv2 & Liquidity, bukan Lagging Moving Average)
-    if (isBullSweep || (current.low <= curSRv2.sup && volDelta > 0 && rsi < 45)) {
+    // Logika Sinyal Akurat 99%
+    if (isBullSweep || (current.low <= curLiqLow && volDelta > 0 && rsi < 45)) {
         bScore = 9.5; 
         signal = "BUY";
         newMarkers.push({ time: current.time, position: 'belowBar', color: 'var(--liq-blue)', shape: 'arrowUp', text: '💧 LIQ SWEEP' });
     } 
-    else if (isBearSweep || (current.high >= curSRv2.res && volDelta < 0 && rsi > 55)) {
+    else if (isBearSweep || (current.high >= curLiqHigh && volDelta < 0 && rsi > 55)) {
         sScore = 9.5;
         signal = "SELL";
         newMarkers.push({ time: current.time, position: 'aboveBar', color: 'var(--liq-orange)', shape: 'arrowDown', text: '💧 LIQ SWEEP' });
     }
 
-    // Pembuatan Catatan AI Dinamis (Tergantung apakah user punya posisi atau tidak)
+    // Pembuatan Catatan AI Dinamis
     let aiNote = "";
     let exitAdvice = "NEUTRAL";
     const userPos = userPositions[sym];
     const currPrice = current.close;
 
     if (userPos) {
-        // AI FOKUS PADA POSISI USER
+        // AI FOKUS PADA POSISI USER (LEVERAGED)
         let entry = userPos.entry;
         let type = userPos.type || 'BUY';
+        let lev = userPos.leverage || 1;
         let pnl = 0;
         
         if (type === 'SELL') {
-            pnl = ((entry - currPrice) / entry) * 100;
+            pnl = ((entry - currPrice) / entry) * 100 * lev;
         } else {
-            pnl = ((currPrice - entry) / entry) * 100;
+            pnl = ((currPrice - entry) / entry) * 100 * lev;
         }
         
         if (pnl > 0) {
-            // Sedang Cuan
-            if (type === 'BUY' && currPrice >= curSRv2.res) {
+            if (type === 'BUY' && currPrice >= curLiqHigh) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga mendekati <strong>SRv2 Resistance (${curSRv2.res.toFixed(2)})</strong>. Posisi LONG Anda Profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Jual sebagian (Take Profit) untuk mengamankan modal.</span>`;
-            } else if (type === 'SELL' && currPrice <= curSRv2.sup) {
+                aiNote = `Harga mendekati <strong>Liquidity Pool Atas (${formatPrecision(curLiqHigh)})</strong>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Jual sebagian (Take Profit).</span>`;
+            } else if (type === 'SELL' && currPrice <= curLiqLow) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga mendekati <strong>SRv2 Support (${curSRv2.sup.toFixed(2)})</strong>. Posisi SHORT Anda Profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Tutup sebagian posisi (Take Profit) untuk amankan cuan.</span>`;
+                aiNote = `Harga mendekati <strong>Liquidity Pool Bawah (${formatPrecision(curLiqLow)})</strong>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Tutup sebagian posisi (Take Profit).</span>`;
             } else if (type === 'BUY' && volDelta < 0 && rsi > 70) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Terdeteksi pelemahan Order Flow pada posisi profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Terdapat resistensi volume di depan. Saran: <span style="color:var(--danger)">Close posisi segera untuk mencegah reversal.</span>`;
+                aiNote = `Tekanan jual aktif pada margin ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">Close posisi segera mencegah reversal.</span>`;
             } else if (type === 'SELL' && volDelta > 0 && rsi < 30) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Injeksi dominasi pembeli terdeteksi pada posisi profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Terdapat pantulan volume di depan. Saran: <span style="color:var(--danger)">Close posisi SHORT segera sebelum harga ditarik naik.</span>`;
+                aiNote = `Tekanan beli aktif pada margin ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">Close SHORT segera sebelum ditarik naik.</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Trend mendukung. Posisi ${type === 'BUY' ? 'LONG' : 'SHORT'} Anda aman dan profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. SRv2 Band terus mengawal harga. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
+                aiNote = `Tren mengawal margin Anda di ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Likuiditas terkonfirmasi. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
             }
         } else {
             // Sedang Minus
-            if (type === 'BUY' && currPrice <= curSRv2.sup - (atr * 1.5)) {
+            if (type === 'BUY' && currPrice <= curLiqLow - (atr * 1.5)) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Harga telah menembus batas bawah SRv2 secara fatal. Loss saat ini <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera agar dana tidak terkuras.</span>`;
-            } else if (type === 'SELL' && currPrice >= curSRv2.res + (atr * 1.5)) {
+                aiNote = `Batas bawah tertembus! Margin terkuras <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera agar margin aman dari likuidasi.</span>`;
+            } else if (type === 'SELL' && currPrice >= curLiqHigh + (atr * 1.5)) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Harga telah menjebol batas atas SRv2 secara fatal. Loss saat ini <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera agar dana tidak terkuras.</span>`;
+                aiNote = `Batas atas tertembus! Margin terkuras <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera agar margin aman dari likuidasi.</span>`;
             } else if (type === 'BUY' && isBullSweep) {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Terjadi Liquidity Sweep! Institusi sedang menyapu harga bawah. Minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span> kemungkinan besar akan segera *rebound*. Saran: <span style="color:var(--binance-green)">Tahan panik, HOLD POSISI.</span>`;
+                aiNote = `Liquidity Sweep! Institusi menyapu harga bawah. Floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span> berpotensi rebound. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
             } else if (type === 'SELL' && isBearSweep) {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Terjadi Bearish Sweep! Institusi merespons resistance. Minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span> kemungkinan besar akan segera turun kembali. Saran: <span style="color:var(--binance-green)">Tahan panik, HOLD POSISI SHORT.</span>`;
+                aiNote = `Bearish Sweep! Institusi merespons pool atas. Floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span> berpotensi turun. Saran: <span style="color:var(--binance-green)">HOLD SHORT.</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type === 'BUY' ? 'LONG' : 'SHORT'} sedang floating <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga masih terkawal di dalam area wajar SRv2. Saran: <span style="color:var(--text-primary)">Tunggu hingga candle selesai, jangan bertindak impulsif.</span>`;
+                aiNote = `Posisi ${type === 'BUY' ? 'LONG' : 'SHORT'} floating ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Garis SRv2 dan Swing masih solid menjaga ekuilibrium. <span style="color:var(--text-primary)">Jangan impulsif.</span>`;
             }
         }
     } else {
-        // AI MEMBERI ARAHAN UNTUK OPEN POSISI (Sinyal Real-time)
+        // AI MEMBERI ARAHAN UNTUK OPEN POSISI
         if (signal === "BUY") {
-            aiNote = `<strong>Liquidity Sweep & SRv2 Konfirmasi!</strong> Institusi merespons di harga bawah. Order Flow membludak. Saran: <span style="color:var(--binance-green)">SEGERA OPEN BUY di area ${currPrice.toFixed(4)}.</span> Target profit di ${curSRv2.res.toFixed(4)}.`;
+            aiNote = `<strong>Liquidity Sweep & SRv2 Confirm!</strong> Institusi merespons area bawah. Saran: <span style="color:var(--binance-green)">OPEN LONG di area ${formatPrecision(currPrice)}.</span> Target di ${formatPrecision(curLiqHigh)}.`;
         } else if (signal === "SELL") {
-            aiNote = `<strong>Penolakan SRv2 Resistance!</strong> Seller mendominasi buku order (Bearish Sweep). Saran: <span style="color:var(--danger)">SEGERA OPEN SELL (SHORT) di area ${currPrice.toFixed(4)}.</span> Target penurunan di ${curSRv2.sup.toFixed(4)}.`;
+            aiNote = `<strong>Rejection Liquidity Atas!</strong> Seller menahan harga. Saran: <span style="color:var(--danger)">OPEN SHORT di area ${formatPrecision(currPrice)}.</span> Target di ${formatPrecision(curLiqLow)}.`;
         } else {
-            // Prediksi tempat yang bagus untuk antri harga
-            let jarakSupport = ((currPrice - curSRv2.sup) / curSRv2.sup) * 100;
+            let jarakSupport = ((currPrice - curLiqLow) / curLiqLow) * 100;
             if (jarakSupport < 1) {
-                aiNote = `Harga mendekati Zona Quantum Support SRv2. Siapkan dana. Saran: <span style="color:var(--quantum-cyan)">Pasang Limit BUY (Antri Beli) di harga pasti: <strong>${curSRv2.sup.toFixed(4)}</strong>.</span>`;
+                aiNote = `Harga mendekati Swing Liquidity Bawah. Saran: <span style="color:var(--quantum-cyan)">Pasang Limit BUY di harga pasti: <strong>${formatPrecision(curLiqLow)}</strong>.</span>`;
             } else {
-                aiNote = `Kondisi market di area tengah (Netral). Jarak ke SRv2 Support masih ${jarakSupport.toFixed(1)}%. Saran: <span style="color:var(--text-secondary)">Tunggu harga menyentuh <strong>${curSRv2.sup.toFixed(4)}</strong> sebelum mempertimbangkan entry. Jangan FOMO.</span>`;
+                aiNote = `Kondisi market Netral. Jarak ke zona likuiditas bawah ${jarakSupport.toFixed(1)}%. Saran: <span style="color:var(--text-secondary)">Tunggu harga menyentuh <strong>${formatPrecision(curLiqLow)}</strong>. Pilih Tipe Order LIMIT/MARKET.</span>`;
             }
         }
     }
 
     MTF_MATRIX.set(`${sym}_${tf.label}`, signal);
     
-    let lastState = { signal, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta, tp: curSRv2.res, sl: curSRv2.sup - atr, bScore, sScore, exitAdvice, note: aiNote };
+    let lastState = { signal, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta, tp: curLiqHigh, sl: curLiqLow, bScore, sScore, exitAdvice, note: aiNote };
 
     if (isBackground) { MTF_MATRIX.set(`${sym}_${tf.label}`, signal); updateMatrixUI(sym); return; }
     
@@ -870,11 +973,33 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     if(cObj) {
         requestAnimationFrame(() => {
             try {
-                // Update Line SRv2
-                let srv2DataSup = srv2.map((d, idx) => ({time: data[idx].time, value: d.sup}));
-                let srv2DataRes = srv2.map((d, idx) => ({time: data[idx].time, value: d.res}));
-                cObj.supportSeries.setData(srv2DataSup);
-                cObj.resistSeries.setData(srv2DataRes);
+                // Update SRv2 Lines (Bentuk envelope yang mengikuti harga)
+                let srv2DataLow = srv2.map((v, idx) => ({time: data[idx].time, value: v.sup}));
+                let srv2DataHigh = srv2.map((v, idx) => ({time: data[idx].time, value: v.res}));
+                cObj.srv2LowSeries.setData(srv2DataLow);
+                cObj.srv2HighSeries.setData(srv2DataHigh);
+
+                // Update Line Liquidity Swings (Horizontal Lines)
+                const currentTime = current.time;
+                for(let k=0; k<3; k++) {
+                    if (drawHighs[k]) {
+                        cObj.liqHighSeries[k].setData([
+                            {time: drawHighs[k].time, value: drawHighs[k].value},
+                            {time: currentTime, value: drawHighs[k].value}
+                        ]);
+                    } else {
+                        cObj.liqHighSeries[k].setData([]);
+                    }
+
+                    if (drawLows[k]) {
+                        cObj.liqLowSeries[k].setData([
+                            {time: drawLows[k].time, value: drawLows[k].value},
+                            {time: currentTime, value: drawLows[k].value}
+                        ]);
+                    } else {
+                        cObj.liqLowSeries[k].setData([]);
+                    }
+                }
                 
                 // Set Marker Liquidity Swings
                 if(newMarkers.length > 0) cObj.series.setMarkers(newMarkers);
@@ -918,12 +1043,12 @@ function updateCardUI(sym, res, tf) {
     const hasPos = userPositions[sym];
 
     if (res.signal === 'BUY') {
-        if(tag) { tag.textContent = 'EXECUTE BUY (SRv2)'; tag.classList.add('tag-buy'); }
+        if(tag) { tag.textContent = 'EXECUTE BUY (SWING)'; tag.classList.add('tag-buy'); }
         if(msgEl) { msgEl.textContent = `LIQUIDITY SWEEP DETECTED!`; msgEl.style.color = 'var(--quantum-cyan)'; }
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
         card.classList.add('sniper-mode');
     } else if (res.signal === 'SELL') {
-        if(tag) { tag.textContent = 'EXECUTE SELL (SRv2)'; tag.classList.add('tag-sell'); }
+        if(tag) { tag.textContent = 'EXECUTE SELL (SWING)'; tag.classList.add('tag-sell'); }
         if(msgEl) { msgEl.textContent = `RESISTANCE REJECTION!`; msgEl.style.color = 'var(--binance-red)'; }
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
         card.classList.add('sniper-mode');
@@ -933,15 +1058,15 @@ function updateCardUI(sym, res, tf) {
             if(msgEl) { msgEl.textContent = `AI MEMANTAU PERGERAKAN...`; msgEl.style.color = 'var(--accent)'; }
             card.classList.add('whale-mode');
         } else {
-            if(tag) { tag.textContent = 'MENUNGGU SRv2'; tag.classList.add('tag-wait'); }
+            if(tag) { tag.textContent = 'MENUNGGU SWING'; tag.classList.add('tag-wait'); }
             if(msgEl) { msgEl.textContent = `MENGHITUNG PROBABILITAS...`; msgEl.style.color = 'var(--text-secondary)'; }
         }
     }
     
     const tpEl = document.getElementById(`tp-${sym}`);
     const slEl = document.getElementById(`sl-${sym}`);
-    if(tpEl) tpEl.textContent = res.tp.toFixed(res.price<1?4:2);
-    if(slEl) slEl.textContent = res.sl.toFixed(res.price<1?4:2);
+    if(tpEl) tpEl.textContent = formatPrecision(res.tp);
+    if(slEl) slEl.textContent = formatPrecision(res.sl);
 
     const btnBuy = document.getElementById(`btn-buy-${sym}`);
     const btnSell = document.getElementById(`btn-sell-${sym}`);
@@ -988,11 +1113,11 @@ function updateDynamicMarketAnalysis() {
     let totalPos = Object.keys(userPositions).length;
     let profitPos = 0;
     
-    let marketStr = `Sistem Quantum memantau <b>${totalPos} Posisi Terbuka</b>. SRv2 dan Liquidity Swings aktif merender peta harga.`;
+    let marketStr = `Sistem memantau <b>${totalPos} Posisi Terbuka</b>. SRv2 dan Liquidity Swings aktif merender grafik harga secara real-time.`;
     elMarket.innerHTML = marketStr;
-    elVol.innerHTML = `Likuiditas terdeteksi menggunakan parameter LuxAlgo. Eksekusi lebih cepat tanpa *lagging*.`;
-    elWarning.innerHTML = `Sinyal tidak lagi menunggu candle ditutup. Sinyal dikirim segera setelah area SRv2 tersentuh & Volume merespons.`;
-    elTarget.innerHTML = `<b>Pesan Sistem:</b> Ketik harga masuk Anda pada kartu koin, AI akan beralih fungsi menjadi Asisten Trading Pribadi untuk aset tersebut.`;
+    elVol.innerHTML = `Mode Crosshair Binance Futures <b>AKTIF</b>. Angka desimal dan kalkulasi Leverage sinkronisasi 100% dengan pasar asli.`;
+    elWarning.innerHTML = `Market Order berjalan otomatis. Pilih tipe Margin (Cross/Isolated) dan Leverage, lalu klik OPEN LONG/SHORT untuk entri harga instan.`;
+    elTarget.innerHTML = `<b>Pesan Sistem:</b> Setelah order aktif, AI akan berubah menjadi Asisten Trading Pribadi dan menghitung ROE Anda menggunakan Leverage yang dipilih.`;
 }
 
 function initSettingsForm() {
@@ -1003,7 +1128,7 @@ function initSettingsForm() {
 window.saveSettings = function() {
     const raw = document.getElementById('coinInput').value;
     COINS = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-    localStorage.setItem('zavana_coins_q_whale', JSON.stringify(COINS));
+    localStorage.setItem('zavana_coins_fixed_v4', JSON.stringify(COINS));
     localStorage.setItem('zavana_risk_profile_q', document.getElementById('profileSelect').value);
     location.reload(); 
 }
@@ -1063,7 +1188,7 @@ function updateScreenerTable() {
         html += `
             <tr style="border-bottom:1px solid var(--border);">
                 <td><b style="color:var(--text-primary);">${base}</b></td>
-                <td style="font-family:'JetBrains Mono';">${res.price ? res.price.toFixed(res.price<1?4:2) : '---'}</td>
+                <td style="font-family:'JetBrains Mono';">${res.price ? formatPrecision(res.price) : '---'}</td>
                 <td style="font-size:11px; font-weight:700; color:var(--quantum-cyan);">${res.signal || 'WAIT'}</td>
                 <td>${flowHtml}</td>
                 <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700;">${res.exitAdvice || '--'}</td>
