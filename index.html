@@ -86,7 +86,7 @@
    
   .card.sniper-mode { border: 1px solid var(--quantum-cyan); box-shadow: 0 0 20px rgba(0, 229, 255, 0.15); }
   .card.whale-mode { border: 1px solid var(--whale-blue); box-shadow: 0 0 20px rgba(41, 98, 255, 0.3); }
-  .card.fomo-mode { border: 1px solid var(--danger); }
+  .card.fomo-mode { border: 1px solid var(--warning); box-shadow: 0 0 20px rgba(255, 170, 0, 0.3); } /* Ubah Fomo-mode ke warna warning kuning/orange */
    
   .sniper-tag { position: absolute; top: 0; right: 0; font-size: 10px; font-weight: 800; padding: 4px 10px; border-bottom-left-radius: 8px; z-index: 10; display: block; letter-spacing: 0.5px; }
   .tag-wait { background: #2b3139; color: var(--text-secondary); } 
@@ -222,7 +222,7 @@
 <div id="toast-container"></div>
 
 <header class="navbar-top">
-    <div class="brand">ZAVANA<span>V26.20 ZERO-DELAY</span></div>
+    <div class="brand">ZAVANA<span>V26.20 ANTI-SHOCK</span></div>
     <div class="nav-links">
         <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
         <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
@@ -242,7 +242,7 @@
         </div>
         <div class="grid" id="grid"></div>
 
-        <!-- AI REPORT BOX: DIKEMBALIKAN KE ASLI NAMUN DENGAN PREDIKSI BTC REAL-TIME -->
+        <!-- AI REPORT BOX -->
         <div class="ai-report-box" id="dynamicMarketAnalysis">
             <div class="ai-col">
                 <h4>📰 LIVE NEWS & MAKROEKONOMI</h4>
@@ -383,7 +383,7 @@ function startApp() {
     setInterval(updateScreenerTable, 2000); 
     setInterval(updateHealthMonitor, 1000); 
     startMatrixScanner();
-    setInterval(updateDynamicMarketAnalysis, 3000); // Merender Prediksi Tiap 3 Detik
+    setInterval(updateDynamicMarketAnalysis, 3000); 
     setTimeout(() => { document.getElementById('loading-overlay').style.display = 'none'; }, 1000);
 }
 
@@ -482,7 +482,6 @@ function renderPosBox(sym) {
     if(pos) {
         let pnl = 0;
         if(currentPrice > 0) {
-            // Kalkulasi ROE % menggunakan Leverage standar Binance Futures
             if (pos.type === 'SELL') {
                 pnl = ((pos.entry - currentPrice) / pos.entry) * 100 * (pos.leverage || 1);
             } else {
@@ -933,7 +932,8 @@ function calcLuxAlgoLiquiditySwings(data, length = 14) {
 
 
 /* =========================================
-   TRUE QUANTUM ENGINE (ZERO-DELAY SNIPER)
+   TRUE QUANTUM ENGINE (ZERO-DELAY SNIPER) 
+   DENGAN WHALE SHOCK DETECTOR (ANTI-WHIPSAW)
    ========================================= */
 function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
     if(data.length < 50) return; 
@@ -941,10 +941,8 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     const i = data.length - 1;
     const current = data[i];
     
-    // 1. Eksekusi Indikator Tunggal (Liquidity Swings)
     const liqSwings = calcLuxAlgoLiquiditySwings(data, 14); 
     
-    // 2. Eksekusi Indikator Smart SRv2 & Trend Filters
     const ema50Arr = calcEMA(data, 50);
     const ema200Arr = calcEMA(data, 200);
     const vwapArr = calcVWAP(data);
@@ -958,7 +956,10 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     const rsiArr = calcRSIArray(data, 14);
     const rsi = rsiArr[i];
 
-    // Hitung Pivot SR 
+    // MENDETEKSI WHIPSAW / SHOCK (Volatilitas Sadis Tiba-tiba)
+    const candleSpread = current.high - current.low;
+    const isShock = candleSpread > (atr * 2.8); // Jika pergerakan 1 candle melebihi 2.8x rata-rata ATR, ini adalah sapuan sadis.
+
     let srLevels = [];
     for(let j = Math.max(5, data.length - 100); j <= i - 5; j++) {
         let isPH = true; let isPL = true;
@@ -1013,15 +1014,11 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     let vwapDistanceOK = Math.abs(current.close - vwap) / vwap > 0.001; 
 
     let signal = "WAIT";
-    let validBuy = buySignal && emaBull && vwapDistanceOK;
-    let validSell = sellSignal && emaBear && vwapDistanceOK;
-    
     let conflict = (buySignal && sellSignal);
-    let dontBuy = !validBuy || conflict;
-    let dontSell = !validSell || conflict;
-
-    if (validBuy && !dontBuy) signal = "BUY";
-    if (validSell && !dontSell) signal = "SELL";
+    
+    // KAMI CABUT BLOKIR: Sinyal kini 100% murni mengikuti raw market 0-delay
+    if (buySignal && !conflict) signal = "BUY";
+    if (sellSignal && !conflict) signal = "SELL";
 
     let aiNote = "";
     let exitAdvice = "NEUTRAL";
@@ -1043,8 +1040,9 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
                 aiNote = `Harga menyentuh <strong>Liquidity Bawah (${formatPrecision(curLiqLow)})</strong>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Segera Amankan profit (TP).</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Belum mencapai zona distribusi/akumulasi mayor. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
+                aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
             }
+            if (isShock) aiNote += ` <br><span style="color:var(--warning)">⚠️ Catatan AI: Volatilitas memuncak (Whipsaw), waspada bantingan harga!</span>`;
         } else {
             if (type === 'BUY' && currPrice < curLiqLow - (atr * 0.5)) { 
                 exitAdvice = "EXIT RISK";
@@ -1056,26 +1054,31 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
                 exitAdvice = "HOLD POSITION";
                 aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga masih dalam zona toleransi SRv2. <span style="color:var(--text-primary)">Tahan.</span>`;
             }
+            if (isShock) aiNote += ` <br><span style="color:var(--warning)">⚠️ Catatan AI: Market Shock terdeteksi. Amati batas SL ketat.</span>`;
         }
     } else {
-        if (validBuy && !dontBuy) {
-            aiNote = `<strong>⚡ ZERO-DELAY SNIPER BUY!</strong> <br>Harga menolak turun di area Support. Institusi (Taker Buy) merespons seketika. Eksekusi <span style="color:var(--binance-green)">LONG SEKARANG di ${formatPrecision(currPrice)}.</span>`;
-        } else if (validSell && !dontSell) {
-            aiNote = `<strong>⚡ ZERO-DELAY SNIPER SELL!</strong> <br>Harga membentur zona Liquidity Atas. Supply masuk seketika. Eksekusi <span style="color:var(--danger)">SHORT SEKARANG di ${formatPrecision(currPrice)}.</span>`;
-        } else if (buySignal && dontBuy) {
-            aiNote = `<span style="color:var(--warning)"><strong>PANTULAN PALSU TERDETEKSI (JANGAN BUY).</strong></span> Sinyal awal muncul tapi EMA menahan trend bawah.`;
-        } else if (sellSignal && dontSell) {
-            aiNote = `<span style="color:var(--warning)"><strong>PANTULAN PALSU TERDETEKSI (JANGAN SELL).</strong></span> Sinyal awal muncul tapi EMA mendorong trend naik.`;
+        if (signal === "BUY") {
+            aiNote = `<strong>⚡ ZERO-DELAY SNIPER BUY!</strong> <br>Institusi merespons Support. Eksekusi <span style="color:var(--binance-green)">LONG SEKARANG di ${formatPrecision(currPrice)}.</span>`;
+            let warnings = [];
+            if (isShock) warnings.push("Volatilitas Sadis (Whipsaw)");
+            if (!emaBull) warnings.push("Melawan Tren Makro");
+            if (warnings.length > 0) aiNote += `<br><span style="color:var(--warning)">⚠️ Catatan AI: ${warnings.join(' & ')}. Resiko tinggi, kurangi size margin!</span>`;
+        } else if (signal === "SELL") {
+            aiNote = `<strong>⚡ ZERO-DELAY SNIPER SELL!</strong> <br>Supply masuk di zona Liquidity Atas. Eksekusi <span style="color:var(--danger)">SHORT SEKARANG di ${formatPrecision(currPrice)}.</span>`;
+            let warnings = [];
+            if (isShock) warnings.push("Volatilitas Sadis (Whipsaw)");
+            if (!emaBear) warnings.push("Melawan Tren Makro");
+            if (warnings.length > 0) aiNote += `<br><span style="color:var(--warning)">⚠️ Catatan AI: ${warnings.join(' & ')}. Resiko tinggi, kurangi size margin!</span>`;
         } else {
             let distToLow = ((currPrice - curLiqLow) / curLiqLow) * 100;
             aiNote = `AI Menunggu momentum Intrabar pada area Support (${formatPrecision(curLiqLow)}). Status: <strong>Monitoring Wick Rejection...</strong>`;
+            if (isShock) aiNote += `<br><span style="color:var(--warning)">⚠️ Catatan AI: Pasar terguncang keras (Market Shock), arah belum stabil.</span>`;
         }
     }
 
     MTF_MATRIX.set(`${sym}_${tf.label}`, signal);
     
-    // MENAMBAHKAN PARAMETER 'atr' DAN 'emaBull' AGAR PREDIKSI BAWAH LEBIH CERDAS
-    let lastState = { signal, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta, tp: curLiqHigh, sl: curLiqLow, exitAdvice, note: aiNote, atr: atr, emaBull: emaBull };
+    let lastState = { signal, isShock, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta, tp: curLiqHigh, sl: curLiqLow, exitAdvice, note: aiNote, atr: atr, emaBull: emaBull };
 
     if (isBackground) { MTF_MATRIX.set(`${sym}_${tf.label}`, signal); updateMatrixUI(sym); return; }
     
@@ -1119,10 +1122,9 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
                 cObj.vwapSeries.setData(vwapArr.map((v, idx) => ({time: data[idx].time, value: v})));
                 
                 let markers = [];
-                if (validBuy && !dontBuy) markers.push({ time: current.time, position: 'belowBar', color: '#0ecb81', shape: 'arrowUp', text: 'BUY' });
-                if (validSell && !dontSell) markers.push({ time: current.time, position: 'aboveBar', color: '#f6465d', shape: 'arrowDown', text: 'SELL' });
-                if (buySignal && dontBuy) markers.push({ time: current.time, position: 'belowBar', color: '#848e9c', shape: 'arrowUp', text: 'JANGAN BUY' });
-                if (sellSignal && dontSell) markers.push({ time: current.time, position: 'aboveBar', color: '#848e9c', shape: 'arrowDown', text: 'JANGAN SELL' });
+                if (signal === "BUY") markers.push({ time: current.time, position: 'belowBar', color: '#0ecb81', shape: 'arrowUp', text: 'BUY' });
+                else if (signal === "SELL") markers.push({ time: current.time, position: 'aboveBar', color: '#f6465d', shape: 'arrowDown', text: 'SELL' });
+                
                 cObj.series.setMarkers(markers);
             } catch(e) {}
         });
@@ -1163,22 +1165,22 @@ function updateCardUI(sym, res, tf) {
     const hasPos = userPositions[sym];
 
     if (res.signal === 'BUY') {
-        if(tag) { tag.textContent = 'SNIPER BUY (0ms)'; tag.classList.add('tag-buy'); }
+        if(tag) { tag.textContent = 'SNIPER BUY (0ms)'; tag.style.background = 'var(--binance-green)'; tag.style.color = '#fff'; }
         if(msgEl) { msgEl.textContent = `REAKSI WICK TERDETEKSI!`; msgEl.style.color = 'var(--quantum-cyan)'; }
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
         card.classList.add('sniper-mode');
     } else if (res.signal === 'SELL') {
-        if(tag) { tag.textContent = 'SNIPER SELL (0ms)'; tag.classList.add('tag-sell'); }
+        if(tag) { tag.textContent = 'SNIPER SELL (0ms)'; tag.style.background = 'var(--binance-red)'; tag.style.color = '#fff'; }
         if(msgEl) { msgEl.textContent = `RESISTANCE REJECTION!`; msgEl.style.color = 'var(--binance-red)'; }
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
         card.classList.add('sniper-mode');
     } else {
         if(hasPos) {
-            if(tag) { tag.textContent = 'POSISI AKTIF 🔒'; tag.classList.add('tag-locked'); }
+            if(tag) { tag.textContent = 'POSISI AKTIF 🔒'; tag.style.background = '#000'; tag.style.color = 'var(--quantum-cyan)'; }
             if(msgEl) { msgEl.textContent = `AI MEMANTAU PERGERAKAN...`; msgEl.style.color = 'var(--accent)'; }
             card.classList.add('whale-mode');
         } else {
-            if(tag) { tag.textContent = 'MENUNGGU WICK'; tag.classList.add('tag-wait'); }
+            if(tag) { tag.textContent = 'MENUNGGU WICK'; tag.style.background = '#2b3139'; tag.style.color = 'var(--text-secondary)'; }
             if(msgEl) { msgEl.textContent = `MONITORING SUPPORT/RESIST...`; msgEl.style.color = 'var(--text-secondary)'; }
         }
     }
@@ -1202,6 +1204,7 @@ function updateMatrixUI(sym) {
             el.className = 'm-dot';
             if (sig === 'BUY') el.classList.add('bull');
             else if (sig === 'SELL') el.classList.add('bear');
+            
             if(tf.label === CURRENT_TF.label) el.classList.add('active');
         }
     });
@@ -1366,7 +1369,7 @@ function updateScreenerTable() {
             <tr style="border-bottom:1px solid var(--border);">
                 <td><b style="color:var(--text-primary);">${base}</b></td>
                 <td style="font-family:'JetBrains Mono';">${res.price ? formatPrecision(res.price) : '---'}</td>
-                <td style="font-size:11px; font-weight:700; color:var(--quantum-cyan);">${res.signal || 'WAIT'}</td>
+                <td style="font-size:11px; font-weight:700; color:var(--quantum-cyan);">${res.isShock ? '⚠️ SHOCK' : (res.signal || 'WAIT')}</td>
                 <td>${flowHtml}</td>
                 <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700;">${res.exitAdvice || '--'}</td>
                 <td><a href="https://www.binance.com/en/futures/${sym}" target="_blank" style="color:var(--quantum-cyan); text-decoration:none; font-weight:bold;">TRADE</a></td>
