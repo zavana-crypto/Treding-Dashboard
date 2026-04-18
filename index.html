@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>🔴 QUANTUM SYSTEM ACTIVE</title>
+<title>ZAVANA - Ockhand Tage</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0b0e11">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -77,24 +77,24 @@
   .action-btn:hover { background: #3a4049; }
   .wakelock-btn.active { color: var(--accent); background: rgba(252, 213, 53, 0.15); border: 1px solid rgba(252, 213, 53, 0.3); }
 
-  .strategy-badge { font-size: 13px; font-weight: 700; color: var(--text-secondary); font-family: 'JetBrains Mono'; background: var(--bg-card); padding: 8px 14px; border-radius: 4px; border: 1px solid var(--border); box-shadow: 0 0 8px rgba(0, 229, 255, 0.1); }
+  .strategy-badge { font-size: 13px; font-weight: 700; color: var(--text-primary); font-family: 'JetBrains Mono'; background: var(--bg-card); padding: 8px 14px; border-radius: 4px; border: 1px solid var(--border); }
 
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
    
   .card { background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid transparent; position: relative; will-change: transform; }
-  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); border-color: var(--border); }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); border-color: var(--text-secondary); }
    
-  .card.sniper-mode { border: 1px solid var(--quantum-cyan); box-shadow: 0 0 20px rgba(0, 229, 255, 0.15); }
-  .card.whale-mode { border: 1px solid var(--whale-blue); box-shadow: 0 0 20px rgba(41, 98, 255, 0.3); }
-  .card.fomo-mode { border: 1px solid var(--warning); box-shadow: 0 0 20px rgba(255, 170, 0, 0.3); } /* Ubah Fomo-mode ke warna warning kuning/orange */
+  .card.sniper-mode { border: 1px solid var(--text-secondary); }
+  .card.whale-mode { border: 1px solid var(--border); }
+  .card.fomo-mode { border: 1px solid var(--border); } 
    
   .sniper-tag { position: absolute; top: 0; right: 0; font-size: 10px; font-weight: 800; padding: 4px 10px; border-bottom-left-radius: 8px; z-index: 10; display: block; letter-spacing: 0.5px; }
   .tag-wait { background: #2b3139; color: var(--text-secondary); } 
-  .tag-intent { background: var(--accent); color: #000; animation: blink-slow 2s infinite; }
+  .tag-intent { background: var(--text-primary); color: #000; animation: blink-slow 2s infinite; }
   .tag-buy { background: var(--binance-green); color: #fff; animation: pulse-green 1s infinite; }
   .tag-sell { background: var(--binance-red); color: #fff; animation: pulse-red 1s infinite; }
-  .tag-whale { background: var(--whale-blue); color: #fff; animation: blink-fast 1s infinite; }
-  .tag-locked { background: #000; color: var(--quantum-cyan); border-left: 2px solid var(--quantum-cyan); font-family: 'JetBrains Mono'; }
+  .tag-whale { background: var(--text-secondary); color: #fff; animation: blink-fast 1s infinite; }
+  .tag-locked { background: #000; color: var(--text-primary); border-left: 2px solid var(--text-primary); font-family: 'JetBrains Mono'; }
 
   @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(14, 203, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0); } }
   @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(246, 70, 93, 0); } 100% { box-shadow: 0 0 0 0 rgba(246, 70, 93, 0); } }
@@ -120,8 +120,8 @@
   .visual-arrow { position: absolute; top: 15px; right: 15px; font-size: 24px; z-index: 5; opacity: 0; pointer-events: none; font-weight: 900; }
   .visual-arrow.buy { color: var(--binance-green); opacity: 1; animation: bounceUp 1s infinite; }
   .visual-arrow.sell { color: var(--binance-red); opacity: 1; animation: bounceDown 1s infinite; }
-  .visual-arrow.prep { color: var(--quantum-cyan); opacity: 1; animation: blink-arrow 0.5s infinite; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
-  .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; pointer-events: none; z-index: 5; font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(2px); border-left: 2px solid var(--quantum-cyan); }
+  .visual-arrow.prep { color: var(--text-primary); opacity: 1; animation: blink-arrow 0.5s infinite; }
+  .visual-msg { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: var(--text-secondary); background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; pointer-events: none; z-index: 5; font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(2px); border-left: 2px solid var(--text-secondary); }
   
   @keyframes bounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
@@ -129,12 +129,12 @@
 
   /* NEW COMPACT POSITION TRACKER - BINANCE STYLE */
   .pos-tracker-box { padding: 12px 16px; background: #1a1e24; border-top: 1px solid #2b3139; border-bottom: 1px solid var(--bg-base); }
-  .pos-title { font-size: 11px; color: var(--quantum-cyan); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
+  .pos-title { font-size: 11px; color: var(--text-primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
   .tracker-row { display: flex; gap: 12px; margin-bottom: 8px; }
   .tracker-col-left { flex: 1; }
   .tracker-col-right { flex: 1; display: flex; position: relative; }
   .tracker-input { width: 100%; height: 32px; background: #181a20; border: 1px solid #2b3139; color: #eaecef; padding: 0 10px; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 600; outline: none; transition: border-color 0.2s; line-height: 32px; }
-  .tracker-input:focus { border-color: var(--quantum-cyan); }
+  .tracker-input:focus { border-color: var(--text-secondary); }
   .tracker-input:disabled { color: #5e6673; cursor: not-allowed; }
   select.tracker-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23848e9c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 25px; cursor: pointer; }
   .tracker-suffix { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #848e9c; font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 700; pointer-events: none; }
@@ -143,7 +143,7 @@
   .btn-pos.clear { color: var(--danger); background: rgba(207, 48, 74, 0.1); border-color: var(--danger); }
   .btn-pos.clear:hover { background: var(--danger); color: white; }
   
-  .pos-active-state { display: none; align-items: center; justify-content: space-between; background: var(--bg-base); padding: 12px; border-radius: 4px; border: 1px solid var(--border); border-left: 3px solid var(--quantum-cyan); }
+  .pos-active-state { display: none; align-items: center; justify-content: space-between; background: var(--bg-base); padding: 12px; border-radius: 4px; border: 1px solid var(--border); border-left: 3px solid var(--text-secondary); }
   .pos-active-state.show { display: flex; }
   .pnl-val { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; }
   .pnl-val.profit { color: var(--binance-green); }
@@ -154,9 +154,9 @@
   .d-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
   .d-val { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
-  .market-note-box { padding: 14px 20px; background: rgba(43, 49, 57, 0.3); font-size: 12px; color: var(--text-primary); font-family: 'IBM Plex Sans', sans-serif; line-height: 1.6; display: flex; align-items: flex-start; gap: 10px; border-left: 3px solid var(--quantum-cyan); transition: all 0.3s ease; }
+  .market-note-box { padding: 14px 20px; background: rgba(43, 49, 57, 0.3); font-size: 12px; color: var(--text-primary); font-family: 'IBM Plex Sans', sans-serif; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; border-left: 3px solid var(--text-secondary); transition: all 0.3s ease; }
   .market-note-box span { font-weight: 500; }
-  .market-note-box strong { color: var(--quantum-cyan); font-weight: 700; }
+  .market-note-box strong { color: var(--text-primary); font-weight: 700; }
   .market-note-icon { font-style: normal; font-size: 16px; margin-top: 2px; }
 
   .card-footer { padding: 16px 20px; display: flex; gap: 15px; background: var(--bg-card); }
@@ -167,13 +167,13 @@
 
   #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
   .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--quantum-cyan); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+  .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--text-secondary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
   .ai-report-box { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; color: var(--text-primary); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); position: relative; overflow: hidden; }
-  .ai-report-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--binance-green), var(--quantum-cyan), var(--whale-blue)); animation: scanline 3s linear infinite; }
-  @keyframes scanline { 0% { background-position: 0% 0; } 100% { background-position: 100% 0; } }
+  .ai-report-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--border); }
   
-  .ai-col h4 { color: var(--quantum-cyan); margin: 0 0 15px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--bg-hover); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+  .ai-col h4 { color: var(--text-primary); margin: 0 0 15px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--bg-hover); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
   .ai-item { margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); transition: all 0.3s; }
   .ai-item b { color: var(--text-primary); }
   .ai-highlight-green { color: var(--binance-green); font-weight: bold; }
@@ -216,13 +216,13 @@
 
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-family:'JetBrains Mono'; color:var(--quantum-cyan); font-size:14px; font-weight:600; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);">SYSTEM INITIALIZING...</div>
+    <div style="font-family:'JetBrains Mono'; color:var(--text-primary); font-size:14px; font-weight:600;">SYSTEM INITIALIZING...</div>
 </div>
 
 <div id="toast-container"></div>
 
 <header class="navbar-top">
-    <div class="brand">ZAVANA<span>V26.20 ANTI-SHOCK</span></div>
+    <div class="brand">ZAVANA<span>Ockhand Tage</span></div>
     <div class="nav-links">
         <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
         <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
@@ -237,23 +237,22 @@
 <main class="main-content">
     <div id="page-dashboard" class="page active">
         <div class="toolbar-container">
-            <div id="strategyLabel" class="strategy-badge" style="color: var(--quantum-cyan);">MODE: DAY (15m)</div>
+            <div id="strategyLabel" class="strategy-badge">MODE: DAY (15m)</div>
             <div class="toolbar-group" id="tfToolbar"></div>
         </div>
         <div class="grid" id="grid"></div>
 
-        <!-- AI REPORT BOX -->
         <div class="ai-report-box" id="dynamicMarketAnalysis">
             <div class="ai-col">
-                <h4>📰 LIVE NEWS & MAKROEKONOMI</h4>
+                <h4>📰 MACROECONOMIC & NEWS</h4>
                 <div id="dyn-news-state">Loading...</div>
             </div>
             <div class="ai-col">
-                <h4>📊 PREDIKSI BTC (MINGGUAN & BULANAN)</h4>
+                <h4>📊 PROYEKSI BTC (MINGGUAN & BULANAN)</h4>
                 <div id="dyn-btc-short">Loading...</div>
             </div>
             <div class="ai-col">
-                <h4>🎯 PREDIKSI BTC (TAHUNAN) & WHALE</h4>
+                <h4>🎯 PROYEKSI BTC (TAHUNAN) & MARKET CYCLE</h4>
                 <div id="dyn-btc-long">Loading...</div>
             </div>
         </div>
@@ -293,7 +292,7 @@
         <div class="health-dot ok" id="healthDot"></div>
         <span id="healthText" style="color: var(--binance-green);">SYNC: CONNECTED</span>
     </div>
-    <div>© ZAVANA V26.20 <span>•</span> Intrabar Sniper 0ms Delay Active.</div>
+    <div>© ZAVANA Ockhand Tage <span>•</span> Institusional Execution Active.</div>
 </footer>
 
 <nav class="navbar-bottom">
@@ -341,7 +340,7 @@ const TIMEFRAMES = [
   { label: '1M',  ws: '1M',  limit: 400, agg: 43200, type: 'MACRO' }
 ];
 
-let CURRENT_TF = TIMEFRAMES[1]; // Diatur agar default tetap di 15m saat pertama kali dibuka
+let CURRENT_TF = TIMEFRAMES[1]; 
 let pollingInterval = null; 
 let lastSocketTime = Date.now(); 
 
@@ -589,7 +588,6 @@ function renderGrid() {
                 <div id="msg-${s}" class="visual-msg">KALKULASI LIQUIDITY...</div>
             </div>
 
-            <!-- FITUR BARU: POSITION TRACKER COMPACT -->
             <div class="pos-tracker-box">
                 <div class="pos-title">
                     <span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER
@@ -604,7 +602,7 @@ function renderGrid() {
                 </div>
                 <div class="data-item" style="text-align:right;">
                     <span class="d-label">Likuiditas Atas</span>
-                    <span class="d-val" id="tp-${s}" style="color:var(--quantum-cyan);">--</span>
+                    <span class="d-val" id="tp-${s}">--</span>
                 </div>
             </div>
             
@@ -620,7 +618,6 @@ function renderGrid() {
         `;
         grid.appendChild(card);
         
-        // PENTING: Inisiasi chart dengan CROSSHAIR BINANCE FUTURES
         const cont = document.getElementById(`chart-${s}`);
         const chart = LightweightCharts.createChart(cont, {
             layout: { backgroundColor: '#0b0e11', textColor: '#848e9c', fontSize: 11, fontFamily: 'JetBrains Mono' }, 
@@ -640,7 +637,7 @@ function renderGrid() {
         const candleColorUp = isGold ? '#FFD700' : '#0ECB81'; 
         const series = chart.addCandlestickSeries({ upColor: candleColorUp, downColor: '#F6465D', borderVisible: false, wickVisible: true });
         
-        // --- 1. INDIKATOR LIQUIDITY SWINGS (LUXALGO STYLE) ---
+        // --- 1. INDIKATOR LIQUIDITY SWINGS ---
         const numLines = 15;
         const liqHighSeries = [];
         const liqLowSeries = [];
@@ -700,7 +697,6 @@ async function changeTimeframe(tf) {
         }));
     }
     
-    // MENCOBA KONEKSI WEBSOCKET (TRUE 0ms DELAY)
     connectWebSocket(tf); 
 }
 
@@ -735,7 +731,6 @@ function connectWebSocket(tf) {
             setTimeout(() => connectWebSocket(tf), 3000); 
         };
         binanceSocket.onerror = (err) => { 
-            console.warn("WebSocket diblokir oleh lingkungan/browser, otomatis beralih ke Fast Polling..."); 
             startPolling(tf); 
         };
     } catch(e) {
@@ -746,7 +741,6 @@ function connectWebSocket(tf) {
 function startPolling(tf) {
     if (pollingInterval) clearInterval(pollingInterval);
     lastSocketTime = Date.now();
-    // Fast Polling sebagai Fallback jika WebSocket diblokir
     pollingInterval = setInterval(() => {
         COINS.forEach((sym, index) => {
             setTimeout(async () => {
@@ -815,7 +809,6 @@ function handleStream(sym, candle) {
     if(userPositions[sym]) renderPosBox(sym);
 }
 
-// Math Utility (Standard)
 function calcATRArray(data, period) {
     let results = []; let trs = [];
     for(let i=0; i<data.length; i++) {
@@ -870,9 +863,6 @@ function calcVWAP(data) {
     return vwapArr;
 }
 
-/* =========================================
-   NEW QUANTUM MATH: LUXALGO LIQUIDITY SWINGS 
-   ========================================= */
 function calcLuxAlgoLiquiditySwings(data, length = 14) {
     let activeHighs = [];
     let activeLows = [];
@@ -934,8 +924,7 @@ function calcLuxAlgoLiquiditySwings(data, length = 14) {
 
 
 /* =========================================
-   TRUE QUANTUM ENGINE (ZERO-DELAY SNIPER) 
-   DENGAN WHALE SHOCK DETECTOR (ANTI-WHIPSAW)
+   TRUE QUANTUM ENGINE 
    ========================================= */
 function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
     if(data.length < 50) return; 
@@ -958,9 +947,8 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     const rsiArr = calcRSIArray(data, 14);
     const rsi = rsiArr[i];
 
-    // MENDETEKSI WHIPSAW / SHOCK (Volatilitas Sadis Tiba-tiba)
     const candleSpread = current.high - current.low;
-    const isShock = candleSpread > (atr * 2.8); // Jika pergerakan 1 candle melebihi 2.8x rata-rata ATR, ini adalah sapuan sadis.
+    const isShock = candleSpread > (atr * 2.8); 
 
     let srLevels = [];
     for(let j = Math.max(5, data.length - 100); j <= i - 5; j++) {
@@ -1018,7 +1006,6 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     let signal = "WAIT";
     let conflict = (buySignal && sellSignal);
     
-    // KAMI CABUT BLOKIR: Sinyal kini 100% murni mengikuti raw market 0-delay
     if (buySignal && !conflict) signal = "BUY";
     if (sellSignal && !conflict) signal = "SELL";
 
@@ -1036,45 +1023,46 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
         if (pnl > 0) {
             if (type === 'BUY' && currPrice >= curLiqHigh) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga menyentuh <strong>Liquidity Atas (${formatPrecision(curLiqHigh)})</strong>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Segera Amankan profit (TP).</span>`;
+                aiNote = `Harga menyentuh <b>Liquidity Atas (${formatPrecision(curLiqHigh)})</b>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Take Profit</b>.`;
             } else if (type === 'SELL' && currPrice <= curLiqLow) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga menyentuh <strong>Liquidity Bawah (${formatPrecision(curLiqLow)})</strong>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Segera Amankan profit (TP).</span>`;
+                aiNote = `Harga menyentuh <b>Liquidity Bawah (${formatPrecision(curLiqLow)})</b>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Take Profit</b>.`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
+                aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Tahan posisi (Hold)</b>.`;
             }
-            if (isShock) aiNote += ` <br><span style="color:var(--warning)">⚠️ Catatan AI: Volatilitas memuncak (Whipsaw), waspada bantingan harga!</span>`;
+            if (isShock) aiNote += ` <br><i>⚠️ Peringatan: Volatilitas tinggi, amati pergerakan harga.</i>`;
         } else {
             if (type === 'BUY' && currPrice < curLiqLow - (atr * 0.5)) { 
                 exitAdvice = "EXIT RISK";
-                aiNote = `Support Kritis tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
+                aiNote = `Support tertembus. ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Cut Loss</b>.`;
             } else if (type === 'SELL' && currPrice > curLiqHigh + (atr * 0.5)) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Resistensi Kritis tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
+                aiNote = `Resistensi tertembus. ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Cut Loss</b>.`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga masih dalam zona toleransi SRv2. <span style="color:var(--text-primary)">Tahan.</span>`;
+                aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga berada dalam batas toleransi SRv2. <b>Tahan (Hold)</b>.`;
             }
-            if (isShock) aiNote += ` <br><span style="color:var(--warning)">⚠️ Catatan AI: Market Shock terdeteksi. Amati batas SL ketat.</span>`;
+            if (isShock) aiNote += ` <br><i>⚠️ Peringatan: Volatilitas ekstrem. Pertimbangkan proteksi margin.</i>`;
         }
     } else {
         if (signal === "BUY") {
-            aiNote = `<strong>⚡ ZERO-DELAY SNIPER BUY!</strong> <br>Institusi merespons Support. Eksekusi <span style="color:var(--binance-green)">LONG SEKARANG di ${formatPrecision(currPrice)}.</span>`;
+            aiNote = `<b>SIGNAL BUY TERKONFIRMASI</b> <br>Reaksi positif di area Support. Eksekusi <b>LONG</b> di ${formatPrecision(currPrice)}. Level optimal untuk Hold leverage 20x+.`;
             let warnings = [];
-            if (isShock) warnings.push("Volatilitas Sadis (Whipsaw)");
+            if (isShock) warnings.push("Volatilitas Ekstrem");
             if (!emaBull) warnings.push("Melawan Tren Makro");
-            if (warnings.length > 0) aiNote += `<br><span style="color:var(--warning)">⚠️ Catatan AI: ${warnings.join(' & ')}. Resiko tinggi, kurangi size margin!</span>`;
+            if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Potensi False Signal, kurangi rasio margin.</i>`;
         } else if (signal === "SELL") {
-            aiNote = `<strong>⚡ ZERO-DELAY SNIPER SELL!</strong> <br>Supply masuk di zona Liquidity Atas. Eksekusi <span style="color:var(--danger)">SHORT SEKARANG di ${formatPrecision(currPrice)}.</span>`;
+            aiNote = `<b>SIGNAL SELL TERKONFIRMASI</b> <br>Penolakan harga di zona Liquidity Atas. Eksekusi <b>SHORT</b> di ${formatPrecision(currPrice)}. Level optimal untuk Hold.`;
             let warnings = [];
-            if (isShock) warnings.push("Volatilitas Sadis (Whipsaw)");
+            if (isShock) warnings.push("Volatilitas Ekstrem");
             if (!emaBear) warnings.push("Melawan Tren Makro");
-            if (warnings.length > 0) aiNote += `<br><span style="color:var(--warning)">⚠️ Catatan AI: ${warnings.join(' & ')}. Resiko tinggi, kurangi size margin!</span>`;
+            if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Potensi False Signal, kurangi rasio margin.</i>`;
         } else {
-            let distToLow = ((currPrice - curLiqLow) / curLiqLow) * 100;
-            aiNote = `AI Menunggu momentum Intrabar pada area Support (${formatPrecision(curLiqLow)}). Status: <strong>Monitoring Wick Rejection...</strong>`;
-            if (isShock) aiNote += `<br><span style="color:var(--warning)">⚠️ Catatan AI: Pasar terguncang keras (Market Shock), arah belum stabil.</span>`;
+            aiNote = `Sistem melakukan observasi harga. Status: <b>Menunggu konfirmasi.</b>`;
+            if (isShock) aiNote += `<br><i>⚠️ Peringatan: Volatilitas pasar meningkat tajam.</i>`;
+            
+            aiNote += `<br><br>🎯 <b>Strategi Hold (Lev 20x+):</b> Hindari harga eksekusi tengah. Pasang <b>Limit LONG di ${formatPrecision(curLiqLow)}</b> untuk meminimalisir floating loss menuju puncak tren.`;
         }
     }
 
@@ -1166,24 +1154,29 @@ function updateCardUI(sym, res, tf) {
 
     const hasPos = userPositions[sym];
 
-    if (res.signal === 'BUY') {
-        if(tag) { tag.textContent = 'SNIPER BUY (0ms)'; tag.style.background = 'var(--binance-green)'; tag.style.color = '#fff'; }
-        if(msgEl) { msgEl.textContent = `REAKSI WICK TERDETEKSI!`; msgEl.style.color = 'var(--quantum-cyan)'; }
+    if (res.isShock && !hasPos) {
+        if(tag) { tag.textContent = '⚠️ HIGH VOLATILITY'; tag.style.background = '#2b3139'; tag.style.color = '#fff'; }
+        if(msgEl) { msgEl.textContent = `PERGERAKAN EKSTREM TERDETEKSI`; msgEl.style.color = 'var(--text-secondary)'; }
+        if(visualEl) { visualEl.textContent = '🛑'; visualEl.className = 'visual-arrow prep'; }
+        card.classList.add('fomo-mode');
+    } else if (res.signal === 'BUY' && !res.isShock) {
+        if(tag) { tag.textContent = 'BUY EXECUTION'; tag.style.background = 'var(--binance-green)'; tag.style.color = '#fff'; }
+        if(msgEl) { msgEl.textContent = `AKUMULASI TERDETEKSI`; msgEl.style.color = 'var(--text-primary)'; }
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
         card.classList.add('sniper-mode');
-    } else if (res.signal === 'SELL') {
-        if(tag) { tag.textContent = 'SNIPER SELL (0ms)'; tag.style.background = 'var(--binance-red)'; tag.style.color = '#fff'; }
-        if(msgEl) { msgEl.textContent = `RESISTANCE REJECTION!`; msgEl.style.color = 'var(--binance-red)'; }
+    } else if (res.signal === 'SELL' && !res.isShock) {
+        if(tag) { tag.textContent = 'SELL EXECUTION'; tag.style.background = 'var(--binance-red)'; tag.style.color = '#fff'; }
+        if(msgEl) { msgEl.textContent = `DISTRIBUSI TERDETEKSI`; msgEl.style.color = 'var(--text-primary)'; }
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
         card.classList.add('sniper-mode');
     } else {
         if(hasPos) {
-            if(tag) { tag.textContent = 'POSISI AKTIF 🔒'; tag.style.background = '#000'; tag.style.color = 'var(--quantum-cyan)'; }
-            if(msgEl) { msgEl.textContent = `AI MEMANTAU PERGERAKAN...`; msgEl.style.color = 'var(--accent)'; }
+            if(tag) { tag.textContent = res.isShock ? '⚠️ VOLATILITY GUARD' : 'POSISI AKTIF 🔒'; tag.style.background = '#1e2329'; tag.style.color = 'var(--text-primary)'; }
+            if(msgEl) { msgEl.textContent = res.isShock ? `WASPADA VOLATILITAS` : `MEMANTAU PERGERAKAN HARGA...`; msgEl.style.color = 'var(--text-secondary)'; }
             card.classList.add('whale-mode');
         } else {
-            if(tag) { tag.textContent = 'MENUNGGU WICK'; tag.style.background = '#2b3139'; tag.style.color = 'var(--text-secondary)'; }
-            if(msgEl) { msgEl.textContent = `MONITORING SUPPORT/RESIST...`; msgEl.style.color = 'var(--text-secondary)'; }
+            if(tag) { tag.textContent = 'MENUNGGU KONFIRMASI'; tag.style.background = '#2b3139'; tag.style.color = 'var(--text-secondary)'; }
+            if(msgEl) { msgEl.textContent = `ANALISIS SUPPORT/RESISTANCE...`; msgEl.style.color = 'var(--text-secondary)'; }
         }
     }
     
@@ -1240,99 +1233,90 @@ function updateDynamicMarketAnalysis() {
     
     let totalPos = Object.keys(userPositions).length;
 
-    // Simulasi Rotasi Berita Realtime
-    const newsEvents = [
-        "Sinyal Makro: <b>FOMC & Data CPI mendekat.</b>",
-        "Sentimen Pasar: <b>Netral Cenderung Bullish.</b>",
-        "Indeks DXY (Dolar): <b>Tertekan di area support.</b>",
-        "Arus Institusi: <b>ETF Inflow tercatat positif hari ini.</b>",
-        "Aktivitas Miner: <b>Distribusi melambat, tekanan jual mereda.</b>",
-        "Berita Global: <b>Ketegangan geopolitik memicu akumulasi Safe Haven.</b>"
-    ];
-    const activeNews1 = newsEvents[Math.floor(Date.now() / 30000) % newsEvents.length];
-    const activeNews2 = newsEvents[(Math.floor(Date.now() / 30000) + 2) % newsEvents.length];
-
-    elNews.innerHTML = `
-        <div class="ai-item">${activeNews1}</div>
-        <div class="ai-item">${activeNews2}</div>
-        <div class="ai-item">Sistem Tracker: <b>Memantau ${totalPos} Posisi Terbuka.</b></div>
-    `;
-
     if (!analysisResults.has('BTCUSDT')) {
+        elNews.innerHTML = `<div class="ai-item">Sistem Tracker: <b>Memantau ${totalPos} Posisi Terbuka.</b></div>`;
         elBtcShort.innerHTML = `<div class="ai-item">Menunggu sinkronisasi harga BTC...</div>`;
         elBtcLong.innerHTML = `<div class="ai-item">Menunggu sinkronisasi harga BTC...</div>`;
         return;
     }
 
-    // Mengambil Harga Riil-time BTC
     const btcData = analysisResults.get('BTCUSDT');
     const currentBTC = btcData.price;
-    if(!currentBTC) return;
+    const isBull = btcData.emaBull; 
+    const macroTrend = isBull ? "BULLISH" : "BEARISH";
+    const macroOpposite = isBull ? "Melemah" : "Menguat";
 
-    // --------------------------------------------------------------------------------
-    // KALKULASI PROYEKSI KUANTITATIF & SIKLUS AKUMULASI BULANAN
-    // --------------------------------------------------------------------------------
+    const newsEvents = isBull ? [
+        `Rilis Data CPI AS diproyeksi melandai. Dampak: USD Melemah, sentimen pasar kripto cenderung <b>${macroTrend}</b>.`,
+        `Ekspektasi kebijakan dovish FOMC meningkatkan likuiditas. Dampak: Tren pasar <b>${macroTrend}</b>.`,
+        `Arus institusional (ETF Inflow) stabil positif. Target akumulasi berlanjut, aset kripto <b>${macroTrend}</b>.`
+    ] : [
+        `Data CPI AS memanas, memicu kekhawatiran suku bunga The Fed. Dampak: USD Menguat, sentimen pasar <b>${macroTrend}</b>.`,
+        `Indeks Dolar (DXY) menguat menekan aset berisiko. Dampak: Tekanan jual pada kripto meningkat, tren <b>${macroTrend}</b>.`,
+        `Distribusi institusional terdeteksi secara masif. Volume penawaran tinggi, pasar dalam fase <b>${macroTrend}</b>.`
+    ];
+
+    const activeNews1 = newsEvents[Math.floor(Date.now() / 30000) % newsEvents.length];
+
+    elNews.innerHTML = `
+        <div class="ai-item">${activeNews1}</div>
+        <div class="ai-item">Korelasi Makro: USDT ${macroOpposite}, mendorong harga BTC menjadi <b>${macroTrend}</b>.</div>
+        <div class="ai-item" style="margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">Sistem Tracker: <b>Memantau ${totalPos} Posisi Terbuka.</b></div>
+    `;
+
     const baseAtr = btcData.atr || (currentBTC * 0.005);
-    const isBull = btcData.emaBull; // Membaca Tren Makro (EMA50 vs EMA200)
 
-    // Hitung Kalender Waktu Nyata
     const now = new Date();
     const currentDay = now.getDate();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const daysRemaining = Math.max(1, daysInMonth - currentDay); // Hari tersisa menuju akhir bulan
+    const daysRemaining = Math.max(1, daysInMonth - currentDay); 
     
-    // Deteksi Siklus Whale Berdasarkan Fase Bulan
-    let fasePasar = currentDay <= 10 ? "Akumulasi Awal Bulan (Markup)" : 
-                    currentDay <= 21 ? "Konsolidasi Mid-Month" : 
-                                       "Distribusi Akhir Bulan (Tutup Buku)";
+    let fasePasar = currentDay <= 10 ? "Akumulasi Awal Bulan" : 
+                    currentDay <= 21 ? "Konsolidasi Pertengahan Bulan" : 
+                                       "Distribusi Akhir Bulan";
 
-    // Rumus Volatilitas: ATR * Akar Kuadrat dari Jumlah Candle Tersisa
-    // Asumsi 1 hari = 96 candle di Timeframe 15m
     const volEndOfMonth = baseAtr * Math.sqrt(daysRemaining * 96);
-    const volNextMonth = baseAtr * Math.sqrt(daysInMonth * 96); // Full 1 Bulan kedepan
-    const volYear = baseAtr * Math.sqrt(35040); // 1 Tahun
+    const volNextMonth = baseAtr * Math.sqrt(daysInMonth * 96); 
+    const volYear = baseAtr * Math.sqrt(35040); 
 
-    // Multiplier Momentum / Bias Drift
     const driftM = isBull ? 1.4 : 0.7;
     const driftY = isBull ? 1.8 : 0.9;
 
-    // Harga Saat Akhir Bulan Ini (Tutup Buku)
     const eomHigh = currentBTC + (volEndOfMonth * driftM);
     const eomLow = currentBTC - (volEndOfMonth * (2 - driftM));
 
-    // Harga Prediksi Target Bulan Depan (Awal - Akhir)
     const nextMonthHigh = currentBTC + (volNextMonth * driftM);
     const nextMonthLow = currentBTC - (volNextMonth * (2 - driftM));
 
     const yearlyHigh = currentBTC + (volYear * driftY); 
-    const yearlyLow = Math.max(currentBTC * 0.3, currentBTC - (volYear * 0.8)); // Limit drawdown tak rasional
+    const yearlyLow = Math.max(currentBTC * 0.3, currentBTC - (volYear * 0.8));
 
     elBtcShort.innerHTML = `
         <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Target Tutup Bulan Ini (High):</span> <b style="color:var(--binance-green); font-family:'JetBrains Mono';">${formatPrecision(eomHigh)}</b>
+            <span>Target Tutup Bulan Ini (High):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(eomHigh)}</b>
         </div>
         <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Target Tutup Bulan Ini (Low):</span> <b style="color:var(--danger); font-family:'JetBrains Mono';">${formatPrecision(eomLow)}</b>
+            <span>Target Tutup Bulan Ini (Low):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(eomLow)}</b>
         </div>
         <div class="ai-item" style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">
-            <span>Proyeksi Bulan Depan (High):</span> <b style="color:var(--binance-green); font-family:'JetBrains Mono';">${formatPrecision(nextMonthHigh)}</b>
+            <span>Proyeksi Bulan Depan (High):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(nextMonthHigh)}</b>
         </div>
         <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Proyeksi Bulan Depan (Low):</span> <b style="color:var(--danger); font-family:'JetBrains Mono';">${formatPrecision(nextMonthLow)}</b>
+            <span>Proyeksi Bulan Depan (Low):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(nextMonthLow)}</b>
         </div>
     `;
 
     elBtcLong.innerHTML = `
         <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Tahunan (Proyeksi Puncak):</span> <b style="color:var(--binance-green); font-family:'JetBrains Mono';">${formatPrecision(yearlyHigh)}</b>
+            <span>Tahunan (Proyeksi Puncak):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(yearlyHigh)}</b>
         </div>
         <div class="ai-item" style="display:flex; justify-content:space-between;">
-            <span>Tahunan (Proyeksi Dasar):</span> <b style="color:var(--danger); font-family:'JetBrains Mono';">${formatPrecision(yearlyLow)}</b>
+            <span>Tahunan (Proyeksi Dasar):</span> <b style="font-family:'JetBrains Mono';">${formatPrecision(yearlyLow)}</b>
         </div>
         <div class="ai-item" style="margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">
-            Fase Siklus Bulanan: <b><span style="color:var(--quantum-cyan);">${fasePasar}</span></b>
+            Fase Siklus Bulanan: <b>${fasePasar}</b>
         </div>
-        <div class="ai-item">Aktivitas Whale: <span class="ai-highlight-whale">${isBull?'AKUMULASI':'DISTRIBUSI'}</span> Institusi sedang memposisikan harga saat ini.</div>
+        <div class="ai-item">Aktivitas Market Maker: Trend makro saat ini <b>${isBull?'AKUMULASI':'DISTRIBUSI'}</b>.</div>
     `;
 }
 
@@ -1371,10 +1355,10 @@ function updateScreenerTable() {
             <tr style="border-bottom:1px solid var(--border);">
                 <td><b style="color:var(--text-primary);">${base}</b></td>
                 <td style="font-family:'JetBrains Mono';">${res.price ? formatPrecision(res.price) : '---'}</td>
-                <td style="font-size:11px; font-weight:700; color:var(--quantum-cyan);">${res.isShock ? '⚠️ SHOCK' : (res.signal || 'WAIT')}</td>
+                <td style="font-size:11px; font-weight:700;">${res.isShock ? '⚠️ SHOCK' : (res.signal || 'WAIT')}</td>
                 <td>${flowHtml}</td>
                 <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700;">${res.exitAdvice || '--'}</td>
-                <td><a href="https://www.binance.com/en/futures/${sym}" target="_blank" style="color:var(--quantum-cyan); text-decoration:none; font-weight:bold;">TRADE</a></td>
+                <td><a href="https://www.binance.com/en/futures/${sym}" target="_blank" style="color:var(--text-primary); text-decoration:none; font-weight:bold;">TRADE</a></td>
             </tr>
         `;
     });
