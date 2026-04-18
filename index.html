@@ -127,20 +127,23 @@
   @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
   @keyframes blink-arrow { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
 
-  /* POSITION TRACKER */
-  .pos-tracker-box { padding: 12px 20px; background: rgba(0, 229, 255, 0.03); border-bottom: 1px solid var(--bg-base); }
-  .pos-title { font-size: 10px; color: var(--quantum-cyan); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px; display: flex; justify-content: space-between; }
-  .pos-input-group { display: flex; gap: 8px; }
-  .pos-input { background: var(--bg-base); border: 1px solid var(--border); color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 12px; }
-  .pos-input:focus { border-color: var(--quantum-cyan); }
-  .pos-input:disabled { background: #1a1e23; color: var(--text-secondary); cursor: not-allowed; }
-  .btn-pos { background: var(--bg-hover); color: #fff; border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; transition: 0.2s; }
-  .btn-pos.done { background: rgba(14, 203, 129, 0.1); color: var(--binance-green); border-color: var(--binance-green); }
-  .btn-pos.done:hover { background: var(--binance-green); color: #fff; }
+  /* NEW COMPACT POSITION TRACKER - BINANCE STYLE */
+  .pos-tracker-box { padding: 12px 16px; background: #1a1e24; border-top: 1px solid #2b3139; border-bottom: 1px solid var(--bg-base); }
+  .pos-title { font-size: 11px; color: var(--quantum-cyan); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
+  .tracker-row { display: flex; gap: 12px; margin-bottom: 8px; }
+  .tracker-col-left { flex: 1; }
+  .tracker-col-right { flex: 1; display: flex; position: relative; }
+  .tracker-input { width: 100%; height: 32px; background: #181a20; border: 1px solid #2b3139; color: #eaecef; padding: 0 10px; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 600; outline: none; transition: border-color 0.2s; line-height: 32px; }
+  .tracker-input:focus { border-color: var(--quantum-cyan); }
+  .tracker-input:disabled { color: #5e6673; cursor: not-allowed; }
+  select.tracker-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23848e9c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 25px; cursor: pointer; }
+  .tracker-suffix { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #848e9c; font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 700; pointer-events: none; }
+  .tracker-input.with-suffix { padding-right: 25px; text-align: right; font-family: 'JetBrains Mono'; }
+  .btn-pos { flex: 1; height: 32px; background: var(--bg-hover); color: #fff; border: 1px solid var(--border); padding: 0; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; transition: 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; }
   .btn-pos.clear { color: var(--danger); background: rgba(207, 48, 74, 0.1); border-color: var(--danger); }
   .btn-pos.clear:hover { background: var(--danger); color: white; }
   
-  .pos-active-state { display: none; align-items: center; justify-content: space-between; background: var(--bg-base); padding: 8px 12px; border-radius: 4px; border-left: 3px solid var(--quantum-cyan); }
+  .pos-active-state { display: none; align-items: center; justify-content: space-between; background: var(--bg-base); padding: 12px; border-radius: 4px; border: 1px solid var(--border); border-left: 3px solid var(--quantum-cyan); }
   .pos-active-state.show { display: flex; }
   .pnl-val { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; }
   .pnl-val.profit { color: var(--binance-green); }
@@ -194,7 +197,8 @@
       .navbar-bottom { display: flex; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
       .main-content { padding: 10px 8px; }
       .grid { grid-template-columns: 1fr; gap: 15px; } 
-      .card-header, .data-row, .market-note-box, .card-footer, .pos-tracker-box { padding: 12px 14px; }
+      .card-header, .data-row, .market-note-box, .card-footer { padding: 12px 14px; }
+      .pos-tracker-box { padding: 12px 14px; }
       .matrix-strip { padding: 6px 14px; }
       .chart-container { height: 210px; }
       .coin-title { font-size: 16px; }
@@ -413,7 +417,7 @@ window.toggleOrderInput = function(sym) {
     const input = document.getElementById(`pos-entry-input-${sym}`);
     if(type === 'MARKET') {
         input.disabled = true;
-        input.placeholder = "Otomatis Harga Market";
+        input.placeholder = "Otomatis Market";
         input.value = '';
     } else {
         input.disabled = false;
@@ -485,19 +489,19 @@ function renderPosBox(sym) {
         
         posBox.innerHTML = `
             <div class="pos-active-state show" style="flex-direction:column; align-items:stretch;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; border-bottom:1px solid var(--border); padding-bottom:6px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #2b3139; padding-bottom:8px;">
                     <span style="font-size:11px; color:var(--text-secondary); font-weight:bold;">
                         <span style="color:${typeColor}">${typeText}</span> • <span style="color:var(--accent);">${marginBadge}</span>
                     </span>
-                    <button class="btn-pos clear" style="padding:2px 8px; font-size:10px;" onclick="clearPos('${sym}')">TUTUP POSISI</button>
+                    <button class="btn-pos clear" style="padding:0 8px; height: 24px; font-size:10px; flex:none;" onclick="clearPos('${sym}')">TUTUP</button>
                 </div>
                 <div style="display:flex; justify-content:space-between;">
                     <div style="display:flex; flex-direction:column;">
-                        <span style="font-size:10px; color:var(--text-secondary);">Entry Price</span>
-                        <span style="color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:bold; font-size:13px;">${formatPrecision(pos.entry)}</span>
+                        <span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">Entry Price</span>
+                        <span style="color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:bold; font-size:14px;">${formatPrecision(pos.entry)}</span>
                     </div>
                     <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                        <span style="font-size:10px; color:var(--text-secondary);">ROE (PNL%)</span>
+                        <span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">ROE (PNL%)</span>
                         <span class="pnl-val ${pnlClass}">${pnlSign}${pnl.toFixed(2)}%</span>
                     </div>
                 </div>
@@ -505,26 +509,32 @@ function renderPosBox(sym) {
         `;
     } else {
         posBox.innerHTML = `
-            <div class="pos-input-group" style="margin-bottom: 6px;">
-                <select id="pos-margin-${sym}" class="pos-input" style="flex:1; font-size:11px; padding:6px;">
-                    <option value="Cross">Cross</option>
-                    <option value="Isolated">Isolated</option>
-                </select>
-                <div style="flex:0.8; display:flex; align-items:center; background:var(--bg-base); border:1px solid var(--border); border-radius:4px;">
-                    <input type="number" id="pos-lev-${sym}" class="pos-input" style="border:none; width:100%; padding:6px; text-align:right;" value="20" min="1" max="125">
-                    <span style="color:var(--text-secondary); font-size:11px; padding-right:8px; font-weight:bold;">x</span>
+            <div class="tracker-row">
+                <div class="tracker-col-left">
+                    <select id="pos-margin-${sym}" class="tracker-input">
+                        <option value="Cross">Cross</option>
+                        <option value="Isolated">Isolated</option>
+                    </select>
+                </div>
+                <div class="tracker-col-right">
+                    <input type="number" id="pos-lev-${sym}" class="tracker-input with-suffix" value="20" min="1" max="125">
+                    <span class="tracker-suffix">x</span>
                 </div>
             </div>
-            <div class="pos-input-group" style="margin-bottom: 6px;">
-                <select id="pos-type-${sym}" class="pos-input" style="flex:0.8; font-size:11px; padding:6px;" onchange="toggleOrderInput('${sym}')">
-                    <option value="MARKET">Market</option>
-                    <option value="LIMIT">Limit</option>
-                </select>
-                <input type="number" id="pos-entry-input-${sym}" class="pos-input" style="flex:1.2; padding:6px;" placeholder="Otomatis Market" disabled>
+            <div class="tracker-row">
+                <div class="tracker-col-left">
+                    <select id="pos-type-${sym}" class="tracker-input" onchange="toggleOrderInput('${sym}')">
+                        <option value="MARKET">Market</option>
+                        <option value="LIMIT">Limit</option>
+                    </select>
+                </div>
+                <div class="tracker-col-right">
+                    <input type="number" id="pos-entry-input-${sym}" class="tracker-input" placeholder="Otomatis Market" disabled>
+                </div>
             </div>
-            <div class="pos-input-group">
-                <button class="btn-pos" style="flex:1; background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos('${sym}', 'BUY')">OPEN LONG</button>
-                <button class="btn-pos" style="flex:1; background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos('${sym}', 'SELL')">OPEN SHORT</button>
+            <div class="tracker-row" style="margin-bottom: 0;">
+                <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos('${sym}', 'BUY')">OPEN LONG</button>
+                <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos('${sym}', 'SELL')">OPEN SHORT</button>
             </div>
         `;
     }
@@ -570,9 +580,11 @@ function renderGrid() {
                 <div id="msg-${s}" class="visual-msg">KALKULASI LIQUIDITY...</div>
             </div>
 
-            <!-- FITUR BARU: POSITION TRACKER -->
+            <!-- FITUR BARU: POSITION TRACKER COMPACT -->
             <div class="pos-tracker-box">
-                <div class="pos-title">🎯 BINANCE FUTURES MARGIN TRACKER</div>
+                <div class="pos-title">
+                    <span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER
+                </div>
                 <div id="pos-tracker-content-${s}"></div>
             </div>
             
