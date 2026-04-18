@@ -608,8 +608,8 @@ function renderGrid() {
             </div>
 
             <div class="card-footer">
-                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade buy" id="btn-buy-${s}">BUY</a>
-                <a href="https://www.binance.com/en/trade/${base}_USDT?type=spot" target="_blank" class="btn-trade sell" id="btn-sell-${s}">SELL</a>
+                <a href="https://www.binance.com/en/futures/${s}" target="_blank" class="btn-trade buy" id="btn-buy-${s}">LONG (FUTURES)</a>
+                <a href="https://www.binance.com/en/futures/${s}" target="_blank" class="btn-trade sell" id="btn-sell-${s}">SHORT (FUTURES)</a>
             </div>
         `;
         grid.appendChild(card);
@@ -1285,7 +1285,7 @@ function updateScreenerTable() {
                 <td style="font-size:11px; font-weight:700; color:var(--quantum-cyan);">${res.signal || 'WAIT'}</td>
                 <td>${flowHtml}</td>
                 <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700;">${res.exitAdvice || '--'}</td>
-                <td><a href="https://www.binance.com/en/trade/${base}_USDT" target="_blank" style="color:var(--quantum-cyan); text-decoration:none; font-weight:bold;">TRADE</a></td>
+                <td><a href="https://www.binance.com/en/futures/${sym}" target="_blank" style="color:var(--quantum-cyan); text-decoration:none; font-weight:bold;">TRADE</a></td>
             </tr>
         `;
     });
