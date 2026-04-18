@@ -435,18 +435,18 @@ function renderToolbar() {
 }
 
 /* UI PENGELOLAAN POSISI */
-window.setPos = function(sym) {
+window.setPos = function(sym, type) {
     const input = document.getElementById(`pos-entry-input-${sym}`);
     const val = parseFloat(input.value);
     if(val > 0) {
-        userPositions[sym] = { entry: val, tf: CURRENT_TF.label };
+        userPositions[sym] = { entry: val, tf: CURRENT_TF.label, type: type || 'BUY' };
         localStorage.setItem('zavana_positions_q', JSON.stringify(userPositions));
         input.value = '';
         renderPosBox(sym);
         // Force re-analyze to update note immediately
         const hist = marketData.get(sym);
         if(hist) analyzeQuantum(sym, hist, CURRENT_TF, false, false);
-        showToast(`Posisi ${sym} Disimpan pada ${val}`);
+        showToast(`Posisi ${sym} (${type}) Disimpan pada ${val}`);
     }
 }
 
@@ -468,14 +468,22 @@ function renderPosBox(sym) {
     
     if(pos) {
         let pnl = 0;
-        if(currentPrice > 0) pnl = ((currentPrice - pos.entry) / pos.entry) * 100;
+        if(currentPrice > 0) {
+            if (pos.type === 'SELL') {
+                pnl = ((pos.entry - currentPrice) / pos.entry) * 100;
+            } else {
+                pnl = ((currentPrice - pos.entry) / pos.entry) * 100;
+            }
+        }
         const pnlClass = pnl >= 0 ? 'profit' : 'loss';
         const pnlSign = pnl >= 0 ? '+' : '';
+        const typeColor = pos.type === 'SELL' ? 'var(--binance-red)' : 'var(--binance-green)';
+        const typeText = pos.type === 'SELL' ? 'SHORT' : 'LONG';
         
         posBox.innerHTML = `
             <div class="pos-active-state show">
                 <div style="display:flex; flex-direction:column;">
-                    <span style="font-size:10px; color:var(--text-secondary);">Entry Terkunci</span>
+                    <span style="font-size:10px; color:var(--text-secondary);">Entry <b style="color:${typeColor}">${typeText}</b></span>
                     <span style="color:var(--quantum-cyan); font-family:'JetBrains Mono'; font-weight:bold;">${pos.entry}</span>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:flex-end;">
@@ -488,8 +496,9 @@ function renderPosBox(sym) {
     } else {
         posBox.innerHTML = `
             <div class="pos-input-group">
-                <input type="number" id="pos-entry-input-${sym}" class="pos-input" placeholder="Ketik Harga Entry...">
-                <button class="btn-pos done" onclick="setPos('${sym}')">DONE</button>
+                <input type="number" id="pos-entry-input-${sym}" class="pos-input" placeholder="Ketik Harga...">
+                <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos('${sym}', 'BUY')">BUY</button>
+                <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos('${sym}', 'SELL')">SELL</button>
             </div>
         `;
     }
@@ -786,31 +795,50 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     if (userPos) {
         // AI FOKUS PADA POSISI USER
         let entry = userPos.entry;
-        let pnl = ((currPrice - entry) / entry) * 100;
+        let type = userPos.type || 'BUY';
+        let pnl = 0;
+        
+        if (type === 'SELL') {
+            pnl = ((entry - currPrice) / entry) * 100;
+        } else {
+            pnl = ((currPrice - entry) / entry) * 100;
+        }
         
         if (pnl > 0) {
             // Sedang Cuan
-            if (currPrice >= curSRv2.res) {
+            if (type === 'BUY' && currPrice >= curSRv2.res) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga mendekati <strong>SRv2 Resistance (${curSRv2.res.toFixed(2)})</strong>. Posisi Anda Profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Jual sebagian (Take Profit) untuk mengamankan modal.</span>`;
-            } else if (volDelta < 0 && rsi > 70) {
+                aiNote = `Harga mendekati <strong>SRv2 Resistance (${curSRv2.res.toFixed(2)})</strong>. Posisi LONG Anda Profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Jual sebagian (Take Profit) untuk mengamankan modal.</span>`;
+            } else if (type === 'SELL' && currPrice <= curSRv2.sup) {
+                exitAdvice = "TAKE PARTIAL";
+                aiNote = `Harga mendekati <strong>SRv2 Support (${curSRv2.sup.toFixed(2)})</strong>. Posisi SHORT Anda Profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Tutup sebagian posisi (Take Profit) untuk amankan cuan.</span>`;
+            } else if (type === 'BUY' && volDelta < 0 && rsi > 70) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Terdeteksi pelemahan Order Flow pada posisi profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Terdapat resistensi volume di depan. Saran: <span style="color:var(--danger)">Close posisi sekarang untuk mencegah reversal.</span>`;
+                aiNote = `Terdeteksi pelemahan Order Flow pada posisi profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Terdapat resistensi volume di depan. Saran: <span style="color:var(--danger)">Close posisi segera untuk mencegah reversal.</span>`;
+            } else if (type === 'SELL' && volDelta > 0 && rsi < 30) {
+                exitAdvice = "EXIT RISK";
+                aiNote = `Injeksi dominasi pembeli terdeteksi pada posisi profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Terdapat pantulan volume di depan. Saran: <span style="color:var(--danger)">Close posisi SHORT segera sebelum harga ditarik naik.</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Trend mendukung. Posisi Anda aman dan profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. SRv2 Band terus mengawal harga. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
+                aiNote = `Trend mendukung. Posisi ${type === 'BUY' ? 'LONG' : 'SHORT'} Anda aman dan profit <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. SRv2 Band terus mengawal harga. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
             }
         } else {
             // Sedang Minus
-            if (currPrice <= curSRv2.sup - (atr * 1.5)) {
+            if (type === 'BUY' && currPrice <= curSRv2.sup - (atr * 1.5)) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Harga telah menembus pertahanan batas bawah SRv2 secara fatal. Loss saat ini <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera agar dana tidak terkuras.</span>`;
-            } else if (isBullSweep) {
+                aiNote = `Harga telah menembus batas bawah SRv2 secara fatal. Loss saat ini <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera agar dana tidak terkuras.</span>`;
+            } else if (type === 'SELL' && currPrice >= curSRv2.res + (atr * 1.5)) {
+                exitAdvice = "EXIT RISK";
+                aiNote = `Harga telah menjebol batas atas SRv2 secara fatal. Loss saat ini <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera agar dana tidak terkuras.</span>`;
+            } else if (type === 'BUY' && isBullSweep) {
                 exitAdvice = "HOLD POSITION";
                 aiNote = `Terjadi Liquidity Sweep! Institusi sedang menyapu harga bawah. Minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span> kemungkinan besar akan segera *rebound*. Saran: <span style="color:var(--binance-green)">Tahan panik, HOLD POSISI.</span>`;
+            } else if (type === 'SELL' && isBearSweep) {
+                exitAdvice = "HOLD POSITION";
+                aiNote = `Terjadi Bearish Sweep! Institusi merespons resistance. Minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span> kemungkinan besar akan segera turun kembali. Saran: <span style="color:var(--binance-green)">Tahan panik, HOLD POSISI SHORT.</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi sedang floating <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga masih berada di atas garis SRv2 Support dinamis. Saran: <span style="color:var(--text-primary)">Tunggu hingga candle selesai, jangan bertindak impulsif.</span>`;
+                aiNote = `Posisi ${type === 'BUY' ? 'LONG' : 'SHORT'} sedang floating <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga masih terkawal di dalam area wajar SRv2. Saran: <span style="color:var(--text-primary)">Tunggu hingga candle selesai, jangan bertindak impulsif.</span>`;
             }
         }
     } else {
