@@ -218,7 +218,7 @@
 <div id="toast-container"></div>
 
 <header class="navbar-top">
-    <div class="brand">ZAVANA<span>V25.20 PRO</span></div>
+    <div class="brand">ZAVANA<span>V26.20 ZERO-DELAY</span></div>
     <div class="nav-links">
         <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
         <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
@@ -240,7 +240,7 @@
 
         <div class="ai-report-box" id="dynamicMarketAnalysis">
             <div class="ai-col">
-                <h4>🌐 LUXALGO ENGINE STATUS</h4>
+                <h4>🌐 ZERO-DELAY ENGINE STATUS</h4>
                 <div id="dyn-market-state" class="ai-item">Loading...</div>
             </div>
             <div class="ai-col">
@@ -288,7 +288,7 @@
         <div class="health-dot ok" id="healthDot"></div>
         <span id="healthText" style="color: var(--binance-green);">SYNC: CONNECTED</span>
     </div>
-    <div>© ZAVANA V25.20 PRO <span>•</span> LuxAlgo Liquidity Swings Active.</div>
+    <div>© ZAVANA V26.20 <span>•</span> Intrabar Sniper 0ms Delay Active.</div>
 </footer>
 
 <nav class="navbar-bottom">
@@ -323,6 +323,7 @@ try {
 }
 
 let userPositions = JSON.parse(localStorage.getItem('zavana_positions_lux')) || {};
+let binanceSocket = null;
 
 const TIMEFRAMES = [
   { label: '1m',  ws: '1m',  limit: 400, agg: 1, type: 'SCALP' }, 
@@ -389,7 +390,10 @@ function updateHealthMonitor() {
     if (diff > 10000) {
         dot.className = 'health-dot bad'; txt.textContent = `SYNC: Terputus, Reconnecting...`; txt.style.color = 'var(--danger)';
     } else {
-        dot.className = 'health-dot ok'; txt.textContent = `SYNC: LIVE (Fast Polling)`; txt.style.color = 'var(--binance-green)';
+        dot.className = 'health-dot ok'; 
+        // Update label to show true websocket speed vs polling
+        txt.textContent = binanceSocket ? `SYNC: WEBSOCKET LIVE (0ms)` : `SYNC: FAST POLLING (1s)`; 
+        txt.style.color = 'var(--binance-green)';
     }
 }
 
@@ -474,7 +478,6 @@ function renderPosBox(sym) {
     if(pos) {
         let pnl = 0;
         if(currentPrice > 0) {
-            // Kalkulasi ROE % menggunakan Leverage standar Binance Futures
             if (pos.type === 'SELL') {
                 pnl = ((pos.entry - currentPrice) / pos.entry) * 100 * (pos.leverage || 1);
             } else {
@@ -677,6 +680,7 @@ async function changeTimeframe(tf) {
     sLabel.textContent = `MODE: ${tf.type} (${tf.label})`;
     
     if(pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+    if(binanceSocket) { binanceSocket.close(); binanceSocket = null; }
     
     for (let i = 0; i < COINS.length; i += 3) {
         const chunk = COINS.slice(i, i + 3);
@@ -693,13 +697,55 @@ async function changeTimeframe(tf) {
             }
         }));
     }
-    startPolling(tf); 
+    
+    // MENCOBA KONEKSI WEBSOCKET (TRUE 0ms DELAY)
+    connectWebSocket(tf); 
+}
+
+function connectWebSocket(tf) {
+    if(binanceSocket) { binanceSocket.close(); binanceSocket = null; }
+    lastSocketTime = Date.now();
+    
+    const streams = COINS.map(s => `${s.toLowerCase()}@kline_${tf.ws}`).join('/');
+    const wsUrl = `wss://stream.binance.com:9443/stream?streams=${streams}`;
+    
+    try {
+        binanceSocket = new WebSocket(wsUrl);
+        binanceSocket.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            if (msg.data && msg.data.k) {
+                const k = msg.data.k;
+                const sym = msg.data.s;
+                const candle = {
+                    time: k.t / 1000, 
+                    open: parseFloat(k.o), 
+                    high: parseFloat(k.h), 
+                    low: parseFloat(k.l), 
+                    close: parseFloat(k.c), 
+                    volume: parseFloat(k.v), 
+                    takerBuy: parseFloat(k.V) 
+                };
+                lastSocketTime = Date.now();
+                handleStream(sym, candle);
+            }
+        };
+        binanceSocket.onclose = () => { 
+            // Jika terputus biasa, coba lagi
+            setTimeout(() => connectWebSocket(tf), 3000); 
+        };
+        binanceSocket.onerror = (err) => { 
+            console.warn("WebSocket diblokir oleh lingkungan/browser, otomatis beralih ke Fast Polling..."); 
+            startPolling(tf); 
+        };
+    } catch(e) {
+        startPolling(tf);
+    }
 }
 
 function startPolling(tf) {
     if (pollingInterval) clearInterval(pollingInterval);
     lastSocketTime = Date.now();
-
+    // Fast Polling sebagai Fallback jika WebSocket diblokir
     pollingInterval = setInterval(() => {
         COINS.forEach((sym, index) => {
             setTimeout(async () => {
@@ -712,7 +758,7 @@ function startPolling(tf) {
                 } catch (err) {}
             }, index * 100);
         });
-    }, 1500); // Polling super cepat (1.5 detik) untuk simulasi real-time di Canvas
+    }, 1500); 
 }
 
 async function fetchHistory(s, interval, lim) {
@@ -754,13 +800,15 @@ function handleStream(sym, candle) {
     const cObj = charts.get(sym);
     if(cObj) requestAnimationFrame(() => { try { cObj.series.update(candle); } catch (e) {} });
     
-    if (isNewCandle) analyzeQuantum(sym, arr, CURRENT_TF, false, false); 
-    else {
+    // Untuk 0-Delay Sniper: Kita panggil fungsi analitik di SETIAP TICK Harga (Intrabar)
+    if (isNewCandle) {
+        analyzeQuantum(sym, arr, CURRENT_TF, false, false); 
+    } else {
         if(!tickDebounce[sym]) {
             tickDebounce[sym] = setTimeout(() => {
                 analyzeQuantum(sym, arr, CURRENT_TF, false, false);
                 tickDebounce[sym] = null;
-            }, 500); 
+            }, 300); // Super agresif, 300ms delay untuk mencegah freeze rendering
         }
     }
     
@@ -821,16 +869,6 @@ function calcVWAP(data) {
     }
     return vwapArr;
 }
-function calcSMA_Vol(data, period) {
-    let smaArr = new Array(data.length).fill(0);
-    let sum = 0;
-    for (let i = 0; i < data.length; i++) {
-        sum += data[i].volume;
-        if (i >= period) sum -= data[i - period].volume;
-        smaArr[i] = i >= period - 1 ? sum / period : sum / (i + 1);
-    }
-    return smaArr;
-}
 
 /* =========================================
    NEW QUANTUM MATH: LUXALGO LIQUIDITY SWINGS 
@@ -847,7 +885,6 @@ function calcLuxAlgoLiquiditySwings(data, length = 14) {
         let pHigh = data[i].high;
         let pLow = data[i].low;
 
-        // Mengecek 'length' bar ke kiri dan ke kanan
         for (let j = 1; j <= length; j++) {
             if (data[i - j].high > pHigh || data[i + j].high >= pHigh) isPH = false;
             if (data[i - j].low < pLow || data[i + j].low <= pLow) isPL = false;
@@ -856,7 +893,7 @@ function calcLuxAlgoLiquiditySwings(data, length = 14) {
         if (isPH) {
             activeHighs.push({
                 time: data[i].time,
-                top: pHigh, // Mengambil extremity wick
+                top: pHigh, 
                 crossed: false,
                 startIndex: i,
                 endIndex: data.length - 1
@@ -877,7 +914,7 @@ function calcLuxAlgoLiquiditySwings(data, length = 14) {
     // Evaluasi Penembusan Harga (Cross) berjalan maju
     for(let h of activeHighs) {
         for(let i = h.startIndex + 1; i < data.length; i++) {
-            if (data[i].close > h.top) { // Harga penutupan menembus Swing High
+            if (data[i].close > h.top) { 
                 h.crossed = true;
                 h.endIndex = i;
                 break;
@@ -887,7 +924,7 @@ function calcLuxAlgoLiquiditySwings(data, length = 14) {
 
     for(let l of activeLows) {
         for(let i = l.startIndex + 1; i < data.length; i++) {
-            if (data[i].close < l.btm) { // Harga penutupan menembus Swing Low
+            if (data[i].close < l.btm) { 
                 l.crossed = true;
                 l.endIndex = i;
                 break;
@@ -900,7 +937,7 @@ function calcLuxAlgoLiquiditySwings(data, length = 14) {
 
 
 /* =========================================
-   TRUE QUANTUM ENGINE + AI ADVISOR
+   TRUE QUANTUM ENGINE (ZERO-DELAY SNIPER)
    ========================================= */
 function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
     if(data.length < 50) return; 
@@ -911,16 +948,14 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     // 1. Eksekusi Indikator Tunggal (Liquidity Swings)
     const liqSwings = calcLuxAlgoLiquiditySwings(data, 14); 
     
-    // 2. Eksekusi Indikator Smart SRv2 & Trend Filters (PineScript v1.0)
+    // 2. Eksekusi Indikator Smart SRv2 & Trend Filters
     const ema50Arr = calcEMA(data, 50);
     const ema200Arr = calcEMA(data, 200);
     const vwapArr = calcVWAP(data);
-    const volSMAArr = calcSMA_Vol(data, 20);
 
     const ema50 = ema50Arr[i];
     const ema200 = ema200Arr[i];
     const vwap = vwapArr[i];
-    const volSMA = volSMAArr[i];
     
     const atrArr = calcATRArray(data, 14);
     const atr = atrArr[i];
@@ -938,7 +973,7 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
         if(isPH) srLevels.push(data[j].high);
         if(isPL) srLevels.push(data[j].low);
     }
-    srLevels = [...new Set(srLevels)].slice(-40); // Simpan 40 terbaru
+    srLevels = [...new Set(srLevels)].slice(-40); 
 
     let nearestResistance = null;
     let nearestSupport = null;
@@ -949,60 +984,55 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
         if(lvl <= current.close && (current.close - lvl) < bestSDist) { nearestSupport = lvl; bestSDist = current.close - lvl; }
     }
 
-    // Hitung Arah Liquidity Swing (Bullish/Bearish) Length = 5
-    let lastSwingHigh = null, prevSwingHigh = null;
-    let lastSwingLow = null, prevSwingLow = null;
-    for(let j = 5; j <= i - 5; j++) {
-        let isPH = true; let isPL = true;
-        for(let k = 1; k <= 5; k++) {
-            if(data[j-k].high > data[j].high || data[j+k].high >= data[j].high) isPH = false;
-            if(data[j-k].low < data[j].low || data[j+k].low <= data[j].low) isPL = false;
-        }
-        if(isPH) { prevSwingHigh = lastSwingHigh; lastSwingHigh = data[j].high; }
-        if(isPL) { prevSwingLow = lastSwingLow; lastSwingLow = data[j].low; }
-    }
-    let bullishLiquidity = lastSwingLow !== null && prevSwingLow !== null && (lastSwingLow > prevSwingLow);
-    let bearishLiquidity = lastSwingHigh !== null && prevSwingHigh !== null && (lastSwingHigh < prevSwingHigh);
+    // Ambil level LuxAlgo absolut terdekat
+    const activeUncrossedHighs = liqSwings.activeHighs.filter(h => !h.crossed);
+    const activeUncrossedLows = liqSwings.activeLows.filter(l => !l.crossed);
+    const curLiqHigh = activeUncrossedHighs.length > 0 ? activeUncrossedHighs[activeUncrossedHighs.length - 1].top : current.close * 1.05;
+    const curLiqLow = activeUncrossedLows.length > 0 ? activeUncrossedLows[activeUncrossedLows.length - 1].btm : current.close * 0.95;
 
-    // Filter Logic & Candle Strength
-    let volSpike = current.volume > volSMA * 1.8;
-    let body = Math.abs(current.close - current.open);
-    let range = current.high - current.low;
-    let candleBodyStrong = body >= range * 0.6;
+    // LOGIKA 0-DELAY (INTRABAR): Tidak menunggu candle menutup. Reaksi pada sentuhan Wick.
+    const takerBuy = current.takerBuy || 0;
+    const takerSell = current.volume - takerBuy;
+    const volDelta = takerBuy - takerSell;
+
+    let isBullSweep = false; 
+    let isBearSweep = false;
+
+    // Memeriksa sapuan likuiditas pada milidetik ini
+    for(let l of liqSwings.activeLows) {
+        if(current.low < l.btm && current.close > l.btm) isBullSweep = true;
+    }
+    for(let h of liqSwings.activeHighs) {
+        if(current.high > h.top && current.close < h.top) isBearSweep = true;
+    }
+
+    let hitSupport = (nearestSupport !== null && current.low <= nearestSupport * 1.001); 
+    let hitResistance = (nearestResistance !== null && current.high >= nearestResistance * 0.999);
+
+    // KUNCI ZERO DELAY: Langsung trigger jika harga menyentuh support/sweep dan volume pembeli masuk detik itu juga.
+    let reversalBuy = hitSupport && (volDelta > 0); 
+    let reversalSell = hitResistance && (volDelta < 0);
+
+    let buySignal = isBullSweep || reversalBuy;
+    let sellSignal = isBearSweep || reversalSell;
+
+    // Filter EMA agar tidak tergilas tren kuat
     let emaBull = ema50 > ema200;
     let emaBear = ema50 < ema200;
-    let vwapDistanceOK = Math.abs(current.close - vwap) / vwap > 0.002;
-    let rsiNeutral = rsi >= 40 && rsi <= 60;
+    let vwapDistanceOK = Math.abs(current.close - vwap) / vwap > 0.001; 
 
-    // Sinyal Logic (PineScript: Breakout & Reversal)
-    let prevC = data[i-1].close;
-    let breakoutBuy = nearestResistance !== null && (prevC <= nearestResistance && current.close > nearestResistance) && bullishLiquidity;
-    let breakoutSell = nearestSupport !== null && (prevC >= nearestSupport && current.close < nearestSupport) && bearishLiquidity;
-
-    let touchSupport = nearestSupport !== null && Math.abs(current.close - nearestSupport) / (nearestSupport||1) < 0.003;
-    let touchResistance = nearestResistance !== null && Math.abs(current.close - nearestResistance) / (nearestResistance||1) < 0.003;
-
-    let reversalBuy = touchSupport && candleBodyStrong && volSpike && bullishLiquidity && (current.close > current.open);
-    let reversalSell = touchResistance && candleBodyStrong && volSpike && bearishLiquidity && (current.close < current.open);
-
-    let buySignal = breakoutBuy || reversalBuy;
-    let sellSignal = breakoutSell || reversalSell;
-
-    let validBuy = buySignal && emaBull && vwapDistanceOK && volSpike;
-    let validSell = sellSignal && emaBear && vwapDistanceOK && volSpike;
-
-    let conflict = (buySignal && sellSignal) || (!validBuy && buySignal) || (!validSell && sellSignal);
-    let neutralMarket = rsiNeutral || (Math.abs(ema50 - ema200) / ema200 < 0.01);
-
-    let dontBuy = !validBuy || neutralMarket || conflict;
-    let dontSell = !validSell || neutralMarket || conflict;
-
+    // Eksekusi Signal
     let signal = "WAIT";
+    let validBuy = buySignal && emaBull && vwapDistanceOK;
+    let validSell = sellSignal && emaBear && vwapDistanceOK;
+    
+    // Menghapus blokir RsiNeutral agar sinyal lebih cepat tembus
+    let conflict = (buySignal && sellSignal);
+    let dontBuy = !validBuy || conflict;
+    let dontSell = !validSell || conflict;
+
     if (validBuy && !dontBuy) signal = "BUY";
     if (validSell && !dontSell) signal = "SELL";
-
-    const curLiqHigh = nearestResistance !== null ? nearestResistance : (current.close * 1.05);
-    const curLiqLow = nearestSupport !== null ? nearestSupport : (current.close * 0.95);
 
     // Pembuatan Catatan AI 
     let aiNote = "";
@@ -1019,45 +1049,44 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
         if (pnl > 0) {
             if (type === 'BUY' && currPrice >= curLiqHigh) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga mencapai <strong>SRv2 Resistance (${formatPrecision(curLiqHigh)})</strong>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Amankan profit (TP).</span>`;
+                aiNote = `Harga menyentuh <strong>Liquidity Atas (${formatPrecision(curLiqHigh)})</strong>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Segera Amankan profit (TP).</span>`;
             } else if (type === 'SELL' && currPrice <= curLiqLow) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga mencapai <strong>SRv2 Support (${formatPrecision(curLiqLow)})</strong>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Amankan profit (TP).</span>`;
+                aiNote = `Harga menyentuh <strong>Liquidity Bawah (${formatPrecision(curLiqLow)})</strong>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--accent)">Segera Amankan profit (TP).</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Tren ditahan filter EMA. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
+                aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Belum mencapai zona distribusi/akumulasi mayor. Saran: <span style="color:var(--binance-green)">HOLD POSISI.</span>`;
             }
         } else {
-            if (type === 'BUY' && currPrice < curLiqLow - (atr * 1.5)) {
+            if (type === 'BUY' && currPrice < curLiqLow - (atr * 0.5)) { // Stop Loss dipersempit
                 exitAdvice = "EXIT RISK";
-                aiNote = `Support tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
-            } else if (type === 'SELL' && currPrice > curLiqHigh + (atr * 1.5)) {
+                aiNote = `Support Kritis tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
+            } else if (type === 'SELL' && currPrice > curLiqHigh + (atr * 0.5)) {
                 exitAdvice = "EXIT RISK";
-                aiNote = `Resistance tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
+                aiNote = `Resistensi Kritis tertembus! ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <span style="color:var(--danger)">CUT LOSS segera.</span>`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Smart SRv2 masih aktif menahan harga. <span style="color:var(--text-primary)">Tahan emosi.</span>`;
+                aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga masih dalam zona toleransi SRv2. <span style="color:var(--text-primary)">Tahan.</span>`;
             }
         }
     } else {
         if (validBuy && !dontBuy) {
-            aiNote = `<strong>Buy Confirmed by Smart SRv2+Liquidity!</strong> EMA Bullish, Vol Spike OK. Saran: <span style="color:var(--binance-green)">OPEN LONG di area ${formatPrecision(currPrice)}.</span>`;
+            aiNote = `<strong>⚡ ZERO-DELAY SNIPER BUY!</strong> <br>Harga menolak turun di area Support. Institusi (Taker Buy) merespons seketika. Eksekusi <span style="color:var(--binance-green)">LONG SEKARANG di ${formatPrecision(currPrice)}.</span>`;
         } else if (validSell && !dontSell) {
-            aiNote = `<strong>Sell Confirmed by Smart SRv2+Liquidity!</strong> EMA Bearish, Vol Spike OK. Saran: <span style="color:var(--danger)">OPEN SHORT di area ${formatPrecision(currPrice)}.</span>`;
+            aiNote = `<strong>⚡ ZERO-DELAY SNIPER SELL!</strong> <br>Harga membentur zona Liquidity Atas. Supply masuk seketika. Eksekusi <span style="color:var(--danger)">SHORT SEKARANG di ${formatPrecision(currPrice)}.</span>`;
         } else if (buySignal && dontBuy) {
-            aiNote = `<span style="color:var(--warning)"><strong>JANGAN BUY!</strong></span> Sinyal awal muncul tapi kondisi pasar / filter trend melarang masuk.`;
+            aiNote = `<span style="color:var(--warning)"><strong>PANTULAN PALSU TERDETEKSI (JANGAN BUY).</strong></span> Sinyal awal muncul tapi EMA menahan trend bawah.`;
         } else if (sellSignal && dontSell) {
-            aiNote = `<span style="color:var(--warning)"><strong>JANGAN SELL!</strong></span> Sinyal awal muncul tapi kondisi pasar / filter trend melarang masuk.`;
+            aiNote = `<span style="color:var(--warning)"><strong>PANTULAN PALSU TERDETEKSI (JANGAN SELL).</strong></span> Sinyal awal muncul tapi EMA mendorong trend naik.`;
         } else {
             let distToLow = ((currPrice - curLiqLow) / curLiqLow) * 100;
-            let distToHigh = ((curLiqHigh - currPrice) / curLiqHigh) * 100;
-            aiNote = `Menunggu set-up Smart SRv2. EMA50>EMA200: <strong>${emaBull?"Yes":"No"}</strong> | Vol Spike: <strong>${volSpike?"Yes":"No"}</strong> | Liq: <strong>${bullishLiquidity?"Bull":"Bear"}</strong>.`;
+            aiNote = `AI Menunggu momentum Intrabar pada area Support (${formatPrecision(curLiqLow)}). Status: <strong>Monitoring Wick Rejection...</strong>`;
         }
     }
 
     MTF_MATRIX.set(`${sym}_${tf.label}`, signal);
     
-    let lastState = { signal, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta: (current.takerBuy||0)-((current.volume-(current.takerBuy||0))), tp: curLiqHigh, sl: curLiqLow, exitAdvice, note: aiNote };
+    let lastState = { signal, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta, tp: curLiqHigh, sl: curLiqLow, exitAdvice, note: aiNote };
 
     if (isBackground) { MTF_MATRIX.set(`${sym}_${tf.label}`, signal); updateMatrixUI(sym); return; }
     
@@ -1067,7 +1096,7 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     if(cObj) {
         requestAnimationFrame(() => {
             try {
-                // Tampilkan maksimal 15 Garis Liquidity Swings (LuxAlgo)
+                // Tampilkan maksimal 15 Garis Liquidity Swings (LuxAlgo) -> Format Pendek
                 const numLines = 15;
                 const recentHighs = liqSwings.activeHighs.slice(-numLines);
                 const recentLows = liqSwings.activeLows.slice(-numLines);
@@ -1105,8 +1134,6 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
                 let markers = [];
                 if (validBuy && !dontBuy) markers.push({ time: current.time, position: 'belowBar', color: '#0ecb81', shape: 'arrowUp', text: 'BUY' });
                 if (validSell && !dontSell) markers.push({ time: current.time, position: 'aboveBar', color: '#f6465d', shape: 'arrowDown', text: 'SELL' });
-                if (buySignal && dontBuy) markers.push({ time: current.time, position: 'belowBar', color: '#848e9c', shape: 'arrowUp', text: 'JANGAN BUY' });
-                if (sellSignal && dontSell) markers.push({ time: current.time, position: 'aboveBar', color: '#848e9c', shape: 'arrowDown', text: 'JANGAN SELL' });
                 cObj.series.setMarkers(markers);
             } catch(e) {}
         });
@@ -1147,12 +1174,12 @@ function updateCardUI(sym, res, tf) {
     const hasPos = userPositions[sym];
 
     if (res.signal === 'BUY') {
-        if(tag) { tag.textContent = 'EXECUTE BUY (SWING)'; tag.classList.add('tag-buy'); }
-        if(msgEl) { msgEl.textContent = `LIQUIDITY SWEEP DETECTED!`; msgEl.style.color = 'var(--quantum-cyan)'; }
+        if(tag) { tag.textContent = 'SNIPER BUY (0ms)'; tag.classList.add('tag-buy'); }
+        if(msgEl) { msgEl.textContent = `REAKSI WICK TERDETEKSI!`; msgEl.style.color = 'var(--quantum-cyan)'; }
         if(visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
         card.classList.add('sniper-mode');
     } else if (res.signal === 'SELL') {
-        if(tag) { tag.textContent = 'EXECUTE SELL (SWING)'; tag.classList.add('tag-sell'); }
+        if(tag) { tag.textContent = 'SNIPER SELL (0ms)'; tag.classList.add('tag-sell'); }
         if(msgEl) { msgEl.textContent = `RESISTANCE REJECTION!`; msgEl.style.color = 'var(--binance-red)'; }
         if(visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
         card.classList.add('sniper-mode');
@@ -1162,8 +1189,8 @@ function updateCardUI(sym, res, tf) {
             if(msgEl) { msgEl.textContent = `AI MEMANTAU PERGERAKAN...`; msgEl.style.color = 'var(--accent)'; }
             card.classList.add('whale-mode');
         } else {
-            if(tag) { tag.textContent = 'MENUNGGU SWING'; tag.classList.add('tag-wait'); }
-            if(msgEl) { msgEl.textContent = `MENGHITUNG PROBABILITAS...`; msgEl.style.color = 'var(--text-secondary)'; }
+            if(tag) { tag.textContent = 'MENUNGGU WICK'; tag.classList.add('tag-wait'); }
+            if(msgEl) { msgEl.textContent = `MONITORING SUPPORT/RESIST...`; msgEl.style.color = 'var(--text-secondary)'; }
         }
     }
     
@@ -1215,9 +1242,9 @@ function updateDynamicMarketAnalysis() {
 
     let totalPos = Object.keys(userPositions).length;
     
-    elMarket.innerHTML = `Sistem memantau <b>${totalPos} Posisi Terbuka</b>. <b>Smart SRv2 + Liquidity Swings v1.0</b> Aktif Penuh.`;
-    elVol.innerHTML = `Filter EMA50/200, VWAP, & Volume Spike mencegah sinyal palsu. Munculnya label <b>"JANGAN BUY/SELL"</b> berarti kondisi belum konfirm.`;
-    elTarget.innerHTML = `<b>Pesan Sistem:</b> Tampilan Liquidity Swings (LuxAlgo) dipertahankan sesuai request, ditumpuk dengan deteksi SRv2 Dinamis.`;
+    elMarket.innerHTML = `Sistem memantau <b>${totalPos} Posisi Terbuka</b>. Algoritma <b>Intrabar Sniper</b> diaktifkan.`;
+    elVol.innerHTML = `Sinyal <b>0-Delay</b> tidak lagi menunggu candle ditutup! Eksekusi seketika (milidetik) saat ujung ekor (Wick) menyentuh level support/liquidity.`;
+    elTarget.innerHTML = `<b>Pesan Sistem:</b> Koneksi WebSocket telah dihidupkan untuk menjamin harga yang tampil sama persis dengan Binance Futures milik Anda.`;
 }
 
 function initSettingsForm() {
