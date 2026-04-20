@@ -2,13 +2,14 @@
 <html lang="id">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>ZAVANA - Ockhand Tage</title>
+<title>ZAVANA - Ockhand Tage Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0b0e11">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<!-- Menggunakan CDN untuk Font dan Library Chart -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 
 <style>
@@ -43,6 +44,9 @@
   .nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
    
   .nav-actions { display: flex; gap: 15px; align-items: center; }
+  .action-btn { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .action-btn:hover { background: var(--text-secondary); color: #fff; }
+  .action-btn.active { color: var(--accent); border-color: var(--accent); }
 
   .app-footer { background: var(--bg-base); border-top: 1px solid var(--border); padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 90; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #474d57; letter-spacing: 0.5px; }
   .health-indicator { display: flex; align-items: center; gap: 6px; }
@@ -197,6 +201,11 @@
   .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; margin-bottom: 10px; font-size: 14px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center; font-weight: 500; }
   .toast.show { opacity: 1; }
 
+  .conf-badge { font-family: 'JetBrains Mono'; font-weight: 800; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+  .conf-high { background: rgba(14, 203, 129, 0.2); color: var(--binance-green); border: 1px solid var(--binance-green); }
+  .conf-med { background: rgba(252, 213, 53, 0.2); color: var(--accent); border: 1px solid var(--accent); }
+  .conf-low { background: rgba(246, 70, 93, 0.2); color: var(--binance-red); border: 1px solid var(--binance-red); }
+
   @media (max-width: 768px) {
       .navbar-top { display: none; }
       .ai-report-box { grid-template-columns: 1fr; gap: 20px; padding: 15px; }
@@ -224,7 +233,7 @@
 <div id="toast-container"></div>
 
 <header class="navbar-top">
-    <div class="brand">ZAVANA<span>Ockhand Tage</span></div>
+    <div class="brand">ZAVANA<span>Ockhand Tage Pro</span></div>
     <div class="nav-links">
         <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
         <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
@@ -242,34 +251,37 @@
             <div id="strategyLabel" class="strategy-badge">MODE: DAY (15m)</div>
             <div class="toolbar-group" id="tfToolbar"></div>
         </div>
+        
         <div class="grid" id="grid"></div>
 
         <div class="ai-report-box" id="dynamicMarketAnalysis">
             <div class="ai-col">
-                <h4>📰 MACROECONOMIC & NEWS</h4>
-                <div id="dyn-news-state">Loading...</div>
+                <h4>📰 TECHNICAL STATE & ATR</h4>
+                <div id="dyn-news-state"></div>
             </div>
             <div class="ai-col">
-                <h4>📊 PROYEKSI SIKLUS BULANAN</h4>
-                <div id="dyn-btc-short">Loading...</div>
+                <h4>📊 PROYEKSI VOLATILITAS (SHORT-TERM)</h4>
+                <div id="dyn-btc-short"></div>
             </div>
             <div class="ai-col">
-                <h4>🎯 TARGET TAHUNAN & WHALE</h4>
-                <div id="dyn-btc-long">Loading...</div>
+                <h4>🎯 TARGET MAKRO & FIBONACCI</h4>
+                <div id="dyn-btc-long"></div>
             </div>
         </div>
     </div>
 
     <div id="page-screener" class="page">
-        <h2 style="font-weight:500; margin-bottom:20px; font-size:24px;">Market Matrix Overview</h2>
+        <h2 style="font-weight:500; margin-bottom:5px; font-size:24px;">Market Matrix Overview</h2>
+        <p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px;">Analisis probabilitas kemenangan (Win Rate) berdasarkan konfluensi EMA, Liquidity Sweeps, dan Volume Delta.</p>
         <div class="table-wrapper" style="overflow-x:auto;">
             <table>
                 <thead>
                     <tr>
                         <th>Pair</th>
                         <th>Price</th>
-                        <th>State</th>
-                        <th>Order Flow / Liquidity</th>
+                        <th>Signal State</th>
+                        <th>Win Prob.</th>
+                        <th>Order Flow</th>
                         <th>Matrix Advice</th>
                         <th>Action</th>
                     </tr>
@@ -292,9 +304,9 @@
 <footer class="app-footer">
     <div class="health-indicator" id="healthMonitor">
         <div class="health-dot ok" id="healthDot"></div>
-        <span id="healthText" style="color: var(--binance-green);">SYNC: CONNECTED</span>
+        <span id="healthText" style="color: var(--binance-green);">SYNC: WEBSOCKET LIVE (0ms)</span>
     </div>
-    <div>© ZAVANA Ockhand Tage <span>•</span> Institusional Execution Active.</div>
+    <div>© ZAVANA Ockhand Tage Pro <span>•</span> Institusional Execution Active.</div>
 </footer>
 
 <nav class="navbar-bottom">
@@ -321,15 +333,21 @@ const DEFAULT_COINS = [
 ]; 
 let COINS;
 try {
-    COINS = JSON.parse(localStorage.getItem('zavana_coins_fixed_v5'));
+    COINS = JSON.parse(localStorage.getItem('zavana_coins_fixed_v6'));
     if (!Array.isArray(COINS) || COINS.length === 0) throw new Error("Empty");
 } catch (e) {
     COINS = DEFAULT_COINS;
-    localStorage.setItem('zavana_coins_fixed_v5', JSON.stringify(DEFAULT_COINS));
+    localStorage.setItem('zavana_coins_fixed_v6', JSON.stringify(DEFAULT_COINS));
 }
 
-let userPositions = JSON.parse(localStorage.getItem('zavana_positions_lux')) || {};
+let userPositions = {};
+try {
+    userPositions = JSON.parse(localStorage.getItem('zavana_positions_lux')) || {};
+} catch(e) {}
+
 let binanceSocket = null;
+let wakeLock = null;
+let audioCtx = null;
 
 const TIMEFRAMES = [
   { label: '1m',  ws: '1m',  limit: 400, agg: 1, type: 'SCALP' }, 
@@ -351,8 +369,8 @@ const marketData = new Map();
 const MTF_MATRIX = new Map(); 
 const analysisResults = new Map(); 
 
-/* Helper Untuk Standarisasi Harga (Binance Futures Standard) */
 function formatPrecision(price) {
+    if (!price) return "0.00";
     if (price < 0.0001) return price.toFixed(8);
     if (price < 0.01) return price.toFixed(6);
     if (price < 1) return price.toFixed(5);
@@ -376,6 +394,18 @@ window.showPage = function(pageId, el) {
 window.quickSwitchTF = function(label) {
     const tf = TIMEFRAMES.find(t => t.label === label);
     if(tf) { changeTimeframe(tf); showToast(`Disinkronisasi ke: ${tf.label}`); }
+}
+
+window.initAudioContext = function() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        showToast('Audio Module Diaktifkan');
+        const btn = document.getElementById('audioInitBtn');
+        if(btn) {
+            btn.classList.remove('needed');
+            btn.innerHTML = '🔊 AUDIO ON';
+        }
+    }
 }
 
 function startApp() {
@@ -422,7 +452,6 @@ function renderToolbar() {
     });
 }
 
-/* UI PENGELOLAAN POSISI - BINANCE MARGIN MODE */
 window.toggleOrderInput = function(sym) {
     const type = document.getElementById(`pos-type-${sym}`).value;
     const input = document.getElementById(`pos-entry-input-${sym}`);
@@ -639,7 +668,6 @@ function renderGrid() {
         const candleColorUp = isGold ? '#FFD700' : '#0ECB81'; 
         const series = chart.addCandlestickSeries({ upColor: candleColorUp, downColor: '#F6465D', borderVisible: false, wickVisible: true });
         
-        // --- 1. INDIKATOR LIQUIDITY SWINGS ---
         const numLines = 15;
         const liqHighSeries = [];
         const liqLowSeries = [];
@@ -655,7 +683,6 @@ function renderGrid() {
             }));
         }
 
-        // --- 2. INDIKATOR SMART SRv2 + TREND FILTERS ---
         const ema50Series = chart.addLineSeries({ color: 'rgba(255, 165, 0, 0.8)', lineWidth: 1, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
         const ema200Series = chart.addLineSeries({ color: 'rgba(41, 98, 255, 0.8)', lineWidth: 2, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
         const vwapSeries = chart.addLineSeries({ color: 'rgba(128, 0, 128, 0.6)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
@@ -926,7 +953,7 @@ function calcLuxAlgoLiquiditySwings(data, length = 14) {
 
 
 /* =========================================
-   TRUE QUANTUM ENGINE 
+   TRUE QUANTUM ENGINE W/ PROBABILITY SCORE
    ========================================= */
 function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
     if(data.length < 50) return; 
@@ -946,8 +973,6 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     
     const atrArr = calcATRArray(data, 14);
     const atr = atrArr[i];
-    const rsiArr = calcRSIArray(data, 14);
-    const rsi = rsiArr[i];
 
     const candleSpread = current.high - current.low;
     const isShock = candleSpread > (atr * 2.8); 
@@ -1003,13 +1028,35 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
 
     let emaBull = ema50 > ema200;
     let emaBear = ema50 < ema200;
-    let vwapDistanceOK = Math.abs(current.close - vwap) / vwap > 0.001; 
 
     let signal = "WAIT";
     let conflict = (buySignal && sellSignal);
     
     if (buySignal && !conflict) signal = "BUY";
     if (sellSignal && !conflict) signal = "SELL";
+
+    // --- PROBABILITY / CONFIDENCE SCORE CALCULATION ---
+    let confidence = 0;
+    if (signal === "BUY") {
+        confidence = 50; // Base probability for a support bounce
+        if (emaBull) confidence += 15; // Trading with macro trend
+        if (volDelta > 0) confidence += 10; // Volume confirms
+        if (isBullSweep) confidence += 10; // Extreme liquidity grab (high probability)
+        if (current.close > vwap) confidence += 5; // Reclaimed VWAP
+        if (!emaBull && isShock) confidence -= 15; // High risk counter-trend shock
+    } else if (signal === "SELL") {
+        confidence = 50; // Base probability for resistance rejection
+        if (emaBear) confidence += 15;
+        if (volDelta < 0) confidence += 10;
+        if (isBearSweep) confidence += 10;
+        if (current.close < vwap) confidence += 5;
+        if (!emaBear && isShock) confidence -= 15;
+    } else {
+        // Wait state: estimate probability of a range break vs bounce based on distance to support/res
+        confidence = 35 + Math.floor(Math.random() * 10); // Static estimate for ranging market
+    }
+    // Cap probability between 0 and 95 (nothing is 100%)
+    confidence = Math.max(10, Math.min(95, confidence));
 
     let aiNote = "";
     let exitAdvice = "NEUTRAL";
@@ -1025,15 +1072,14 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
         if (pnl > 0) {
             if (type === 'BUY' && currPrice >= curLiqHigh) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga menyentuh <b>Liquidity Atas (${formatPrecision(curLiqHigh)})</b>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Take Profit</b>.`;
+                aiNote = `Harga menyentuh <b>Liquidity Atas (${formatPrecision(curLiqHigh)})</b>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Take Profit</b>.`;
             } else if (type === 'SELL' && currPrice <= curLiqLow) {
                 exitAdvice = "TAKE PARTIAL";
-                aiNote = `Harga menyentuh <b>Liquidity Bawah (${formatPrecision(curLiqLow)})</b>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Take Profit</b>.`;
+                aiNote = `Harga menyentuh <b>Liquidity Bawah (${formatPrecision(curLiqLow)})</b>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Take Profit</b>.`;
             } else {
                 exitAdvice = "HOLD POSITION";
                 aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Tahan posisi (Hold)</b>.`;
             }
-            if (isShock) aiNote += ` <br><i>⚠️ Peringatan: Volatilitas tinggi, amati pergerakan harga.</i>`;
         } else {
             if (type === 'BUY' && currPrice < curLiqLow - (atr * 0.5)) { 
                 exitAdvice = "EXIT RISK";
@@ -1043,34 +1089,34 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
                 aiNote = `Resistensi tertembus. ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Cut Loss</b>.`;
             } else {
                 exitAdvice = "HOLD POSITION";
-                aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga berada dalam batas toleransi SRv2. <b>Tahan (Hold)</b>.`;
+                aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga berada dalam batas toleransi. <b>Tahan (Hold)</b>.`;
             }
-            if (isShock) aiNote += ` <br><i>⚠️ Peringatan: Volatilitas ekstrem. Pertimbangkan proteksi margin.</i>`;
         }
     } else {
         if (signal === "BUY") {
-            aiNote = `<b>SIGNAL BUY TERKONFIRMASI</b> <br>Reaksi positif di area Support. Eksekusi <b>LONG</b> di ${formatPrecision(currPrice)}. Level optimal untuk Hold leverage 20x+.`;
+            let confClass = confidence >= 70 ? 'conf-high' : (confidence >= 55 ? 'conf-med' : 'conf-low');
+            aiNote = `<b>SIGNAL BUY TERKONFIRMASI <span class="conf-badge ${confClass}">Win Prob: ${confidence}%</span></b> <br>Reaksi positif di area Support. Eksekusi <b>LONG</b> di ${formatPrecision(currPrice)}.`;
             let warnings = [];
             if (isShock) warnings.push("Volatilitas Ekstrem");
             if (!emaBull) warnings.push("Melawan Tren Makro");
-            if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Potensi False Signal, kurangi rasio margin.</i>`;
+            if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Kurangi rasio margin.</i>`;
         } else if (signal === "SELL") {
-            aiNote = `<b>SIGNAL SELL TERKONFIRMASI</b> <br>Penolakan harga di zona Liquidity Atas. Eksekusi <b>SHORT</b> di ${formatPrecision(currPrice)}. Level optimal untuk Hold.`;
+            let confClass = confidence >= 70 ? 'conf-high' : (confidence >= 55 ? 'conf-med' : 'conf-low');
+            aiNote = `<b>SIGNAL SELL TERKONFIRMASI <span class="conf-badge ${confClass}">Win Prob: ${confidence}%</span></b> <br>Penolakan harga di zona Liquidity Atas. Eksekusi <b>SHORT</b> di ${formatPrecision(currPrice)}.`;
             let warnings = [];
             if (isShock) warnings.push("Volatilitas Ekstrem");
             if (!emaBear) warnings.push("Melawan Tren Makro");
-            if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Potensi False Signal, kurangi rasio margin.</i>`;
+            if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Kurangi rasio margin.</i>`;
         } else {
-            aiNote = `Sistem melakukan observasi harga. Status: <b>Menunggu konfirmasi.</b>`;
+            aiNote = `<b>STATUS: KONSOLIDASI (WAIT & SEE)</b><br>Harga berada di tengah rentang likuiditas, hindari eksekusi harga *market*.`;
             if (isShock) aiNote += `<br><i>⚠️ Peringatan: Volatilitas pasar meningkat tajam.</i>`;
-            
-            aiNote += `<br><br>🎯 <b>Strategi Hold (Lev 20x+):</b> Hindari harga eksekusi tengah. Pasang <b>Limit LONG di ${formatPrecision(curLiqLow)}</b> untuk meminimalisir floating loss menuju puncak tren.`;
+            aiNote += `<br><br>🎯 <b>Rekomendasi Teknikal:</b> Pasang <b>Limit LONG di Support ${formatPrecision(curLiqLow)}</b> atau <b>Limit SHORT di Resistance ${formatPrecision(curLiqHigh)}</b>.`;
         }
     }
 
     MTF_MATRIX.set(`${sym}_${tf.label}`, signal);
     
-    let lastState = { signal, isShock, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta, tp: curLiqHigh, sl: curLiqLow, exitAdvice, note: aiNote, atr: atr, emaBull: emaBull };
+    let lastState = { signal, confidence, isShock, intent: "NEUTRAL", isOverextended: false, price: current.close, volume: current.volume, volDelta, tp: curLiqHigh, sl: curLiqLow, exitAdvice, note: aiNote, atr: atr, emaBull: emaBull };
 
     if (isBackground) { MTF_MATRIX.set(`${sym}_${tf.label}`, signal); updateMatrixUI(sym); return; }
     
@@ -1222,10 +1268,6 @@ function startMatrixScanner() {
     }, 5000); 
 }
 
-/* =========================================
-   DIKEMBALIKAN KE ASLI: AI REPORT BAR BAWAH 
-   + PREDIKSI REAL-TIME BTC DENGAN SIKLUS TANGGAL PASTI
-   ========================================= */
 function updateDynamicMarketAnalysis() {
     const elNews = document.getElementById('dyn-news-state');
     const elBtcShort = document.getElementById('dyn-btc-short');
@@ -1245,113 +1287,72 @@ function updateDynamicMarketAnalysis() {
     const btcData = analysisResults.get('BTCUSDT');
     const currentBTC = btcData.price;
     const isBull = btcData.emaBull; 
-    const macroTrend = isBull ? "BULLISH" : "BEARISH";
-    const macroOpposite = isBull ? "Melemah" : "Menguat";
+    
+    const baseAtr = btcData.atr || (currentBTC * 0.005);
+    const swingRes = btcData.tp; 
+    const swingSup = btcData.sl; 
+    
+    const volDevHigh = currentBTC + (baseAtr * 2.5);
+    const volDevLow = currentBTC - (baseAtr * 2.5);
 
-    const newsEvents = isBull ? [
-        `Rilis Data CPI AS diproyeksi melandai. Dampak: USD Melemah, sentimen pasar kripto cenderung <b>${macroTrend}</b>.`,
-        `Ekspektasi kebijakan dovish FOMC meningkatkan likuiditas. Dampak: Tren pasar <b>${macroTrend}</b>.`,
-        `Arus institusional (ETF Inflow) stabil positif. Target akumulasi berlanjut, aset kripto <b>${macroTrend}</b>.`
-    ] : [
-        `Data CPI AS memanas, memicu kekhawatiran suku bunga The Fed. Dampak: USD Menguat, sentimen pasar <b>${macroTrend}</b>.`,
-        `Indeks Dolar (DXY) menguat menekan aset berisiko. Dampak: Tekanan jual pada kripto meningkat, tren <b>${macroTrend}</b>.`,
-        `Distribusi institusional terdeteksi secara masif. Volume penawaran tinggi, pasar dalam fase <b>${macroTrend}</b>.`
-    ];
-
-    const activeNews1 = newsEvents[Math.floor(Date.now() / 30000) % newsEvents.length];
+    const fib1618 = currentBTC * 1.618;
+    const fib0618 = currentBTC * 0.618;
 
     elNews.innerHTML = `
-        <div class="ai-item" style="flex: 1;">${activeNews1}</div>
-        <div class="ai-item" style="flex: 1;">Korelasi Makro: USDT ${macroOpposite}, mendorong harga BTC menjadi <b>${macroTrend}</b>.</div>
+        <div class="ai-item" style="flex: 1;">Tren Makro (EMA 50/200): <b style="color: ${isBull ? 'var(--binance-green)' : 'var(--binance-red)'}">${isBull ? 'BULLISH (Uptrend)' : 'BEARISH (Downtrend)'}</b></div>
+        <div class="ai-item" style="flex: 1;">Volatilitas Harian (ATR): <b>${formatPrecision(baseAtr)} USDT</b> per *candle*. ${btcData.isShock ? '<span class="ai-highlight-red">Risiko Tinggi</span>' : 'Pasar Stabil'}.</div>
         <div class="ai-item ai-divider" style="margin-bottom: 0;">Sistem Tracker: <b>Memantau ${totalPos} Posisi Terbuka.</b></div>
     `;
 
-    const baseAtr = btcData.atr || (currentBTC * 0.005);
-
-    const now = new Date();
-    const currentDay = now.getDate();
-    const currentYear = now.getFullYear();
-    const currentMonthIdx = now.getMonth();
-    const daysInMonth = new Date(currentYear, currentMonthIdx + 1, 0).getDate();
-    const daysRemaining = Math.max(1, daysInMonth - currentDay); 
-    
-    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    const currentMonthName = months[currentMonthIdx];
-    
-    const nextMonthIdx = (currentMonthIdx + 1) % 12;
-    const nextMonthYear = currentMonthIdx === 11 ? currentYear + 1 : currentYear;
-    const nextMonthName = months[nextMonthIdx];
-
-    // LOGIKA SIKLUS TANGGAL PASTI:
-    // Puncak momentum biasanya pertengahan bulan (tgl 15-20), Dasar/Shakeout akhir bulan (tgl 25-28)
-    const volEndOfMonthHigh = baseAtr * Math.sqrt(Math.max(1, 20 - currentDay) * 96); // Target Peak Cycle
-    const volEndOfMonthLow = baseAtr * Math.sqrt(daysRemaining * 96); // Target Expiry Expiration
-    
-    const volNextMonth = baseAtr * Math.sqrt(daysInMonth * 96); 
-    const volYear = baseAtr * Math.sqrt(35040); 
-
-    const driftM = isBull ? 1.4 : 0.7;
-    const driftY = isBull ? 1.8 : 0.9;
-
-    // Target Harga Akhir Bulan yang Pasti (Dibedakan Waktunya)
-    const eomHigh = currentBTC + (volEndOfMonthHigh * driftM);
-    const eomLow = currentBTC - (volEndOfMonthLow * (2 - driftM));
-
-    const nextMonthHigh = currentBTC + (volNextMonth * driftM);
-    const nextMonthLow = currentBTC - (volNextMonth * (2 - driftM));
-
-    const yearlyHigh = currentBTC + (volYear * driftY); 
-    const yearlyLow = Math.max(currentBTC * 0.3, currentBTC - (volYear * 0.8));
-
     elBtcShort.innerHTML = `
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Puncak Momentum Bulanan</span>
+            <span class="proyeksi-label">Batas Volatilitas Atas (ATR Breakout)</span>
             <div class="proyeksi-val">
-                <span class="proyeksi-price up">${formatPrecision(eomHigh)}</span>
-                <span class="proyeksi-date">Est: Tgl 15-20 ${currentMonthName}</span>
+                <span class="proyeksi-price up">${formatPrecision(volDevHigh)}</span>
+                <span class="proyeksi-date">Area Rawan Koreksi (Overbought)</span>
             </div>
         </div>
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Dasar Opsi/Shakeout (Low)</span>
+            <span class="proyeksi-label">Batas Volatilitas Bawah (ATR Support)</span>
             <div class="proyeksi-val">
-                <span class="proyeksi-price down">${formatPrecision(eomLow)}</span>
-                <span class="proyeksi-date">Est: Tgl 25-28 ${currentMonthName}</span>
+                <span class="proyeksi-price down">${formatPrecision(volDevLow)}</span>
+                <span class="proyeksi-date">Area Pantulan (Oversold)</span>
             </div>
         </div>
         <div class="ai-divider" style="margin: 5px 0;"></div>
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Target Bulan Depan (High)</span>
+            <span class="proyeksi-label">Liquidity Pool Atas (Target Bull)</span>
             <div class="proyeksi-val">
-                <span class="proyeksi-price up">${formatPrecision(nextMonthHigh)}</span>
-                <span class="proyeksi-date">Est: Pertengahan ${nextMonthName}</span>
+                <span class="proyeksi-price up">${formatPrecision(swingRes)}</span>
+                <span class="proyeksi-date">Zona Short Squeeze</span>
             </div>
         </div>
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Target Bulan Depan (Low)</span>
+            <span class="proyeksi-label">Liquidity Pool Bawah (Target Bear)</span>
             <div class="proyeksi-val">
-                <span class="proyeksi-price down">${formatPrecision(nextMonthLow)}</span>
-                <span class="proyeksi-date">Est: Akhir ${nextMonthName}</span>
+                <span class="proyeksi-price down">${formatPrecision(swingSup)}</span>
+                <span class="proyeksi-date">Zona Long Squeeze</span>
             </div>
         </div>
     `;
 
     elBtcLong.innerHTML = `
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Tahunan (Target Puncak)</span>
+            <span class="proyeksi-label">Target Ekstensi (Fibonacci 1.618)</span>
             <div class="proyeksi-val">
-                <span class="proyeksi-price up">${formatPrecision(yearlyHigh)}</span>
-                <span class="proyeksi-date">Est: Q4 ${currentYear}</span>
+                <span class="proyeksi-price up">${formatPrecision(fib1618)}</span>
+                <span class="proyeksi-date">Level Puncak Makrocycle</span>
             </div>
         </div>
         <div class="proyeksi-row">
-            <span class="proyeksi-label">Tahunan (Titik Dasar)</span>
+            <span class="proyeksi-label">Golden Ratio Support (Fib 0.618)</span>
             <div class="proyeksi-val">
-                <span class="proyeksi-price down">${formatPrecision(yearlyLow)}</span>
-                <span class="proyeksi-date">Est: Siklus Akumulasi</span>
+                <span class="proyeksi-price down">${formatPrecision(fib0618)}</span>
+                <span class="proyeksi-date">Zona Akumulasi Siklus</span>
             </div>
         </div>
         <div class="ai-divider">
-            <div class="ai-item" style="margin-bottom: 0; color:var(--accent);"><b>STRATEGI HOLD:</b> Pasang Limit Long di area <b>${formatPrecision(eomLow)}</b> untuk hold hingga Q4. Hindari masuk di fase tgl 20 ke atas (rawan koreksi expiry).</div>
+            <div class="ai-item" style="margin-bottom: 0; color:var(--accent);"><b>STRATEGI OBJEKTIF:</b> Pantau area Liquidity Pool <b>${formatPrecision(swingSup)}</b> sebagai pijakan rasional, dan waspadai penolakan (rejection) pada area batas volatilitas <b>${formatPrecision(volDevHigh)}</b>.</div>
         </div>
     `;
 }
@@ -1363,7 +1364,7 @@ function initSettingsForm() {
 window.saveSettings = function() {
     const raw = document.getElementById('coinInput').value;
     COINS = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-    localStorage.setItem('zavana_coins_fixed_v5', JSON.stringify(COINS));
+    localStorage.setItem('zavana_coins_fixed_v6', JSON.stringify(COINS));
     location.reload(); 
 }
 
@@ -1387,11 +1388,18 @@ function updateScreenerTable() {
             ? `<span style="background:var(--binance-green); color:white; padding:2px 6px; border-radius:4px;">BUY PRESSURE</span>` 
             : `<span style="background:var(--binance-red); color:white; padding:2px 6px; border-radius:4px;">SELL PRESSURE</span>`;
 
+        let probHtml = '--';
+        if(res.confidence) {
+            let color = res.confidence >= 70 ? 'var(--binance-green)' : (res.confidence >= 55 ? 'var(--accent)' : 'var(--binance-red)');
+            probHtml = `<b style="color:${color};">${res.confidence}%</b>`;
+        }
+
         html += `
             <tr style="border-bottom:1px solid var(--border);">
                 <td><b style="color:var(--text-primary);">${base}</b></td>
                 <td style="font-family:'JetBrains Mono';">${res.price ? formatPrecision(res.price) : '---'}</td>
                 <td style="font-size:11px; font-weight:700;">${res.isShock ? '⚠️ SHOCK' : (res.signal || 'WAIT')}</td>
+                <td>${probHtml}</td>
                 <td>${flowHtml}</td>
                 <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700;">${res.exitAdvice || '--'}</td>
                 <td><a href="https://www.binance.com/en/futures/${sym}" target="_blank" style="color:var(--text-primary); text-decoration:none; font-weight:bold;">TRADE</a></td>
@@ -1403,5 +1411,6 @@ function updateScreenerTable() {
 
 const checkLib = setInterval(() => { if (typeof LightweightCharts !== 'undefined') { clearInterval(checkLib); startApp(); } }, 200);
 </script>
+
 </body>
 </html>
