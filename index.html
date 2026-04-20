@@ -1890,17 +1890,18 @@
                 // Jika URL kosongan (atau usercontent dari Google), anggap berada di dalam sistem Canvas
                 const isCanvasEnv = window.location.hostname.includes('usercontent.goog') || window.location.hostname === '';
                 
-                let apiKey = localStorage.getItem('zavana_gemini_key') || "";
+                // Menanamkan API Key bawaan Anda secara langsung sebagai Default Fallback (Hardcoded)
+                const hardcodedKey = "AIzaSyBx2D-PPJrZRLghJWyK4OvGH9-AYNFcBZA";
+                let apiKey = localStorage.getItem('zavana_gemini_key') || hardcodedKey;
                 let model = "gemini-2.5-flash-preview-09-2025"; 
-
-                // Jika di luar Canvas (di GitHub Anda) dan tidak ada API Key
-                if (!isCanvasEnv && !apiKey) {
-                    throw new Error("API Key kosong. Silakan masuk ke menu Settings dan masukkan API Key Gemini Anda.");
-                }
 
                 // Jika di dalam Canvas, kosongkan key agar Canvas menginjeksi akses otomatisnya
                 if (isCanvasEnv) {
                     apiKey = "";
+                }
+
+                if (!isCanvasEnv && !apiKey) {
+                    throw new Error("API Key kosong. Silakan masuk ke menu Settings dan masukkan API Key Gemini Anda.");
                 }
 
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
