@@ -553,15 +553,15 @@
                 <h3 style="margin-top:0; border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:30px; font-size:20px;">System Preferences</h3>
                 
                 <label>Watchlist (USDT Pairs, Comma Separated)</label>
-                <textarea id="coinInput" rows="4"></textarea>
-                
-                <label style="margin-top:10px; display:block;">Custom Gemini API Key (Opsional - Jika digunakan di luar environment asli)</label>
-                <input type="text" id="geminiApiKey" placeholder="AI sudah terhubung otomatis. Isi hanya jika error.">
+            <textarea id="coinInput" rows="4"></textarea>
+            
+            <label style="margin-top:10px; display:block;">Custom Gemini API Key (Opsional - Jika digunakan di luar environment asli)</label>
+            <input type="text" id="geminiApiKey" placeholder="AI sudah terhubung otomatis. Isi hanya jika error.">
 
-                <button class="btn-primary" onclick="saveSettings()">Save Configuration</button>
-            </div>
+            <button type="button" class="btn-primary" onclick="saveSettings()">Save Configuration</button>
         </div>
-    </main>
+    </div>
+</main>
 
     <!-- AI CHAT WIDGET -->
     <div id="ai-fab" onclick="toggleChat()" title="Tanya AI ZAVANA">
@@ -645,9 +645,7 @@
         let audioCtx = null;
 
         // AUTONOMOUS AI INTEGRATION
-        const envApiKey = ""; 
         const userApiKey = localStorage.getItem('zavana_gemini_key') || "";
-        const activeApiKey = envApiKey || userApiKey;
 
         const TIMEFRAMES = [
             { label: '1m',  ws: '1m',  limit: 400, agg: 1,     type: 'SCALP' }, 
@@ -1759,19 +1757,59 @@
 
         function initSettingsForm() {
             document.getElementById('coinInput').value = COINS.join(', ');
-            document.getElementById('geminiApiKey').value = userApiKey;
+            // Mengambil langsung dari storage agar datanya selalu paling baru
+            document.getElementById('geminiApiKey').value = localStorage.getItem('zavana_gemini_key') || "";
         }
 
         window.saveSettings = function() {
-            const raw = document.getElementById('coinInput').value;
-            COINS = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-            localStorage.setItem('zavana_coins_fixed_v6', JSON.stringify(COINS));
-            
-            const inputKey = document.getElementById('geminiApiKey').value.trim();
-            if (inputKey) localStorage.setItem('zavana_gemini_key', inputKey);
-            else localStorage.removeItem('zavana_gemini_key');
-            
-            location.reload(); 
+            const btn = document.querySelector('.settings-box .btn-primary');
+            if(btn) {
+                btn.textContent = "Menyimpan...";
+                btn.style.opacity = "0.7";
+                btn.disabled = true;
+            }
+
+            try {
+                // 1. Simpan API Key terlebih dahulu
+                const inputKey = document.getElementById('geminiApiKey').value.trim();
+                if (inputKey) {
+                    localStorage.setItem('zavana_gemini_key', inputKey);
+                } else {
+                    localStorage.removeItem('zavana_gemini_key');
+                }
+                
+                // 2. Cek & Simpan Koin
+                const raw = document.getElementById('coinInput').value;
+                const newCoins = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
+                
+                // Cek apakah koin berubah
+                const isCoinChanged = JSON.stringify(COINS) !== JSON.stringify(newCoins);
+                
+                if (isCoinChanged) {
+                    COINS = newCoins;
+                    localStorage.setItem('zavana_coins_fixed_v6', JSON.stringify(COINS));
+                    showToast("✅ Konfigurasi Koin & API tersimpan! Memuat ulang sistem...");
+                    setTimeout(() => {
+                        location.reload(); 
+                    }, 1500);
+                } else {
+                    // Jika koin tidak diubah, JANGAN muat ulang halaman. Cukup simpan API Key.
+                    showToast("✅ API Key Gemini berhasil disimpan!");
+                    if(btn) {
+                        btn.textContent = "Save Configuration";
+                        btn.style.opacity = "1";
+                        btn.disabled = false;
+                    }
+                }
+
+            } catch(e) {
+                showToast("❌ Gagal menyimpan konfigurasi: " + e.message);
+                if(btn) {
+                    btn.textContent = "Save Configuration";
+                    btn.style.opacity = "1";
+                    btn.disabled = false;
+                }
+            }
         };
 
         function updateScreenerTable() {
@@ -1850,16 +1888,23 @@
             typing.classList.add('show');
             scrollToBottom();
 
-            if (!activeApiKey) {
-                setTimeout(() => {
-                    typing.classList.remove('show');
-                    appendMessage('ai', '⚠️ Maaf, API Key AI belum terhubung. Anda menjalankan dashboard ini di luar Environment asli. Silakan masukkan kunci API Gemini Anda di menu Settings.');
-                }, 1000);
-                return;
-            }
-
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeApiKey}`;
+                // Pendeteksi Lingkungan Otomatis (Adaptive Environment Detection)
+                const isCanvasEnv = window.location.hostname.includes('usercontent.goog');
+                
+                // Konfigurasi Standalone (Untuk di GitHub zavana-crypto / Lokal)
+                const hardcodedKey = "AIzaSyBx2D-PPJrZRLghJWyK4OvGH9-AYNFcBZA";
+                const customKey = localStorage.getItem('zavana_gemini_key') || "";
+                let apiKey = customKey || hardcodedKey;
+                let model = "gemini-1.5-flash"; // Model publik yang stabil
+
+                // Konfigurasi khusus Preview Canvas (Di sini)
+                if (isCanvasEnv) {
+                    apiKey = ""; // Dikosongkan agar sistem preview bisa menyuntikkan aksesnya sendiri
+                    model = "gemini-2.5-flash-preview-09-2025"; 
+                }
+
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                 const context = generateAIContext();
                 
                 const payload = {
@@ -1873,7 +1918,12 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) throw new Error("Gagal terhubung ke API Gemini");
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const exactError = errorData?.error?.message || `HTTP Error ${response.status}: Gagal terhubung ke API Google.`;
+                    throw new Error(exactError);
+                }
+                
                 const data = await response.json();
                 const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak bisa memproses analisis tersebut saat ini.";
                 
@@ -1881,7 +1931,7 @@
                 appendMessage('ai', formatAIText(textResponse));
             } catch (error) {
                 typing.classList.remove('show');
-                appendMessage('ai', `⚠️ Koneksi API Terputus: ${error.message}. Pastikan Environment mengizinkan akses ke AI.`);
+                appendMessage('ai', `⚠️ Koneksi API Terputus:<br><b style="color:var(--binance-red)">${error.message}</b>`);
             }
         }
 
