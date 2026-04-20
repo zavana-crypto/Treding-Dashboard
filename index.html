@@ -1887,13 +1887,16 @@
 
             try {
                 // Deteksi lingkungan: Canvas vs Luar (GitHub/Lokal)
-                // Jika URL kosongan (atau usercontent dari Google), anggap berada di dalam sistem Canvas
                 const isCanvasEnv = window.location.hostname.includes('usercontent.goog') || window.location.hostname === '';
                 
                 // Menanamkan API Key bawaan Anda secara langsung sebagai Default Fallback (Hardcoded)
                 const hardcodedKey = "AIzaSyBx2D-PPJrZRLghJWyK4OvGH9-AYNFcBZA";
                 let apiKey = localStorage.getItem('zavana_gemini_key') || hardcodedKey;
-                let model = "gemini-2.5-flash-preview-09-2025"; 
+                
+                // LOGIKA MODEL ADAPTIF:
+                // Di Canvas preview, WAJIB menggunakan model preview-09-2025.
+                // Di luar Canvas (GitHub), WAJIB menggunakan model gemini-1.5-flash agar tidak "Not Found".
+                let model = isCanvasEnv ? "gemini-2.5-flash-preview-09-2025" : "gemini-1.5-flash"; 
 
                 // Jika di dalam Canvas, kosongkan key agar Canvas menginjeksi akses otomatisnya
                 if (isCanvasEnv) {
@@ -1922,9 +1925,8 @@
                     const errorData = await response.json().catch(() => ({}));
                     const exactError = errorData?.error?.message || `HTTP Error ${response.status}`;
                     
-                    // Cek jika error akibat kunci diblokir
                     if (exactError.includes("API key not valid") || response.status === 400 || response.status === 403) {
-                        throw new Error(`API Key Ditolak oleh Google. Kunci tersebut sudah tidak aktif/diblokir. Buat API Key baru.`);
+                        throw new Error(`API Key Ditolak/Diblokir oleh Google. Silakan buat API Key baru di Google AI Studio.`);
                     }
                     
                     throw new Error(exactError);
@@ -1937,7 +1939,7 @@
                 appendMessage('ai', formatAIText(textResponse));
             } catch (error) {
                 typing.classList.remove('show');
-                appendMessage('ai', `⚠️ <b>Koneksi AI Gagal:</b><br><span style="color:var(--binance-red)">${error.message}</span><br><br>📝 <i>Saran: Buka menu Settings, dan masukkan API Key Gemini yang valid.</i>`);
+                appendMessage('ai', `⚠️ <b>Koneksi AI Gagal:</b><br><span style="color:var(--binance-red)">${error.message}</span><br><br>📝 <i>Saran: Gunakan model 'gemini-1.5-flash' di GitHub atau ganti API Key Anda jika sudah tidak valid.</i>`);
             }
         }
 
