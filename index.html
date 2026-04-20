@@ -272,7 +272,7 @@
 
     <div id="page-screener" class="page">
         <h2 style="font-weight:500; margin-bottom:5px; font-size:24px;">Market Matrix Overview</h2>
-        <p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px;">Analisis probabilitas kemenangan (Win Rate) berdasarkan konfluensi EMA, Liquidity Sweeps, dan Volume Delta.</p>
+        <p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px;">Analisis probabilitas kemenangan (Win Rate) berdasarkan konfluensi EMA, Liquidity Sweeps, RSI, dan Volume Delta.</p>
         <div class="table-wrapper" style="overflow-x:auto;">
             <table>
                 <thead>
@@ -973,6 +973,8 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     
     const atrArr = calcATRArray(data, 14);
     const atr = atrArr[i];
+    const rsiArr = calcRSIArray(data, 14);
+    const rsi = rsiArr[i];
 
     const candleSpread = current.high - current.low;
     const isShock = candleSpread > (atr * 2.8); 
@@ -1035,27 +1037,39 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
     if (buySignal && !conflict) signal = "BUY";
     if (sellSignal && !conflict) signal = "SELL";
 
-    // --- PROBABILITY / CONFIDENCE SCORE CALCULATION ---
+    // --- PROBABILITY / CONFIDENCE SCORE CALCULATION (ENHANCED) ---
     let confidence = 0;
     if (signal === "BUY") {
-        confidence = 50; // Base probability for a support bounce
+        confidence = 45; // Base probability for a support bounce
         if (emaBull) confidence += 15; // Trading with macro trend
         if (volDelta > 0) confidence += 10; // Volume confirms
-        if (isBullSweep) confidence += 10; // Extreme liquidity grab (high probability)
+        if (isBullSweep) confidence += 15; // Extreme liquidity grab (high probability)
         if (current.close > vwap) confidence += 5; // Reclaimed VWAP
-        if (!emaBull && isShock) confidence -= 15; // High risk counter-trend shock
+        if (rsi < 40) confidence += 10; // Konfirmasi ganda: Oversold (Harga sudah jenuh jual)
+        if (rsi > 70) confidence -= 15; // Penalti: Terlalu Overbought (Risiko FOMO beli di pucuk)
+        if (!emaBull && isShock) confidence -= 20; // High risk counter-trend shock
     } else if (signal === "SELL") {
-        confidence = 50; // Base probability for resistance rejection
+        confidence = 45; // Base probability for resistance rejection
         if (emaBear) confidence += 15;
         if (volDelta < 0) confidence += 10;
-        if (isBearSweep) confidence += 10;
+        if (isBearSweep) confidence += 15; // Extreme liquidity grab
         if (current.close < vwap) confidence += 5;
-        if (!emaBear && isShock) confidence -= 15;
+        if (rsi > 60) confidence += 10; // Konfirmasi ganda: Overbought (Harga sudah jenuh beli)
+        if (rsi < 30) confidence -= 15; // Penalti: Terlalu Oversold (Risiko telat jual)
+        if (!emaBear && isShock) confidence -= 20;
     } else {
-        // Wait state: estimate probability of a range break vs bounce based on distance to support/res
-        confidence = 35 + Math.floor(Math.random() * 10); // Static estimate for ranging market
+        // Logika Status WAIT yang Presisi Matematis (Bukan Acak)
+        // Seberapa dekat harga saat ini dengan Liquidity Atas atau Bawah?
+        let range = curLiqHigh - curLiqLow;
+        let posInRange = range > 0 ? (current.close - curLiqLow) / range : 0.5;
+        
+        // Jika posInRange mendekati 0 (Support) atau 1 (Resistance), probabilitas pergerakan arah jelas (bounce/break) lebih tinggi.
+        // Jika posInRange di sekitar 0.5 (tengah), berarti harga sedang berombak di area "Chop Zone" (risiko sangat tinggi).
+        let distanceToEdge = Math.abs(posInRange - 0.5) * 2; // Menghasilkan 0 di tengah, 1 di ujung rentang
+        confidence = 30 + Math.floor(distanceToEdge * 20); // Probabilitas WAIT berkisar antara 30% hingga 50%
     }
-    // Cap probability between 0 and 95 (nothing is 100%)
+    
+    // Cap probability between 10 and 95 (nothing is 100% in trading)
     confidence = Math.max(10, Math.min(95, confidence));
 
     let aiNote = "";
@@ -1099,6 +1113,7 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
             let warnings = [];
             if (isShock) warnings.push("Volatilitas Ekstrem");
             if (!emaBull) warnings.push("Melawan Tren Makro");
+            if (rsi > 70) warnings.push("Harga Overbought (Risiko FOMO)");
             if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Kurangi rasio margin.</i>`;
         } else if (signal === "SELL") {
             let confClass = confidence >= 70 ? 'conf-high' : (confidence >= 55 ? 'conf-med' : 'conf-low');
@@ -1106,9 +1121,11 @@ function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullSc
             let warnings = [];
             if (isShock) warnings.push("Volatilitas Ekstrem");
             if (!emaBear) warnings.push("Melawan Tren Makro");
+            if (rsi < 30) warnings.push("Harga Oversold (Rawan Pantulan Naik)");
             if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Kurangi rasio margin.</i>`;
         } else {
-            aiNote = `<b>STATUS: KONSOLIDASI (WAIT & SEE)</b><br>Harga berada di tengah rentang likuiditas, hindari eksekusi harga *market*.`;
+            let confClass = confidence >= 45 ? 'conf-med' : 'conf-low';
+            aiNote = `<b>STATUS: KONSOLIDASI (WAIT & SEE) <span class="conf-badge ${confClass}">Volatilitas: ${confidence}%</span></b><br>Harga berada di rentang likuiditas, hindari eksekusi harga *market*.`;
             if (isShock) aiNote += `<br><i>⚠️ Peringatan: Volatilitas pasar meningkat tajam.</i>`;
             aiNote += `<br><br>🎯 <b>Rekomendasi Teknikal:</b> Pasang <b>Limit LONG di Support ${formatPrecision(curLiqLow)}</b> atau <b>Limit SHORT di Resistance ${formatPrecision(curLiqHigh)}</b>.`;
         }
