@@ -350,15 +350,17 @@
             border-left: 3px solid var(--text-secondary); transition: all 0.3s ease; 
         }
         
-        .card-footer { padding: 16px 20px; display: flex; gap: 15px; background: var(--bg-card); }
+        .card-footer { padding: 16px 20px; display: flex; gap: 10px; background: var(--bg-card); align-items: center;}
         .btn-trade { 
-            flex: 1; border: none; border-radius: 4px; padding: 12px 0; font-size: 14px; 
+            flex: 1; border: none; border-radius: 4px; padding: 12px 0; font-size: 13px; 
             font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; 
             color: white; transition: 0.2s; opacity: 0.3; letter-spacing: 0.5px; 
             display: flex; align-items: center; justify-content: center; gap: 5px; 
         }
         .btn-trade.buy { background: var(--binance-green); }
         .btn-trade.sell { background: var(--binance-red); }
+        .btn-trade.ai-btn { background: #1e293b; color: var(--quantum-cyan); border: 1px solid var(--quantum-cyan); flex: 0.4; opacity: 1; }
+        .btn-trade.ai-btn:hover { background: var(--quantum-cyan); color: #000; box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
         .btn-trade.active { opacity: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transform: scale(1.02); }
 
         /* =========================================
@@ -368,7 +370,16 @@
         .spinner { width: 50px; height: 50px; border: 5px solid var(--bg-hover); border-top: 5px solid var(--text-secondary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .ai-report-box { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; color: var(--text-primary); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); position: relative; overflow: hidden; }
+        .dashboard-header-bar { display: flex; justify-content: space-between; align-items: center; margin: 30px 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .dashboard-header-bar h3 { margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        
+        #ai-briefing-box { display: none; padding: 20px; background: rgba(0, 229, 255, 0.05); border: 1px solid var(--quantum-cyan); border-radius: 8px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; color: var(--text-primary); position: relative; }
+        #ai-briefing-box.show { display: block; animation: fadeIn 0.3s ease; }
+        #ai-briefing-box h4 { margin-top: 0; color: var(--quantum-cyan); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        #ai-briefing-box ul { padding-left: 20px; margin-bottom: 0; }
+        #ai-briefing-box li { margin-bottom: 8px; }
+
+        .ai-report-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; color: var(--text-primary); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); }
         .ai-col { background: var(--bg-base); padding: 20px; border-radius: 6px; border: 1px solid #1e2329; display: flex; flex-direction: column; }
         .ai-col h4 { color: var(--text-primary); margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px dashed var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
         .ai-item { margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); transition: all 0.3s; }
@@ -507,6 +518,16 @@
             
             <div class="grid" id="grid"></div>
 
+            <div class="dashboard-header-bar">
+                <h3>📊 Market Overview & Tracker</h3>
+                <button onclick="generateMarketBriefing()" class="action-btn" style="background: var(--quantum-cyan); color: #000; border: none; padding: 8px 16px;">✨ Generate Market Briefing</button>
+            </div>
+
+            <div id="ai-briefing-box">
+                <h4>✨ Gemini API Market Briefing</h4>
+                <div id="ai-briefing-content">Meminta analisis dari Gemini LLM...</div>
+            </div>
+
             <div class="ai-report-box" id="dynamicMarketAnalysis">
                 <div class="ai-col">
                     <h4>📰 TECHNICAL STATE &amp; ATR</h4>
@@ -553,7 +574,7 @@
                 <label>Watchlist (USDT Pairs, Comma Separated)</label>
                 <textarea id="coinInput" rows="4"></textarea>
             
-                <label style="margin-top:10px; display:block;">Custom Gemini API Key (Untuk penggunaan di luar lingkungan ini)</label>
+                <label style="margin-top:10px; display:block;">Custom Gemini API Key (Akan diabaikan di lingkungan ini, mengacu pada environment Runtime)</label>
                 <input type="text" id="geminiApiKey" placeholder="Paste kunci AIzaSy... milik Anda di sini">
 
                 <button type="button" class="btn-primary" onclick="saveSettings()">Save Configuration</button>
@@ -563,7 +584,7 @@
 
     <!-- AI CHAT WIDGET -->
     <div id="ai-fab" onclick="toggleChat()" title="Tanya AI ZAVANA">
-        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
     </div>
 
     <div id="ai-chat-window">
@@ -571,12 +592,12 @@
             <div class="chat-header-title">
                 <div class="dot"></div> ZAVANA Quantum AI
             </div>
-            <div class="close-chat" onclick="toggleChat()">×</div>
+            <div class="close-chat" onclick="toggleChat(false)">×</div>
         </div>
         <div class="chat-body" id="chatBody">
             <div class="chat-msg msg-ai">
-                <p>Halo! Saya sistem AI Otonom yang terhubung langsung dengan *live chart* dan estimasi <b>CoinGlass Liquidation Map</b>.</p>
-                <p>Anda sedang berada di timeframe <b><span id="chat-tf-info">4H</span></b>. Apa yang ingin Anda tanyakan tentang probabilitas atau strategi koin saat ini?</p>
+                <p>Halo! Saya sistem AI Otonom ditenagai <b>Gemini API</b> yang terhubung langsung dengan *live chart* dan estimasi <b>CoinGlass Liquidation Map</b>.</p>
+                <p>Anda sedang berada di timeframe <b><span id="chat-tf-info">4H</span></b>. Gunakan tombol ✨ AI pada koin, atau ketik pertanyaan strategi Anda di sini!</p>
             </div>
             <div class="typing-indicator" id="typingIndicator">
                 <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
@@ -596,7 +617,7 @@
             <div class="health-dot ok" id="healthDot"></div>
             <span id="healthText" style="color: var(--binance-green);">SYNC: WEBSOCKET LIVE (0ms)</span>
         </div>
-        <div>© ZAVANA Ockhand Tage Pro <span>•</span> CoinGlass Liq. Estimation Active.</div>
+        <div>© ZAVANA Ockhand Tage Pro <span>•</span> Gemini API Integration Active.</div>
     </footer>
 
     <!-- NAVBAR BOTTOM MOBILE -->
@@ -707,7 +728,6 @@
             }
         };
 
-        // Implementasi WakeLock Asli
         window.toggleWakeLock = async function() {
             try {
                 if (!wakeLock) {
@@ -992,8 +1012,9 @@
                     </div>
 
                     <div class="card-footer">
-                        <a href="https://www.binance.com/en/futures/${s}" target="_blank" class="btn-trade buy" id="btn-buy-${s}">LONG (FUTURES)</a>
-                        <a href="https://www.binance.com/en/futures/${s}" target="_blank" class="btn-trade sell" id="btn-sell-${s}">SHORT (FUTURES)</a>
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin('${s}')" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/${s}" target="_blank" class="btn-trade buy" id="btn-buy-${s}">LONG</a>
+                        <a href="https://www.binance.com/en/futures/${s}" target="_blank" class="btn-trade sell" id="btn-sell-${s}">SHORT</a>
                     </div>
                 `;
                 
@@ -1340,13 +1361,10 @@
             return { activeHighs, activeLows };
         }
 
-        // SIMULASI ALGORITMA COINGLASS LIQUIDATION MAP
         function calcCoinGlassEstimatedLiquidationNodes(data, currentIndex) {
-            // Mencari area akumulasi volume tertinggi untuk mengestimasi Liquidation Pools (50x/100x leverage)
             let highNode = 0;
             let lowNode = Infinity;
             
-            // Lookback 50 candle kebelakang untuk mencari swing area
             let startIdx = Math.max(0, currentIndex - 50);
             for (let j = startIdx; j <= currentIndex; j++) {
                 if (data[j].high > highNode) highNode = data[j].high;
@@ -1354,21 +1372,16 @@
             }
 
             const currentPrice = data[currentIndex].close;
-            
-            // Formula Likuidasi (Asumsi): Short Liq = Entry * (1 + 1/Leverage)
-            // CoinGlass biasanya melacak 25x, 50x, 100x. Kita ambil 50x sebagai rata-rata Heatmap Squeeze
             const leverage = 50; 
             
-            // Est. Short Liquidation Cluster (Berada di ATAS area konsolidasi bawah)
             let cgEstShortLiq = lowNode * (1 + (1/leverage)); 
             if (cgEstShortLiq < currentPrice) {
-                cgEstShortLiq = currentPrice * (1 + (1/100)); // Pindah ke 100x short liq dari harga saat ini jika node bawah sudah terlewati
+                cgEstShortLiq = currentPrice * (1 + (1/100));
             }
 
-            // Est. Long Liquidation Cluster (Berada di BAWAH area konsolidasi atas)
             let cgEstLongLiq = highNode * (1 - (1/leverage));
             if (cgEstLongLiq > currentPrice) {
-                cgEstLongLiq = currentPrice * (1 - (1/100)); // Pindah ke 100x long liq dari harga saat ini jika node atas sudah terlewati
+                cgEstLongLiq = currentPrice * (1 - (1/100)); 
             }
 
             return { shortLiq: cgEstShortLiq, longLiq: cgEstLongLiq };
@@ -1401,7 +1414,6 @@
             const candleSpread = current.high - current.low;
             const isShock = candleSpread > (atr * 2.8); 
 
-            // Hitung estimasi CoinGlass Liquidation Node
             const cgNodes = calcCoinGlassEstimatedLiquidationNodes(data, i);
 
             let srLevels = [];
@@ -1531,30 +1543,18 @@
                 if (signal === "BUY") {
                     let confClass = confidence >= 70 ? 'conf-high' : (confidence >= 55 ? 'conf-med' : 'conf-low');
                     aiNote = `<b>SIGNAL BUY TERKONFIRMASI <span class="conf-badge ${confClass}">Win Prob: ${confidence}%</span></b> <br>Harga menguji area <i>Long Liq Cluster</i>. Eksekusi <b>LONG</b> di ${formatPrecision(currPrice)}.`;
-                    let warnings = [];
-                    if (isShock) warnings.push("Volatilitas Ekstrem");
-                    if (!emaBull) warnings.push("Melawan Tren Makro");
-                    if (rsi > 70) warnings.push("Harga Overbought (Risiko FOMO)");
-                    if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Kurangi rasio margin.</i>`;
                 } else if (signal === "SELL") {
                     let confClass = confidence >= 70 ? 'conf-high' : (confidence >= 55 ? 'conf-med' : 'conf-low');
                     aiNote = `<b>SIGNAL SELL TERKONFIRMASI <span class="conf-badge ${confClass}">Win Prob: ${confidence}%</span></b> <br>Penolakan di area <i>Short Liq Cluster</i>. Eksekusi <b>SHORT</b> di ${formatPrecision(currPrice)}.`;
-                    let warnings = [];
-                    if (isShock) warnings.push("Volatilitas Ekstrem");
-                    if (!emaBear) warnings.push("Melawan Tren Makro");
-                    if (rsi < 30) warnings.push("Harga Oversold (Rawan Pantulan Naik)");
-                    if (warnings.length > 0) aiNote += `<br><i>⚠️ Peringatan: ${warnings.join(' & ')}. Kurangi rasio margin.</i>`;
                 } else {
                     let confClass = confidence >= 45 ? 'conf-med' : 'conf-low';
                     aiNote = `<b>STATUS: KONSOLIDASI (WAIT & SEE) <span class="conf-badge ${confClass}">Volatilitas: ${confidence}%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.`;
-                    if (isShock) aiNote += `<br><i>⚠️ Peringatan: Volatilitas pasar meningkat tajam.</i>`;
                     aiNote += `<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di ${formatPrecision(cgNodes.longLiq)}</b> atau <b>Limit SHORT di ${formatPrecision(cgNodes.shortLiq)}</b>.`;
                 }
             }
 
             MTF_MATRIX.set(`${sym}_${tf.label}`, signal);
             
-            // Simpan semua data riil ke memory untuk dibaca AI Chat
             let lastState = { 
                 signal, confidence, rsi, isShock, intent: "NEUTRAL", 
                 isOverextended: false, price: current.close, volume: current.volume, 
@@ -1600,7 +1600,6 @@
                             }
                         }
 
-                        // Menggambar estimasi CoinGlass Line
                         cObj.cgShortSeries.setData([{time: data[Math.max(0, data.length-30)].time, value: cgNodes.shortLiq}, {time: current.time, value: cgNodes.shortLiq}]);
                         cObj.cgLongSeries.setData([{time: data[Math.max(0, data.length-30)].time, value: cgNodes.longLiq}, {time: current.time, value: cgNodes.longLiq}]);
 
@@ -1821,7 +1820,6 @@
             }
 
             try {
-                // 1. Simpan API Key terlebih dahulu
                 const inputKey = document.getElementById('geminiApiKey').value.trim();
                 if (inputKey) {
                     localStorage.setItem('zavana_gemini_key', inputKey);
@@ -1829,11 +1827,9 @@
                     localStorage.removeItem('zavana_gemini_key');
                 }
                 
-                // 2. Cek & Simpan Koin
                 const raw = document.getElementById('coinInput').value;
                 const newCoins = raw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
                 
-                // Cek apakah koin berubah
                 const isCoinChanged = JSON.stringify(COINS) !== JSON.stringify(newCoins);
                 
                 if (isCoinChanged) {
@@ -1844,7 +1840,6 @@
                         location.reload(); 
                     }, 1500);
                 } else {
-                    // Jika koin tidak diubah, JANGAN muat ulang halaman. Cukup simpan API Key.
                     showToast("✅ API Key Gemini berhasil disimpan!");
                     if(btn) {
                         btn.textContent = "Save Configuration";
@@ -1898,34 +1893,120 @@
         }
 
         /* =========================================
-           AUTONOMOUS AI CHAT INTEGRATION
+           AUTONOMOUS AI CHAT & LLM INTEGRATION
            ========================================= */
         let isChatOpen = false;
 
-        function toggleChat() {
-            isChatOpen = !isChatOpen;
+        function toggleChat(forceOpen = null) {
+            isChatOpen = forceOpen !== null ? forceOpen : !isChatOpen;
             const w = document.getElementById('ai-chat-window');
             w.classList.toggle('open', isChatOpen);
             if (isChatOpen) document.getElementById('chatInput').focus();
         }
 
-        function generateAIContext() {
-            let context = `Anda adalah 'ZAVANA Quantum AI', seorang asisten trading kripto kuantitatif profesional. Anda menjawab secara langsung, objektif, dan logis.\n\n`;
-            context += `[KONTEKS PASAR SAAT INI]\n`;
-            context += `Timeframe Aktif: ${CURRENT_TF.label}\n`;
-            context += `Jenis Analisis: Likuiditas (CoinGlass Liquidation Map Estimation) & Momentum\n\n`;
-            context += `DATA KOIN (Real-Time):\n`;
+        // Fungsi pusat pemanggilan Gemini API dengan Exponential Backoff
+        async function fetchGeminiWithBackoff(payload) {
+            // Environment menyediakan API key pada runtime melalui const ini
+            const apiKey = ""; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const delays = [1000, 2000, 4000, 8000, 16000];
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat merumuskan jawaban saat ini.";
+                    }
+                    
+                    // Jangan retry jika error dari format payload (400)
+                    if (response.status === 400) {
+                        throw new Error("Bad Request dari payload API.");
+                    }
+                } catch (e) {
+                    if (i === 4) throw e;
+                }
+                await new Promise(r => setTimeout(r, delays[i]));
+            }
+            throw new Error("Gagal terhubung dengan server AI setelah beberapa percobaan.");
+        }
+
+        function generateAIContext(specificCoin = null) {
+            let context = `Anda adalah 'ZAVANA Quantum AI', seorang analis institusional kripto kuantitatif. Jawab dalam bahasa Indonesia yang profesional, padat, dan ringkas.\n`;
+            context += `[KONTEKS PASAR]\nTimeframe: ${CURRENT_TF.label}\n`;
             
-            COINS.forEach(sym => {
-                let d = analysisResults.get(sym);
+            if (specificCoin) {
+                let d = analysisResults.get(specificCoin);
                 if (d) {
                     let rsiFixed = d.rsi ? Math.round(d.rsi) : 50;
-                    context += `- ${sym}: Harga ${formatPrecision(d.price)}. Sinyal: ${d.signal} (Prob: ${d.confidence}%). RSI: ${rsiFixed}. Tren Makro: ${d.emaBull ? 'Bullish' : 'Bearish'}. Target Est. Short Liq (Atas): ${formatPrecision(d.tp)}. Target Est. Long Liq (Bawah): ${formatPrecision(d.sl)}.\n`;
+                    context += `Fokus Koin: ${specificCoin}\nHarga: ${formatPrecision(d.price)}\nSignal AI: ${d.signal} (Win Probabilitas: ${d.confidence}%)\nRSI: ${rsiFixed}\nTren (EMA): ${d.emaBull ? 'Bullish' : 'Bearish'}\nEstimasi Target Short Liquidation (Atas): ${formatPrecision(d.tp)}\nEstimasi Target Long Liquidation (Bawah): ${formatPrecision(d.sl)}.\nSaran Exit: ${d.exitAdvice}\n`;
+                    context += `\nInstruksi: Berikan ulasan spesifik 1-2 paragraf mengenai kondisi koin ini. Jelaskan apakah aman untuk entry sekarang berdasarkan jarak ke area likuiditas.`;
                 }
-            });
-
-            context += `\nINSTRUKSI:\n1. Jawab pertanyaan pengguna berdasarkan data live di atas. Pertimbangkan jarak harga ke 'Target Est. Short/Long Liq'.\n2. Harga biasanya tersedot ke zona likuidasi terdekat untuk membersihkan *high leverage* trader.\n3. Gunakan bahasa Indonesia profesional layaknya seorang analis finansial institusional.\n4. Jika probabilitas di bawah 50% atau RSI netral, sarankan bersikap pasif (Wait and See).`;
+            } else {
+                context += `DATA KOIN (Real-Time):\n`;
+                COINS.forEach(sym => {
+                    let d = analysisResults.get(sym);
+                    if (d) {
+                        context += `- ${sym}: Harga ${formatPrecision(d.price)}. Sinyal: ${d.signal} (${d.confidence}%). Tren: ${d.emaBull ? 'Bull' : 'Bear'}. Res(Short Liq): ${formatPrecision(d.tp)}. Sup(Long Liq): ${formatPrecision(d.sl)}.\n`;
+                    }
+                });
+                context += `\nInstruksi: Jawab ringkas. Perhatikan target likuidasi (Squeeze potential). Jika probabilitas < 50%, sarankan Wait and See.`;
+            }
             return context;
+        }
+
+        // Fitur 1: ✨ Generate Market Briefing
+        async function generateMarketBriefing() {
+            const outputBox = document.getElementById('ai-briefing-box');
+            const contentBox = document.getElementById('ai-briefing-content');
+            outputBox.classList.add('show');
+            contentBox.innerHTML = `<span style="color:var(--text-secondary);">Menganalisis matriks data seluruh koin... Mohon tunggu ✨</span>`;
+
+            try {
+                const context = generateAIContext();
+                const payload = {
+                    contents: [{ parts: [{ text: "Buatkan saya ringkasan eksekutif pasar kripto saat ini (maksimal 2 paragraf). Soroti 2-3 koin dengan peluang terbaik (Signal terkuat) dan sebutkan area likuidasi utamanya. Format respons Anda menggunakan tag HTML dasar seperti <b>, <ul>, dan <li> tanpa menggunakan markdown code blocks." }] }],
+                    systemInstruction: { parts: [{ text: context }] }
+                };
+
+                const textResponse = await fetchGeminiWithBackoff(payload);
+                contentBox.innerHTML = textResponse.replace(/```html|```/g, ''); // Membersihkan format markdown jika AI mengirimkannya
+            } catch (error) {
+                contentBox.innerHTML = `<span style="color:var(--binance-red);">⚠️ Gagal membuat briefing: ${error.message}</span>`;
+            }
+        }
+
+        // Fitur 2: ✨ Auto-Analyze Coin dari Card
+        function askAIAboutCoin(sym) {
+            toggleChat(true);
+            const promptMsg = `Analisis mendalam untuk koin ${sym} ✨`;
+            appendMessage('user', promptMsg);
+            
+            const typing = document.getElementById('typingIndicator');
+            typing.classList.add('show');
+            scrollToBottom();
+
+            (async () => {
+                try {
+                    const context = generateAIContext(sym);
+                    const payload = {
+                        contents: [{ parts: [{ text: `Tolong berikan analisis teknikal lengkap dan saran manajemen risiko untuk koin ${sym} berdasarkan data live saat ini.` }] }],
+                        systemInstruction: { parts: [{ text: context }] }
+                    };
+
+                    const textResponse = await fetchGeminiWithBackoff(payload);
+                    typing.classList.remove('show');
+                    appendMessage('ai', formatAIText(textResponse));
+                } catch (error) {
+                    typing.classList.remove('show');
+                    appendMessage('ai', `<span style="color:var(--binance-red);">⚠️ Gagal menganalisis ${sym}: ${error.message}</span>`);
+                }
+            })();
         }
 
         async function sendChatMessage() {
@@ -1941,45 +2022,19 @@
             scrollToBottom();
 
             try {
-                // Di Canvas Environment, kita selalu menggunakan api key yang disuntikkan secara dinamis
-                // dengan men-set key string kosong (const apiKey = "") jika pengguna tidak mengisi API sendiri
-                const customKey = localStorage.getItem('zavana_gemini_key') || "";
-                const apiKey = customKey || ""; // Canvas memproses key ini
-                
-                const model = "gemini-2.5-flash-preview-09-2025"; 
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                 const context = generateAIContext();
-                
                 const payload = {
                     contents: [{ parts: [{ text: msg }] }],
                     systemInstruction: { parts: [{ text: context }] }
                 };
 
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    const exactError = errorData?.error?.message || `HTTP Error ${response.status}`;
-                    
-                    if (exactError.includes("API key not valid") || response.status === 400 || response.status === 403) {
-                        throw new Error(`API Key tidak valid atau Ditolak. Silakan periksa di bagian Settings.`);
-                    }
-                    
-                    throw new Error(exactError);
-                }
-                
-                const data = await response.json();
-                const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak bisa memproses analisis tersebut.";
+                const textResponse = await fetchGeminiWithBackoff(payload);
                 
                 typing.classList.remove('show');
                 appendMessage('ai', formatAIText(textResponse));
             } catch (error) {
                 typing.classList.remove('show');
-                appendMessage('ai', `⚠️ <b>Koneksi AI Gagal:</b><br><span style="color:var(--binance-red)">${error.message}</span><br><br>📝 <i>Pastikan koneksi internet stabil atau Anda menggunakan API Key yang benar di Settings.</i>`);
+                appendMessage('ai', `⚠️ <b>Koneksi AI Gagal:</b><br><span style="color:var(--binance-red)">${error.message}</span><br><br>📝 <i>Sistem sedang mengalami gangguan komunikasi dengan API LLM.</i>`);
             }
         }
 
