@@ -223,7 +223,7 @@
             font-size: 13px; 
             font-weight: 700; 
             color: var(--text-primary); 
-            font-family: 'JetBrains Mono'; 
+            font-family: 'JetBrains Mono', monospace; 
             background: var(--bg-card); 
             padding: 8px 14px; 
             border-radius: 4px; 
@@ -274,10 +274,10 @@
         .coin-meta { display: flex; align-items: center; gap: 12px; }
         .coin-icon { width: 36px; height: 36px; border-radius: 50%; pointer-events: none; }
         .coin-title { font-size: 18px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
-        .coin-vol { font-size: 11px; color: var(--text-secondary); margin-top: 4px; font-family: 'JetBrains Mono'; }
+        .coin-vol { font-size: 11px; color: var(--text-secondary); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
         
         .price-meta { text-align: right; }
-        .price-main { font-size: 20px; font-family: 'JetBrains Mono'; font-weight: 700; color: var(--text-primary); }
+        .price-main { font-size: 20px; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-primary); }
         .price-change { font-size: 13px; font-weight: 500; margin-top: 2px;}
         .c-up { color: var(--binance-green); } 
         .c-down { color: var(--binance-red); }
@@ -322,8 +322,8 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23848e9c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); 
             background-repeat: no-repeat; background-position: right 8px center; padding-right: 25px; cursor: pointer; 
         }
-        .tracker-suffix { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #848e9c; font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 700; pointer-events: none; }
-        .tracker-input.with-suffix { padding-right: 25px; text-align: right; font-family: 'JetBrains Mono'; }
+        .tracker-suffix { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #848e9c; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; pointer-events: none; }
+        .tracker-input.with-suffix { padding-right: 25px; text-align: right; font-family: 'JetBrains Mono', monospace; }
         
         .btn-pos { 
             flex: 1; height: 32px; background: var(--bg-hover); color: #fff; 
@@ -336,11 +336,11 @@
         
         .pos-active-state { display: none; align-items: center; justify-content: space-between; background: var(--bg-base); padding: 12px; border-radius: 4px; border: 1px solid var(--border); border-left: 3px solid var(--text-secondary); }
         .pos-active-state.show { display: flex; }
-        .pnl-val { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; }
+        .pnl-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; }
         .pnl-val.profit { color: var(--binance-green); }
         .pnl-val.loss { color: var(--binance-red); }
 
-        .data-row { display: grid; grid-template-columns: 1fr 1fr; padding: 14px 20px; gap: 15px; font-family: 'JetBrains Mono'; border-bottom: 1px solid var(--bg-base); }
+        .data-row { display: grid; grid-template-columns: 1fr 1fr; padding: 14px 20px; gap: 15px; font-family: 'JetBrains Mono', monospace; border-bottom: 1px solid var(--bg-base); }
         .data-item { display: flex; flex-direction: column; gap: 4px; }
         .d-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
         .d-val { font-size: 14px; font-weight: 600; color: var(--text-primary); }
@@ -400,7 +400,7 @@
         .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; margin-bottom: 10px; font-size: 14px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center; font-weight: 500; }
         .toast.show { opacity: 1; }
 
-        .conf-badge { font-family: 'JetBrains Mono'; font-weight: 800; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+        .conf-badge { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
         .conf-high { background: rgba(14, 203, 129, 0.2); color: var(--binance-green); border: 1px solid var(--binance-green); }
         .conf-med { background: rgba(252, 213, 53, 0.2); color: var(--accent); border: 1px solid var(--accent); }
         .conf-low { background: rgba(246, 70, 93, 0.2); color: var(--binance-red); border: 1px solid var(--binance-red); }
@@ -479,7 +479,7 @@
     <!-- OVERLAY LOADING -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div style="font-family:'JetBrains Mono'; color:var(--text-primary); font-size:14px; font-weight:600;">SYSTEM INITIALIZING...</div>
+        <div style="font-family:'JetBrains Mono', monospace; color:var(--text-primary); font-size:14px; font-weight:600;">SYSTEM INITIALIZING...</div>
     </div>
 
     <div id="toast-container"></div>
@@ -503,24 +503,25 @@
         <!-- Dashboard Page -->
         <div id="page-dashboard" class="page active">
             <div class="toolbar-container">
-                <div id="strategyLabel" class="strategy-badge">MODE: DAY (15m)</div>
+                <div id="strategyLabel" class="strategy-badge">MODE: SWING (4H)</div>
                 <div class="toolbar-group" id="tfToolbar"></div>
             </div>
             
+            <!-- Elemen yang di-hardcode sebelumnya telah dihapus agar dapat digenerate secara dinamis -->
             <div class="grid" id="grid"></div>
 
             <div class="ai-report-box" id="dynamicMarketAnalysis">
                 <div class="ai-col">
-                    <h4>📰 TECHNICAL STATE & ATR</h4>
-                    <div id="dyn-news-state"></div>
+                    <h4>📰 TECHNICAL STATE &amp; ATR</h4>
+                    <div id="dyn-news-state">Memuat...</div>
                 </div>
                 <div class="ai-col">
                     <h4>📊 PROYEKSI VOLATILITAS (SHORT-TERM)</h4>
-                    <div id="dyn-btc-short"></div>
+                    <div id="dyn-btc-short">Memuat...</div>
                 </div>
                 <div class="ai-col">
-                    <h4>🎯 TARGET MAKRO & FIBONACCI</h4>
-                    <div id="dyn-btc-long"></div>
+                    <h4>🎯 TARGET MAKRO &amp; FIBONACCI</h4>
+                    <div id="dyn-btc-long">Memuat...</div>
                 </div>
             </div>
         </div>
@@ -553,19 +554,19 @@
                 <h3 style="margin-top:0; border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:30px; font-size:20px;">System Preferences</h3>
                 
                 <label>Watchlist (USDT Pairs, Comma Separated)</label>
-            <textarea id="coinInput" rows="4"></textarea>
+                <textarea id="coinInput" rows="4"></textarea>
             
-            <label style="margin-top:10px; display:block;">Custom Gemini API Key (Untuk penggunaan di luar GitHub / Environment Pribadi)</label>
-            <input type="text" id="geminiApiKey" placeholder="Paste kunci AIzaSy... milik Anda di sini">
+                <label style="margin-top:10px; display:block;">Custom Gemini API Key (Untuk penggunaan di luar lingkungan ini)</label>
+                <input type="text" id="geminiApiKey" placeholder="Paste kunci AIzaSy... milik Anda di sini">
 
-            <button type="button" class="btn-primary" onclick="saveSettings()">Save Configuration</button>
+                <button type="button" class="btn-primary" onclick="saveSettings()">Save Configuration</button>
+            </div>
         </div>
-    </div>
-</main>
+    </main>
 
     <!-- AI CHAT WIDGET -->
     <div id="ai-fab" onclick="toggleChat()" title="Tanya AI ZAVANA">
-        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
     </div>
 
     <div id="ai-chat-window">
@@ -578,7 +579,7 @@
         <div class="chat-body" id="chatBody">
             <div class="chat-msg msg-ai">
                 <p>Halo! Saya sistem AI Otonom yang terhubung langsung dengan *live chart* Anda.</p>
-                <p>Anda sedang berada di timeframe <b><span id="chat-tf-info"></span></b>. Apa yang ingin Anda tanyakan tentang probabilitas atau strategi koin saat ini?</p>
+                <p>Anda sedang berada di timeframe <b><span id="chat-tf-info">4H</span></b>. Apa yang ingin Anda tanyakan tentang probabilitas atau strategi koin saat ini?</p>
             </div>
             <div class="typing-indicator" id="typingIndicator">
                 <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
@@ -655,7 +656,7 @@
             { label: '1M',  ws: '1M',  limit: 400, agg: 43200, type: 'MACRO' }
         ];
 
-        let CURRENT_TF = TIMEFRAMES[1]; 
+        let CURRENT_TF = TIMEFRAMES[3]; // Default ke 4H 
         let pollingInterval = null; 
         let lastSocketTime = Date.now(); 
 
@@ -706,6 +707,28 @@
                     btn.classList.remove('needed');
                     btn.innerHTML = '🔊 AUDIO ON';
                 }
+            }
+        };
+
+        // Implementasi WakeLock Asli
+        window.toggleWakeLock = async function() {
+            try {
+                if (!wakeLock) {
+                    if ('wakeLock' in navigator) {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        showToast('⚡ Layar Tetap Menyala (Wake Lock Aktif)');
+                        document.querySelector('.wakelock-btn').classList.add('active');
+                    } else {
+                        showToast('Fitur Wake Lock tidak didukung di browser ini.');
+                    }
+                } else {
+                    wakeLock.release();
+                    wakeLock = null;
+                    showToast('Layar Normal (Wake Lock Nonaktif)');
+                    document.querySelector('.wakelock-btn').classList.remove('active');
+                }
+            } catch (err) {
+                showToast(`Wake Lock Error: ${err.message}`);
             }
         };
 
@@ -857,7 +880,7 @@
                         <div style="display:flex; justify-content:space-between;">
                             <div style="display:flex; flex-direction:column;">
                                 <span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">Entry Price</span>
-                                <span style="color:var(--text-primary); font-family:'JetBrains Mono'; font-weight:bold; font-size:14px;">${formatPrecision(pos.entry)}</span>
+                                <span style="color:var(--text-primary); font-family:'JetBrains Mono', monospace; font-weight:bold; font-size:14px;">${formatPrecision(pos.entry)}</span>
                             </div>
                             <div style="display:flex; flex-direction:column; align-items:flex-end;">
                                 <span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">ROE (PNL%)</span>
@@ -1340,7 +1363,7 @@
             const atr = atrArr[i];
             
             const rsiArr = calcRSIArray(data, 14); 
-            const rsi = rsiArr[i];
+            const rsi = rsiArr[i] || 50; // Aman jika undefined
 
             const candleSpread = current.high - current.low;
             const isShock = candleSpread > (atr * 2.8); 
@@ -1754,7 +1777,6 @@
 
         function initSettingsForm() {
             document.getElementById('coinInput').value = COINS.join(', ');
-            // Mengambil langsung dari storage agar datanya selalu paling baru
             document.getElementById('geminiApiKey').value = localStorage.getItem('zavana_gemini_key') || "";
         }
 
@@ -1831,11 +1853,11 @@
                 html += `
                     <tr style="border-bottom:1px solid var(--border);">
                         <td><b style="color:var(--text-primary);">${base}</b></td>
-                        <td style="font-family:'JetBrains Mono';">${res.price ? formatPrecision(res.price) : '---'}</td>
+                        <td style="font-family:'JetBrains Mono', monospace;">${res.price ? formatPrecision(res.price) : '---'}</td>
                         <td style="font-size:11px; font-weight:700;">${res.isShock ? '⚠️ SHOCK' : (res.signal || 'WAIT')}</td>
                         <td>${probHtml}</td>
                         <td>${flowHtml}</td>
-                        <td style="font-family:'JetBrains Mono'; font-size:11px; font-weight:700;">${res.exitAdvice || '--'}</td>
+                        <td style="font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;">${res.exitAdvice || '--'}</td>
                         <td><a href="https://www.binance.com/en/futures/${sym}" target="_blank" style="color:var(--text-primary); text-decoration:none; font-weight:bold;">TRADE</a></td>
                     </tr>
                 `;
@@ -1865,7 +1887,8 @@
             COINS.forEach(sym => {
                 let d = analysisResults.get(sym);
                 if (d) {
-                    context += `- ${sym}: Harga ${formatPrecision(d.price)}. Sinyal: ${d.signal} (Prob: ${d.confidence}%). RSI: ${Math.round(d.rsi)}. Tren Makro: ${d.emaBull ? 'Bullish' : 'Bearish'}. Target Atas (Res): ${formatPrecision(d.tp)}. Target Bawah (Sup): ${formatPrecision(d.sl)}.\n`;
+                    let rsiFixed = d.rsi ? Math.round(d.rsi) : 50;
+                    context += `- ${sym}: Harga ${formatPrecision(d.price)}. Sinyal: ${d.signal} (Prob: ${d.confidence}%). RSI: ${rsiFixed}. Tren Makro: ${d.emaBull ? 'Bullish' : 'Bearish'}. Target Atas (Res): ${formatPrecision(d.tp)}. Target Bawah (Sup): ${formatPrecision(d.sl)}.\n`;
                 }
             });
 
@@ -1886,27 +1909,12 @@
             scrollToBottom();
 
             try {
-                // Deteksi lingkungan: Canvas vs Luar (GitHub/Lokal)
-                const isCanvasEnv = window.location.hostname.includes('usercontent.goog') || window.location.hostname === '';
+                // Di Canvas Environment, kita selalu menggunakan api key yang disuntikkan secara dinamis
+                // dengan men-set key string kosong (const apiKey = "") jika pengguna tidak mengisi API sendiri
+                const customKey = localStorage.getItem('zavana_gemini_key') || "";
+                const apiKey = customKey || ""; // Canvas memproses key ini
                 
-                // Menanamkan API Key bawaan Anda secara langsung sebagai Default Fallback (Hardcoded)
-                const hardcodedKey = "AIzaSyBx2D-PPJrZRLghJWyK4OvGH9-AYNFcBZA";
-                let apiKey = localStorage.getItem('zavana_gemini_key') || hardcodedKey;
-                
-                // LOGIKA MODEL ADAPTIF:
-                // Di Canvas preview, WAJIB menggunakan model preview-09-2025.
-                // Di luar Canvas (GitHub), WAJIB menggunakan model gemini-1.5-flash agar tidak "Not Found".
-                let model = isCanvasEnv ? "gemini-2.5-flash-preview-09-2025" : "gemini-1.5-flash"; 
-
-                // Jika di dalam Canvas, kosongkan key agar Canvas menginjeksi akses otomatisnya
-                if (isCanvasEnv) {
-                    apiKey = "";
-                }
-
-                if (!isCanvasEnv && !apiKey) {
-                    throw new Error("API Key kosong. Silakan masuk ke menu Settings dan masukkan API Key Gemini Anda.");
-                }
-
+                const model = "gemini-2.5-flash-preview-09-2025"; 
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                 const context = generateAIContext();
                 
@@ -1926,7 +1934,7 @@
                     const exactError = errorData?.error?.message || `HTTP Error ${response.status}`;
                     
                     if (exactError.includes("API key not valid") || response.status === 400 || response.status === 403) {
-                        throw new Error(`API Key Ditolak/Diblokir oleh Google. Silakan buat API Key baru di Google AI Studio.`);
+                        throw new Error(`API Key tidak valid atau Ditolak. Silakan periksa di bagian Settings.`);
                     }
                     
                     throw new Error(exactError);
@@ -1939,7 +1947,7 @@
                 appendMessage('ai', formatAIText(textResponse));
             } catch (error) {
                 typing.classList.remove('show');
-                appendMessage('ai', `⚠️ <b>Koneksi AI Gagal:</b><br><span style="color:var(--binance-red)">${error.message}</span><br><br>📝 <i>Saran: Gunakan model 'gemini-1.5-flash' di GitHub atau ganti API Key Anda jika sudah tidak valid.</i>`);
+                appendMessage('ai', `⚠️ <b>Koneksi AI Gagal:</b><br><span style="color:var(--binance-red)">${error.message}</span><br><br>📝 <i>Pastikan koneksi internet stabil atau Anda menggunakan API Key yang benar di Settings.</i>`);
             }
         }
 
@@ -1971,6 +1979,5 @@
             } 
         }, 200);
     </script>
-
 </body>
 </html>
