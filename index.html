@@ -2534,236 +2534,526 @@
         }
 
         /* =========================================
-           TRUE QUANTUM ENGINE W/ PROBABILITY SCORE
+           PROFESSIONAL TRADING ENGINE v2.0
+           Multi-Confluence Smart Money System
            ========================================= */
+
+        // --- MACD ---
+        function calcMACDArray(data, fast=12, slow=26, sig=9) {
+            const emaF = calcEMA(data, fast);
+            const emaS = calcEMA(data, slow);
+            const macdLine = emaF.map((v,i) => v - emaS[i]);
+            let signalLine = new Array(macdLine.length).fill(0);
+            let k = 2/(sig+1), emaVal = macdLine[0];
+            for (let i=0; i<macdLine.length; i++) {
+                emaVal = (macdLine[i] - emaVal)*k + emaVal;
+                signalLine[i] = emaVal;
+            }
+            const histogram = macdLine.map((v,i) => v - signalLine[i]);
+            return { macdLine, signalLine, histogram };
+        }
+
+        // --- CANDLE PATTERN RECOGNITION ---
+        function detectCandlePattern(data, i) {
+            if (i < 1) return 'NEUTRAL';
+            const c = data[i], p = data[i-1];
+            const body    = Math.abs(c.close - c.open);
+            const range   = c.high - c.low || 0.0001;
+            const topBody = Math.max(c.close, c.open);
+            const botBody = Math.min(c.close, c.open);
+            const upWick  = c.high - topBody;
+            const dnWick  = botBody - c.low;
+            const bull    = c.close > c.open;
+
+            // Hammer / Bullish Pin Bar
+            if (dnWick >= body*2.0 && upWick <= body*0.4 && dnWick >= range*0.55) return 'HAMMER';
+            // Shooting Star / Bearish Pin Bar
+            if (upWick >= body*2.0 && dnWick <= body*0.4 && upWick >= range*0.55) return 'SHOOTING_STAR';
+            // Bullish Engulfing
+            if (bull && p.close < p.open && c.open <= p.close && c.close >= p.open) return 'BULL_ENGULF';
+            // Bearish Engulfing
+            if (!bull && p.close > p.open && c.open >= p.close && c.close <= p.open) return 'BEAR_ENGULF';
+            // Bullish Marubozu (strong momentum candle)
+            if (bull && body >= range*0.75 && dnWick <= range*0.1) return 'BULL_MARUBOZU';
+            // Bearish Marubozu
+            if (!bull && body >= range*0.75 && upWick <= range*0.1) return 'BEAR_MARUBOZU';
+            // Doji (indecision)
+            if (body <= range*0.08) return 'DOJI';
+            return 'NEUTRAL';
+        }
+
+        // --- MARKET STRUCTURE (HH/HL vs LH/LL) ---
+        function detectMarketStructure(data, lookback=60) {
+            const end = data.length - 1;
+            const start = Math.max(3, end - lookback);
+            let swingHighs = [], swingLows = [];
+
+            for (let i = start+2; i < end-2; i++) {
+                const isSwingHigh = data[i].high > data[i-1].high && data[i].high > data[i-2].high
+                                 && data[i].high > data[i+1].high && data[i].high > data[i+2].high;
+                const isSwingLow  = data[i].low  < data[i-1].low  && data[i].low  < data[i-2].low
+                                 && data[i].low  < data[i+1].low  && data[i].low  < data[i+2].low;
+                if (isSwingHigh) swingHighs.push({ price: data[i].high, idx: i, time: data[i].time });
+                if (isSwingLow)  swingLows.push({ price: data[i].low,  idx: i, time: data[i].time });
+            }
+
+            let structure = 'RANGING';
+            if (swingHighs.length >= 2 && swingLows.length >= 2) {
+                const lastSH  = swingHighs[swingHighs.length-1].price;
+                const prevSH  = swingHighs[swingHighs.length-2].price;
+                const lastSL  = swingLows[swingLows.length-1].price;
+                const prevSL  = swingLows[swingLows.length-2].price;
+                if (lastSH > prevSH && lastSL > prevSL) structure = 'BULLISH'; // HH + HL
+                else if (lastSH < prevSH && lastSL < prevSL) structure = 'BEARISH'; // LH + LL
+            }
+            return { structure, swingHighs, swingLows };
+        }
+
+        // --- IMPROVED S/R DETECTION (20-candle pivot, lookback 100) ---
+        function findKeyLevels(data, i) {
+            const lookback = Math.min(100, i - 3);
+            let resistances = [], supports = [];
+            for (let j = Math.max(3, i - lookback); j < i - 2; j++) {
+                let isPH = true, isPL = true;
+                for (let k = 1; k <= 3; k++) {
+                    if (data[j-k] && data[j+k]) {
+                        if (data[j-k].high >= data[j].high || data[j+k].high >= data[j].high) isPH = false;
+                        if (data[j-k].low  <= data[j].low  || data[j+k].low  <= data[j].low)  isPL = false;
+                    }
+                }
+                if (isPH) resistances.push(data[j].high);
+                if (isPL) supports.push(data[j].low);
+            }
+            const price = data[i].close;
+            // Nearest resistance above price
+            const aboveRes = resistances.filter(r => r > price).sort((a,b)=>a-b);
+            const belowSup = supports.filter(s => s < price).sort((a,b)=>b-a);
+            return {
+                nearestRes: aboveRes[0] || null,
+                nearestSup: belowSup[0] || null,
+                allRes: aboveRes.slice(0,5),
+                allSup: belowSup.slice(0,5)
+            };
+        }
+
+        // --- IMPROVED CoinGlass Liquidation Estimation ---
+        // Uses weighted cluster approach based on volume-weighted swing zones
+        function calcLiquidationZones(data, i, atr) {
+            const price = data[i].close;
+            // Use 100-candle window for better accuracy
+            const window = Math.min(100, i);
+            let highCluster = 0, lowCluster = Infinity;
+            let highVolWt = 0, lowVolWt = 0;
+
+            for (let j = i - window; j <= i; j++) {
+                if (j < 0) continue;
+                const vol = data[j].volume || 1;
+                if (data[j].high > highCluster) { highCluster = data[j].high; highVolWt = vol; }
+                if (data[j].low  < lowCluster)  { lowCluster  = data[j].low;  lowVolWt  = vol; }
+            }
+
+            // Estimated short liq zone = recent high area (where short stops cluster)
+            // Estimated long liq zone  = recent low area  (where long stops cluster)
+            // Add ATR buffer to make more realistic
+            const shortLiqZone = highCluster + atr * 0.1; // Slightly above swing high
+            const longLiqZone  = lowCluster  - atr * 0.1; // Slightly below swing low
+
+            // Nearest meaningful targets above/below current price
+            const shortTarget = shortLiqZone > price ? shortLiqZone : price + atr * 1.5;
+            const longTarget  = longLiqZone  < price ? longLiqZone  : price - atr * 1.5;
+
+            return { shortLiq: shortTarget, longLiq: longTarget };
+        }
+
+        /* =========
+           MAIN ANALYSIS ENGINE — PROFESSIONAL MULTI-CONFLUENCE
+           Konsep: Trader profesional hanya entry ketika minimal 3-4 faktor selaras.
+           Faktor lebih banyak = probabilitas lebih tinggi.
+           ========= */
         function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
-            if (data.length < 50) return; 
+            if (data.length < 60) return;
 
-            const i = data.length - 1;
+            const i       = data.length - 1;
             const current = data[i];
-            
-            const liqSwings = calcLuxAlgoLiquiditySwings(data, 14); 
-            const ema50Arr = calcEMA(data, 50); 
-            const ema200Arr = calcEMA(data, 200); 
-            const vwapArr = calcVWAP(data);
-            
-            const ema50 = ema50Arr[i]; 
-            const ema200 = ema200Arr[i]; 
-            const vwap = vwapArr[i];
-            
-            const atrArr = calcATRArray(data, 14); 
-            const atr = atrArr[i];
-            
-            const rsiArr = calcRSIArray(data, 14); 
-            const rsi = rsiArr[i] || 50; 
+            const prev    = i > 0 ? data[i-1] : current;
 
-            const candleSpread = current.high - current.low;
-            const isShock = candleSpread > (atr * 2.8); 
+            // ── SEMUA INDIKATOR ──────────────────────────────────────────
+            const ema50Arr  = calcEMA(data, 50);
+            const ema200Arr = calcEMA(data, 200);
+            const vwapArr   = calcVWAP(data);
+            const atrArr    = calcATRArray(data, 14);
+            const rsiArr    = calcRSIArray(data, 14);
+            const macdData  = calcMACDArray(data, 12, 26, 9);
+            const liqSwings = calcLuxAlgoLiquiditySwings(data, 10);
+            const mktStr    = detectMarketStructure(data, 60);
+            const keyLvl    = findKeyLevels(data, i);
 
-            const cgNodes = calcCoinGlassEstimatedLiquidationNodes(data, i);
+            const ema50   = ema50Arr[i];
+            const ema200  = ema200Arr[i];
+            const vwap    = vwapArr[i];
+            const atr     = atrArr[i];
+            const rsi     = Math.min(100, Math.max(0, rsiArr[i] || 50));
+            const macdH   = macdData.histogram[i];
+            const macdHp  = macdData.histogram[Math.max(0,i-1)];
+            const cgNodes = calcLiquidationZones(data, i, atr);
 
-            let srLevels = [];
-            for (let j = Math.max(5, data.length - 100); j <= i - 5; j++) {
-                let isPH = true; 
-                let isPL = true;
-                for (let k = 1; k <= 5; k++) {
-                    if (data[j-k].high > data[j].high || data[j+k].high >= data[j].high) isPH = false;
-                    if (data[j-k].low < data[j].low || data[j+k].low <= data[j].low) isPL = false;
-                }
-                if (isPH) srLevels.push(data[j].high);
-                if (isPL) srLevels.push(data[j].low);
-            }
-            srLevels = [...new Set(srLevels)].slice(-40); 
+            // ── CANDLE & STRUCTURE ───────────────────────────────────────
+            const pattern = detectCandlePattern(data, i);
+            const isBullPat = ['HAMMER','BULL_ENGULF','BULL_MARUBOZU'].includes(pattern);
+            const isBearPat = ['SHOOTING_STAR','BEAR_ENGULF','BEAR_MARUBOZU'].includes(pattern);
 
-            let nearestResistance = null; 
-            let nearestSupport = null;
-            let bestRDist = Infinity; 
-            let bestSDist = Infinity;
-            
-            for (let lvl of srLevels) {
-                if (lvl > current.close && (lvl - current.close) < bestRDist) { 
-                    nearestResistance = lvl; 
-                    bestRDist = lvl - current.close; 
-                }
-                if (lvl <= current.close && (current.close - lvl) < bestSDist) { 
-                    nearestSupport = lvl; 
-                    bestSDist = current.close - lvl; 
-                }
-            }
-
-            const takerBuy = current.takerBuy || 0;
+            // ── VOLUME DELTA ─────────────────────────────────────────────
+            const takerBuy  = current.takerBuy || 0;
             const takerSell = current.volume - takerBuy;
-            const volDelta = takerBuy - takerSell;
+            const volDelta  = takerBuy - takerSell;
+            const buyRatio  = current.volume > 0 ? takerBuy / current.volume : 0.5;
 
-            let isBullSweep = false; 
-            let isBearSweep = false;
-            for (let l of liqSwings.activeLows) { 
-                if (current.low < l.btm && current.close > l.btm) isBullSweep = true; 
+            // ── SHOCK / FOMO FILTER ──────────────────────────────────────
+            const candleSpread = current.high - current.low;
+            const isShock = candleSpread > atr * 3.2; // Candle abnormal besar → skip
+
+            // ── TREND ────────────────────────────────────────────────────
+            const emaBull         = ema50 > ema200;
+            const priceAboveEma50  = current.close > ema50;
+            const priceAboveEma200 = current.close > ema200;
+            const priceAboveVwap   = current.close > vwap;
+
+            // Struktur pasar
+            const structureBull = mktStr.structure === 'BULLISH';
+            const structureBear = mktStr.structure === 'BEARISH';
+
+            // Strong trend: EMA + struktur selaras
+            const strongBullTrend = emaBull && structureBull;
+            const strongBearTrend = !emaBull && structureBear;
+
+            // ── LIQUIDITY SWEEP (ICT / SMC — sinyal terkuat) ─────────────
+            // Sweep: harga menembus level lama lalu CLOSE kembali di dalam → smart money trap
+            let isBullSweep = false, isBearSweep = false;
+            for (let l of liqSwings.activeLows) {
+                if (current.low < l.btm && current.close > l.btm && prev.low >= l.btm) {
+                    isBullSweep = true; // Grab stop di bawah, lalu bullish rejection
+                }
             }
-            for (let h of liqSwings.activeHighs) { 
-                if (current.high > h.top && current.close < h.top) isBearSweep = true; 
+            for (let h of liqSwings.activeHighs) {
+                if (current.high > h.top && current.close < h.top && prev.high <= h.top) {
+                    isBearSweep = true; // Grab stop di atas, lalu bearish rejection
+                }
             }
 
-            let hitSupport = (nearestSupport !== null && current.low <= nearestSupport * 1.001); 
-            let hitResistance = (nearestResistance !== null && current.high >= nearestResistance * 0.999);
+            // ── PULLBACK TO VALUE (entry terbaik = ketika harga balik ke EMA) ──
+            const nearEma50Bull = emaBull && current.low <= ema50 * 1.008 && current.close >= ema50 * 0.992;
+            const nearEma50Bear = !emaBull && current.high >= ema50 * 0.992 && current.close <= ema50 * 1.008;
+            const nearVwapBull  = priceAboveEma200 && current.low <= vwap * 1.005 && current.close >= vwap * 0.995;
+            const nearVwapBear  = !priceAboveEma200 && current.high >= vwap * 0.995 && current.close <= vwap * 1.005;
 
-            let reversalBuy = hitSupport && (volDelta > 0); 
-            let reversalSell = hitResistance && (volDelta < 0);
+            // ── MACD MOMENTUM ─────────────────────────────────────────────
+            const macdBullCross = macdH > 0 && macdHp <= 0; // Crossover naik
+            const macdBearCross = macdH < 0 && macdHp >= 0; // Crossover turun
+            const macdRising    = macdH > macdHp;            // Momentum naik
+            const macdFalling   = macdH < macdHp;            // Momentum turun
 
-            let buySignal = isBullSweep || reversalBuy;
-            let sellSignal = isBearSweep || reversalSell;
+            // ── SUPPORT/RESISTANCE HIT ────────────────────────────────────
+            const hitSupport    = keyLvl.nearestSup !== null && current.low <= keyLvl.nearestSup * 1.003 && current.close >= keyLvl.nearestSup * 0.997;
+            const hitResistance = keyLvl.nearestRes !== null && current.high >= keyLvl.nearestRes * 0.997 && current.close <= keyLvl.nearestRes * 1.003;
 
-            let emaBull = ema50 > ema200; 
-            let emaBear = ema50 < ema200;
+            // ── RSI KONDISI ────────────────────────────────────────────────
+            const rsiOversold   = rsi < 35;
+            const rsiOverbought = rsi > 65;
+            const rsiMidBull    = rsi >= 40 && rsi <= 60; // Healthy bullish zone
+            const rsiMidBear    = rsi >= 40 && rsi <= 60; // Healthy bearish zone
 
-            let signal = "WAIT"; 
-            let conflict = (buySignal && sellSignal);
-            
-            if (buySignal && !conflict) signal = "BUY";
-            if (sellSignal && !conflict) signal = "SELL";
+            // ══════════════════════════════════════════════════════════════
+            // CONFLUENCE SCORING — BUY
+            // Setiap faktor memberi poin. Minimum poin untuk signal aktif
+            // ditentukan per timeframe (TF lebih rendah = threshold lebih tinggi)
+            // ══════════════════════════════════════════════════════════════
+            let buyScore = 0, sellScore = 0;
+            let buyFactors = [], sellFactors = [];
 
+            // ─── BUY FACTORS ───
+            // 1. Trend Alignment (30 poin — paling penting)
+            if (emaBull && priceAboveEma200) { buyScore += 18; buyFactors.push('Tren Bullish EMA50/200'); }
+            else if (emaBull)                { buyScore += 10; buyFactors.push('EMA50 > EMA200'); }
+            if (structureBull)               { buyScore += 12; buyFactors.push('Struktur HH+HL'); }
+            if (strongBullTrend)             { buyScore += 5;  } // Bonus jika keduanya selaras
+
+            // 2. Liquidity Sweep (25 poin — sinyal entry terkuat)
+            if (isBullSweep) { buyScore += 25; buyFactors.push('🎯 Liquidity Sweep (Stop Hunt)'); }
+
+            // 3. Value Area Entry (15 poin)
+            if (nearEma50Bull) { buyScore += 10; buyFactors.push('Pullback ke EMA50'); }
+            if (nearVwapBull)  { buyScore += 8;  buyFactors.push('Bounce dari VWAP'); }
+            if (hitSupport)    { buyScore += 8;  buyFactors.push('Di Level Support'); }
+
+            // 4. RSI (10 poin)
+            if (rsiOversold)      { buyScore += 12; buyFactors.push(`RSI Oversold (${Math.round(rsi)})`); }
+            else if (rsi < 50)    { buyScore += 6;  buyFactors.push(`RSI Netral-Low (${Math.round(rsi)})`); }
+            if (rsiOverbought)    { buyScore -= 18; } // Jangan beli saat overbought
+
+            // 5. MACD Momentum (10 poin)
+            if (macdBullCross)     { buyScore += 12; buyFactors.push('MACD Cross Bullish'); }
+            else if (macdRising && macdH > 0) { buyScore += 6; buyFactors.push('MACD Bullish'); }
+            else if (macdFalling && macdH < 0){ buyScore -= 5; }
+
+            // 6. Volume Pressure (8 poin)
+            if (buyRatio >= 0.62)  { buyScore += 10; buyFactors.push(`Volume Buyer ${(buyRatio*100).toFixed(0)}%`); }
+            else if (buyRatio <= 0.38) { buyScore -= 8; }
+
+            // 7. Candle Pattern (8 poin)
+            if (isBullPat) { buyScore += 10; buyFactors.push(`Pola: ${pattern}`); }
+            if (isBearPat) { buyScore -= 8; }
+
+            // ─── PENALTIES BUY ───
+            if (isShock)         buyScore -= 25; // Candle shock → jangan entry
+            if (strongBearTrend) buyScore -= 30; // Counter-trend trade berisiko tinggi
+            if (!emaBull && rsi > 55) buyScore -= 12;
+
+            // ─── SELL FACTORS ───
+            // 1. Trend Alignment
+            if (!emaBull && !priceAboveEma200) { sellScore += 18; sellFactors.push('Tren Bearish EMA50/200'); }
+            else if (!emaBull)                 { sellScore += 10; sellFactors.push('EMA50 < EMA200'); }
+            if (structureBear)                 { sellScore += 12; sellFactors.push('Struktur LH+LL'); }
+            if (strongBearTrend)               { sellScore += 5; }
+
+            // 2. Liquidity Sweep
+            if (isBearSweep) { sellScore += 25; sellFactors.push('🎯 Liquidity Sweep (Stop Hunt)'); }
+
+            // 3. Value Area Entry
+            if (nearEma50Bear)  { sellScore += 10; sellFactors.push('Rally ke EMA50'); }
+            if (nearVwapBear)   { sellScore += 8;  sellFactors.push('Rejection VWAP'); }
+            if (hitResistance)  { sellScore += 8;  sellFactors.push('Di Level Resistance'); }
+
+            // 4. RSI
+            if (rsiOverbought)    { sellScore += 12; sellFactors.push(`RSI Overbought (${Math.round(rsi)})`); }
+            else if (rsi > 50)    { sellScore += 6;  sellFactors.push(`RSI Netral-High (${Math.round(rsi)})`); }
+            if (rsiOversold)      { sellScore -= 18; }
+
+            // 5. MACD Momentum
+            if (macdBearCross)     { sellScore += 12; sellFactors.push('MACD Cross Bearish'); }
+            else if (macdFalling && macdH < 0) { sellScore += 6; sellFactors.push('MACD Bearish'); }
+            else if (macdRising && macdH > 0)  { sellScore -= 5; }
+
+            // 6. Volume Pressure
+            if (buyRatio <= 0.38) { sellScore += 10; sellFactors.push(`Volume Seller ${((1-buyRatio)*100).toFixed(0)}%`); }
+            else if (buyRatio >= 0.62) { sellScore -= 8; }
+
+            // 7. Candle Pattern
+            if (isBearPat) { sellScore += 10; sellFactors.push(`Pola: ${pattern}`); }
+            if (isBullPat) { sellScore -= 8; }
+
+            // ─── PENALTIES SELL ───
+            if (isShock)         sellScore -= 25;
+            if (strongBullTrend) sellScore -= 30;
+            if (emaBull && rsi < 45) sellScore -= 12;
+
+            // Clamp scores
+            buyScore  = Math.max(0, Math.min(100, buyScore));
+            sellScore = Math.max(0, Math.min(100, sellScore));
+
+            // ── THRESHOLD PER TIMEFRAME ──────────────────────────────────
+            // TF kecil lebih noisy → perlu threshold lebih tinggi
+            const tfThresholds = {
+                '1m': 74, '15m': 70, '1H': 65, '4H': 58, '6H': 55, '1D': 50, '1W': 47, '1M': 44
+            };
+            const minScore = tfThresholds[tf.label] || 58;
+
+            // ── FINAL SIGNAL ─────────────────────────────────────────────
+            let signal = 'WAIT';
             let confidence = 0;
-            if (signal === "BUY") {
-                confidence = 45;
-                if (emaBull) confidence += 15; 
-                if (volDelta > 0) confidence += 10; 
-                if (isBullSweep) confidence += 15; 
-                if (current.close > vwap) confidence += 5; 
-                if (rsi < 40) confidence += 10; 
-                if (rsi > 70) confidence -= 15; 
-                if (!emaBull && isShock) confidence -= 20; 
-            } else if (signal === "SELL") {
-                confidence = 45; 
-                if (emaBear) confidence += 15;
-                if (volDelta < 0) confidence += 10;
-                if (isBearSweep) confidence += 15; 
-                if (current.close < vwap) confidence += 5;
-                if (rsi > 60) confidence += 10; 
-                if (rsi < 30) confidence -= 15; 
-                if (!emaBear && isShock) confidence -= 20;
-            } else {
-                let range = cgNodes.shortLiq - cgNodes.longLiq;
-                let posInRange = range > 0 ? (current.close - cgNodes.longLiq) / range : 0.5;
-                let distanceToEdge = Math.abs(posInRange - 0.5) * 2; 
-                confidence = 30 + Math.floor(distanceToEdge * 20); 
-            }
-            confidence = Math.max(10, Math.min(95, confidence));
+            let activeFactors = [];
 
-            let aiNote = ""; 
-            let exitAdvice = "NEUTRAL";
-            const userPos = userPositions[sym];
+            const clearWinner = Math.abs(buyScore - sellScore) >= 10; // Harus unggul jelas
+
+            if (buyScore > sellScore && buyScore >= minScore && clearWinner && !isShock) {
+                signal = 'BUY';
+                confidence = Math.round(buyScore);
+                activeFactors = buyFactors;
+            } else if (sellScore > buyScore && sellScore >= minScore && clearWinner && !isShock) {
+                signal = 'SELL';
+                confidence = Math.round(sellScore);
+                activeFactors = sellFactors;
+            } else {
+                // WAIT — tunjukkan leaning direction sebagai informasi
+                confidence = Math.max(15, Math.min(49, Math.round(Math.max(buyScore, sellScore) * 0.65)));
+            }
+
+            // ── RISK/REWARD CALCULATION ──────────────────────────────────
+            // Entry yang bagus minimal punya R:R 1.5:1
             const currPrice = current.close;
+            let stopLoss, target, riskReward;
+
+            if (signal === 'BUY') {
+                // Stop: Di bawah swing low terdekat atau 1x ATR
+                const recentSwingLow = liqSwings.activeLows.length > 0
+                    ? Math.min(...liqSwings.activeLows.slice(-3).map(l => l.btm))
+                    : currPrice - atr;
+                stopLoss   = Math.min(recentSwingLow - atr*0.2, currPrice - atr);
+                target     = cgNodes.shortLiq > currPrice ? cgNodes.shortLiq : currPrice + atr*2;
+                riskReward = Math.abs(target - currPrice) / Math.abs(currPrice - stopLoss);
+                // Jika R:R < 1.5, kurangi confidence
+                if (riskReward < 1.5) confidence = Math.max(15, confidence - 15);
+            } else if (signal === 'SELL') {
+                const recentSwingHigh = liqSwings.activeHighs.length > 0
+                    ? Math.max(...liqSwings.activeHighs.slice(-3).map(h => h.top))
+                    : currPrice + atr;
+                stopLoss   = Math.max(recentSwingHigh + atr*0.2, currPrice + atr);
+                target     = cgNodes.longLiq < currPrice ? cgNodes.longLiq : currPrice - atr*2;
+                riskReward = Math.abs(currPrice - target) / Math.abs(stopLoss - currPrice);
+                if (riskReward < 1.5) confidence = Math.max(15, confidence - 15);
+            } else {
+                stopLoss   = signal === 'BUY' ? currPrice - atr : currPrice + atr;
+                target     = cgNodes.shortLiq;
+                riskReward = 0;
+            }
+
+            // ── CATATAN & EXIT ADVICE ────────────────────────────────────
+            let aiNote = '', exitAdvice = 'NEUTRAL';
+            const userPos = userPositions[sym];
 
             if (userPos) {
-                let entry = userPos.entry; 
-                let type = userPos.type || 'BUY'; 
-                let lev = userPos.leverage || 1;
-                let pnl = type === 'SELL' 
-                    ? ((entry - currPrice) / entry) * 100 * lev 
+                // User sudah punya posisi → beri saran exit
+                const entry = userPos.entry;
+                const type  = userPos.type || 'BUY';
+                const lev   = userPos.leverage || 1;
+                const pnl   = type === 'SELL'
+                    ? ((entry - currPrice) / entry) * 100 * lev
                     : ((currPrice - entry) / entry) * 100 * lev;
-                
+                const pnlStr = pnl >= 0
+                    ? `<span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>`
+                    : `<span class="ai-highlight-red">${pnl.toFixed(2)}%</span>`;
+
                 if (pnl > 0) {
-                    if (type === 'BUY' && currPrice >= cgNodes.shortLiq) { 
-                        exitAdvice = "TAKE PARTIAL"; 
-                        aiNote = `Harga menyentuh <b>Short Liquidity Cluster (${formatPrecision(cgNodes.shortLiq)})</b>. Posisi LONG (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Ambil Profit</b>.`;
-                    } else if (type === 'SELL' && currPrice <= cgNodes.longLiq) { 
-                        exitAdvice = "TAKE PARTIAL"; 
-                        aiNote = `Harga menyentuh <b>Long Liquidity Cluster (${formatPrecision(cgNodes.longLiq)})</b>. Posisi SHORT (+${lev}x) ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Ambil Profit</b>.`;
-                    } else { 
-                        exitAdvice = "HOLD POSITION"; 
-                        aiNote = `Posisi ${type} profit ROE <span class="ai-highlight-green">+${pnl.toFixed(2)}%</span>. Saran: <b>Tahan posisi (Hold)</b>.`; 
+                    if (type === 'BUY' && currPrice >= cgNodes.shortLiq * 0.998) {
+                        exitAdvice = 'TAKE PROFIT';
+                        aiNote = `✅ <b>Target Tercapai!</b> Harga di zona Short Liq Cluster <b>${formatPrecision(cgNodes.shortLiq)}</b>. ROE ${pnlStr}. <b>Ambil profit sekarang.</b>`;
+                    } else if (type === 'SELL' && currPrice <= cgNodes.longLiq * 1.002) {
+                        exitAdvice = 'TAKE PROFIT';
+                        aiNote = `✅ <b>Target Tercapai!</b> Harga di zona Long Liq Cluster <b>${formatPrecision(cgNodes.longLiq)}</b>. ROE ${pnlStr}. <b>Ambil profit sekarang.</b>`;
+                    } else if (pnl >= 3 * lev) {
+                        // Profit signifikan tapi belum di target
+                        exitAdvice = 'TRAIL STOP';
+                        aiNote = `📈 Posisi ${type} profit bagus ROE ${pnlStr}. Geser stop loss ke <b>break-even + buffer</b> untuk lindungi profit.`;
+                    } else {
+                        exitAdvice = 'HOLD POSITION';
+                        aiNote = `🔒 Posisi ${type} ROE ${pnlStr}. Harga belum mencapai target. <b>Tahan — jangan panic close.</b>`;
                     }
                 } else {
-                    if (type === 'BUY' && currPrice < cgNodes.longLiq - (atr * 0.5)) { 
-                        exitAdvice = "EXIT RISK"; 
-                        aiNote = `Support dan Level Likuidasi tertembus. ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Cut Loss</b>.`;
-                    } else if (type === 'SELL' && currPrice > cgNodes.shortLiq + (atr * 0.5)) { 
-                        exitAdvice = "EXIT RISK"; 
-                        aiNote = `Resistensi tertembus. ROE <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Saran: <b>Pertimbangkan Cut Loss</b>.`;
-                    } else { 
-                        exitAdvice = "HOLD POSITION"; 
-                        aiNote = `Posisi ${type} floating minus <span class="ai-highlight-red">${pnl.toFixed(2)}%</span>. Harga berada dalam batas toleransi. <b>Tahan (Hold)</b>.`; 
+                    // Floating loss
+                    const riskBreached = (type === 'BUY' && currPrice < cgNodes.longLiq - atr*0.3)
+                                      || (type === 'SELL' && currPrice > cgNodes.shortLiq + atr*0.3);
+                    const deepLoss = pnl < -5 * lev;
+
+                    if (riskBreached || deepLoss) {
+                        exitAdvice = 'EXIT RISK';
+                        aiNote = `⚠️ <b>Zona Bahaya!</b> ${riskBreached ? 'Level support/resistance kritis tertembus.' : 'Floating loss sudah dalam.'} ROE ${pnlStr}. <b>Pertimbangkan cut loss sekarang</b> sebelum bertambah.`;
+                    } else {
+                        exitAdvice = 'HOLD POSITION';
+                        aiNote = `⏳ Posisi ${type} floating ${pnlStr}. Masih dalam batas toleransi ATR. <b>Tahan — harga masih dalam struktur valid.</b>`;
                     }
                 }
             } else {
-                if (signal === "BUY") {
-                    let confClass = confidence >= 70 ? 'conf-high' : (confidence >= 55 ? 'conf-med' : 'conf-low');
-                    aiNote = `<b>SIGNAL BUY TERKONFIRMASI <span class="conf-badge ${confClass}">Win Prob: ${confidence}%</span></b> <br>Harga menguji area <i>Long Liq Cluster</i>. Eksekusi <b>LONG</b> di ${formatPrecision(currPrice)}.`;
-                } else if (signal === "SELL") {
-                    let confClass = confidence >= 70 ? 'conf-high' : (confidence >= 55 ? 'conf-med' : 'conf-low');
-                    aiNote = `<b>SIGNAL SELL TERKONFIRMASI <span class="conf-badge ${confClass}">Win Prob: ${confidence}%</span></b> <br>Penolakan di area <i>Short Liq Cluster</i>. Eksekusi <b>SHORT</b> di ${formatPrecision(currPrice)}.`;
+                // Tidak ada posisi → beri saran entry
+                const rrStr = riskReward > 0 ? ` | R:R <b>${riskReward.toFixed(1)}:1</b>` : '';
+                const factorStr = activeFactors.length > 0
+                    ? `<br><small style="color:var(--text-secondary);">📋 ${activeFactors.slice(0,4).join(' · ')}</small>`
+                    : '';
+
+                if (signal === 'BUY') {
+                    const cc = confidence >= 72 ? 'conf-high' : confidence >= 58 ? 'conf-med' : 'conf-low';
+                    aiNote = `<b>🟢 SIGNAL BUY <span class="conf-badge ${cc}">Win Prob: ${confidence}%</span></b><br>`
+                           + `Entry LONG di <b>${formatPrecision(currPrice)}</b> | Target: <b>${formatPrecision(target)}</b> | SL: <b>${formatPrecision(stopLoss)}</b>${rrStr}${factorStr}`;
+                } else if (signal === 'SELL') {
+                    const cc = confidence >= 72 ? 'conf-high' : confidence >= 58 ? 'conf-med' : 'conf-low';
+                    aiNote = `<b>🔴 SIGNAL SELL <span class="conf-badge ${cc}">Win Prob: ${confidence}%</span></b><br>`
+                           + `Entry SHORT di <b>${formatPrecision(currPrice)}</b> | Target: <b>${formatPrecision(target)}</b> | SL: <b>${formatPrecision(stopLoss)}</b>${rrStr}${factorStr}`;
                 } else {
-                    let confClass = confidence >= 45 ? 'conf-med' : 'conf-low';
-                    aiNote = `<b>STATUS: KONSOLIDASI (WAIT & SEE) <span class="conf-badge ${confClass}">Volatilitas: ${confidence}%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.`;
-                    aiNote += `<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di ${formatPrecision(cgNodes.longLiq)}</b> atau <b>Limit SHORT di ${formatPrecision(cgNodes.shortLiq)}</b>.`;
+                    // WAIT — beri informasi leaning
+                    const leaning    = buyScore > sellScore ? '🟡 Bias LONG' : '🟡 Bias SHORT';
+                    const leanScore  = Math.max(buyScore, sellScore);
+                    const cc         = 'conf-low';
+                    const waitReason = isShock
+                        ? 'Candle abnormal besar — tunggu konfirmasi.'
+                        : leanScore < minScore * 0.7
+                            ? 'Belum cukup konfluensi — pasar tidak jelas arahnya.'
+                            : `Mendekati sinyal. ${leaning} tapi belum konfirmasi.`;
+                    aiNote = `<b>⏳ WAIT & SEE <span class="conf-badge ${cc}">Strength: ${confidence}%</span></b><br>`
+                           + `${waitReason}<br><small style="color:var(--text-secondary);">🎯 Pantau Liq Zone: Long area <b>${formatPrecision(cgNodes.longLiq)}</b> | Short area <b>${formatPrecision(cgNodes.shortLiq)}</b></small>`;
                 }
             }
 
+            // ── UPDATE STATE & UI ─────────────────────────────────────────
             MTF_MATRIX.set(`${sym}_${tf.label}`, signal);
-            
-            let lastState = { 
-                signal, confidence, rsi, isShock, intent: "NEUTRAL", 
-                isOverextended: false, price: current.close, volume: current.volume, 
-                volDelta, tp: cgNodes.shortLiq, sl: cgNodes.longLiq, exitAdvice, note: aiNote, 
-                atr: atr, emaBull: emaBull 
+
+            const lastState = {
+                signal, confidence, rsi, isShock,
+                price: currPrice, volume: current.volume,
+                volDelta, buyRatio,
+                tp: cgNodes.shortLiq, sl: cgNodes.longLiq,
+                stopLoss, target, riskReward,
+                exitAdvice, note: aiNote,
+                atr, emaBull,
+                pattern, activeFactors,
+                mktStructure: mktStr.structure
             };
 
-            if (isBackground) { 
-                MTF_MATRIX.set(`${sym}_${tf.label}`, signal); 
-                updateMatrixUI(sym); 
-                return; 
+            if (isBackground) {
+                updateMatrixUI(sym);
+                return;
             }
-            
+
             analysisResults.set(sym, lastState);
-            
+
             const cObj = charts.get(sym);
             if (cObj) {
                 requestAnimationFrame(() => {
                     try {
                         const numLines = 15;
                         const recentHighs = liqSwings.activeHighs.slice(-numLines);
-                        const recentLows = liqSwings.activeLows.slice(-numLines);
+                        const recentLows  = liqSwings.activeLows.slice(-numLines);
 
-                        for(let k=0; k<numLines; k++) {
+                        for (let k = 0; k < numLines; k++) {
                             if (recentHighs[k]) {
-                                let sIdx = recentHighs[k].startIndex;
+                                const sIdx = recentHighs[k].startIndex;
                                 cObj.liqHighSeries[k].setData([
-                                    { time: data[Math.max(0, sIdx - 4)].time, value: recentHighs[k].top }, 
-                                    { time: data[Math.min(data.length - 1, sIdx + 10)].time, value: recentHighs[k].top }
+                                    { time: data[Math.max(0, sIdx-4)].time, value: recentHighs[k].top },
+                                    { time: data[Math.min(data.length-1, sIdx+10)].time, value: recentHighs[k].top }
                                 ]);
-                            } else { 
-                                cObj.liqHighSeries[k].setData([]); 
-                            }
+                            } else { cObj.liqHighSeries[k].setData([]); }
 
                             if (recentLows[k]) {
-                                let sIdx = recentLows[k].startIndex;
+                                const sIdx = recentLows[k].startIndex;
                                 cObj.liqLowSeries[k].setData([
-                                    { time: data[Math.max(0, sIdx - 4)].time, value: recentLows[k].btm }, 
-                                    { time: data[Math.min(data.length - 1, sIdx + 10)].time, value: recentLows[k].btm }
+                                    { time: data[Math.max(0, sIdx-4)].time, value: recentLows[k].btm },
+                                    { time: data[Math.min(data.length-1, sIdx+10)].time, value: recentLows[k].btm }
                                 ]);
-                            } else { 
-                                cObj.liqLowSeries[k].setData([]); 
-                            }
+                            } else { cObj.liqLowSeries[k].setData([]); }
                         }
 
-                        cObj.cgShortSeries.setData([{time: data[Math.max(0, data.length-30)].time, value: cgNodes.shortLiq}, {time: current.time, value: cgNodes.shortLiq}]);
-                        cObj.cgLongSeries.setData([{time: data[Math.max(0, data.length-30)].time, value: cgNodes.longLiq}, {time: current.time, value: cgNodes.longLiq}]);
+                        cObj.cgShortSeries.setData([
+                            { time: data[Math.max(0,data.length-30)].time, value: cgNodes.shortLiq },
+                            { time: current.time, value: cgNodes.shortLiq }
+                        ]);
+                        cObj.cgLongSeries.setData([
+                            { time: data[Math.max(0,data.length-30)].time, value: cgNodes.longLiq },
+                            { time: current.time, value: cgNodes.longLiq }
+                        ]);
 
-                        cObj.ema50Series.setData(ema50Arr.map((v, idx) => ({time: data[idx].time, value: v})));
-                        cObj.ema200Series.setData(ema200Arr.map((v, idx) => ({time: data[idx].time, value: v})));
-                        cObj.vwapSeries.setData(vwapArr.map((v, idx) => ({time: data[idx].time, value: v})));
-                        
+                        cObj.ema50Series.setData(ema50Arr.map((v,idx) => ({time: data[idx].time, value: v})));
+                        cObj.ema200Series.setData(ema200Arr.map((v,idx) => ({time: data[idx].time, value: v})));
+                        cObj.vwapSeries.setData(vwapArr.map((v,idx) => ({time: data[idx].time, value: v})));
+
                         let markers = [];
-                        if (signal === "BUY") markers.push({ time: current.time, position: 'belowBar', color: '#0ecb81', shape: 'arrowUp', text: 'BUY' });
-                        else if (signal === "SELL") markers.push({ time: current.time, position: 'aboveBar', color: '#f6465d', shape: 'arrowDown', text: 'SELL' });
+                        if (signal === 'BUY')  markers.push({ time: current.time, position: 'belowBar', color: '#0ecb81', shape: 'arrowUp',   text: `BUY ${confidence}%` });
+                        if (signal === 'SELL') markers.push({ time: current.time, position: 'aboveBar', color: '#f6465d', shape: 'arrowDown', text: `SELL ${confidence}%` });
                         cObj.series.setMarkers(markers);
                     } catch(e) {}
                 });
             }
-            
+
             updateCardUI(sym, lastState, tf);
             updateMatrixUI(sym);
         }
+
 
         /* =========================================
            HELPER UPDATE UI & REPORT
