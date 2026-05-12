@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>ZAVANA - Ockhand Tage Pro (Auto-AI & CoinGlass Liq)</title>
+<!-- saved from url=(0050)https://zavana-crypto.github.io/Treding-Dashboard/ -->
+<html lang="id"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>ZAVANA - Ockhand Tage Pro (Auto-AI &amp; CoinGlass Liq)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="theme-color" content="#0b0e11">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
 
     <!-- Menggunakan CDN untuk Font dan Library Chart -->
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 
     <style>
@@ -481,14 +481,74 @@
             #ai-fab { bottom: 90px; right: 20px; width: 50px; height: 50px; }
             #ai-chat-window { bottom: 0; right: 0; width: 100%; height: 100%; border-radius: 0; z-index: 1001; position: fixed; }
         }
+
+        /* =========================================
+           SETUP MODAL - FIRST RUN API KEY
+           ========================================= */
+        #zavana-setup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 14, 17, 0.96); z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #zavana-setup-overlay.hidden { display: none; }
+        .zavana-setup-box {
+            background: #1e2329; border: 1px solid #00e5ff;
+            border-radius: 10px; padding: 36px; max-width: 460px; width: 90%;
+        }
+        .zavana-setup-box h2 {
+            color: #FCD535; margin: 0 0 6px;
+            font-family: 'JetBrains Mono', monospace; font-size: 20px;
+        }
+        .zavana-setup-box p { color: #848e9c; font-size: 13px; line-height: 1.6; margin: 0 0 22px; }
+        .zavana-setup-box label { color: #eaecef; font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+        .zavana-setup-input {
+            width: 100%; background: #0b0e11; border: 1px solid #474d57;
+            color: #eaecef; padding: 12px; border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace; font-size: 13px;
+            margin-bottom: 10px; outline: none; box-sizing: border-box;
+        }
+        .zavana-setup-input:focus { border-color: #00e5ff; }
+        .zavana-setup-link {
+            color: #00e5ff; font-size: 12px; display: block;
+            margin-bottom: 22px; text-decoration: none;
+        }
+        .zavana-setup-link:hover { text-decoration: underline; }
+        .zavana-setup-btn {
+            width: 100%; background: #00e5ff; color: #0b0e11;
+            font-weight: 700; padding: 13px; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 14px;
+            font-family: 'IBM Plex Sans', sans-serif;
+        }
+        .zavana-setup-btn:hover { background: #33eaff; }
+        .zavana-setup-skip {
+            width: 100%; background: transparent; color: #848e9c;
+            font-weight: 600; padding: 10px; border: 1px solid #2b3139;
+            border-radius: 4px; cursor: pointer; font-size: 12px;
+            margin-top: 8px; font-family: 'IBM Plex Sans', sans-serif;
+        }
+        .zavana-setup-skip:hover { border-color: #848e9c; color: #eaecef; }
     </style>
 </head>
 <body>
 
+
+    <!-- SETUP MODAL: Isi API Key Gemini pertama kali -->
+    <div id="zavana-setup-overlay">
+        <div class="zavana-setup-box">
+            <h2>⚡ ZAVANA Setup</h2>
+            <p>Masukkan <b style="color:#eaecef;">Gemini API Key</b> gratis kamu untuk mengaktifkan fitur AI Analisis & Market Briefing. Klik link di bawah untuk mendapatkannya dalam 1 menit menggunakan akun Google.</p>
+            <label>Gemini API Key</label>
+            <input type="text" class="zavana-setup-input" id="zavana-setup-key-input" placeholder="AIzaSy...">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="zavana-setup-link">→ Dapatkan API Key GRATIS di aistudio.google.com</a>
+            <button class="zavana-setup-btn" onclick="zavanaSetupSave()">✅ Simpan & Mulai Dashboard</button>
+            <button class="zavana-setup-skip" onclick="zavanaSetupSkip()">Lewati — AI tidak aktif</button>
+        </div>
+    </div>
+
     <!-- OVERLAY LOADING -->
-    <div id="loading-overlay">
+    <div id="loading-overlay" style="display: none;">
         <div class="spinner"></div>
-        <div style="font-family:'JetBrains Mono', monospace; color:var(--text-primary); font-size:14px; font-weight:600;">SINKRONISASI COINGLASS ALGO...</div>
+        <div style="font-family:&#39;JetBrains Mono&#39;, monospace; color:var(--text-primary); font-size:14px; font-weight:600;">SINKRONISASI COINGLASS ALGO...</div>
     </div>
 
     <div id="toast-container"></div>
@@ -497,9 +557,9 @@
     <header class="navbar-top">
         <div class="brand">ZAVANA<span>Ockhand Tage Pro</span></div>
         <div class="nav-links">
-            <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
-            <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
-            <div class="nav-link" onclick="showPage('settings', this)">Settings</div>
+            <div class="nav-link active" onclick="showPage(&#39;dashboard&#39;, this)">Dashboard</div>
+            <div class="nav-link" onclick="showPage(&#39;screener&#39;, this)">Market Matrix</div>
+            <div class="nav-link" onclick="showPage(&#39;settings&#39;, this)">Settings</div>
         </div>
         <div class="nav-actions">
             <button id="audioInitBtn" class="action-btn audio-btn needed" onclick="initAudioContext()">🔊 INIT AUDIO</button>
@@ -513,13 +573,1045 @@
         <div id="page-dashboard" class="page active">
             <div class="toolbar-container">
                 <div id="strategyLabel" class="strategy-badge">MODE: SWING (4H)</div>
-                <div class="toolbar-group" id="tfToolbar"></div>
+                <div class="toolbar-group" id="tfToolbar"><button class="tf-btn ">1m</button><button class="tf-btn ">15m</button><button class="tf-btn ">1H</button><button class="tf-btn active">4H</button><button class="tf-btn ">6H</button><button class="tf-btn ">1D</button><button class="tf-btn ">1W</button><button class="tf-btn ">1M</button></div>
             </div>
             
-            <div class="grid" id="grid"></div>
+            <div class="grid" id="grid"><div class="card sniper-mode" id="card-BTCUSDT">
+                    <div class="sniper-tag" id="tag-BTCUSDT" style="background: var(--binance-red); color: rgb(255, 255, 255);">SELL EXECUTION</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/btc@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">BTC/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-BTCUSDT">387</span> | Flow: <span id="delta-BTCUSDT" style="font-weight: bold; color: var(--binance-red);">- SELLER DOMINANCE</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-down" id="price-BTCUSDT" data-p="80948.24">80948.24</div>
+                            <div class="price-change" id="chg-BTCUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-BTCUSDT-1m" class="m-dot bull" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-BTCUSDT-15m" class="m-dot bull" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-BTCUSDT-1H" class="m-dot" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-BTCUSDT-4H" class="m-dot bear active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-BTCUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-BTCUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-BTCUSDT-1W" class="m-dot bull" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-BTCUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-BTCUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.875px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.875px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 324.875px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="324" height="258" style="width: 324.875px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="324" height="258" style="width: 324.875px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 70px; left: 0px; position: relative; min-width: 70px; cursor: default;"><canvas width="70" height="258" style="width: 70px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="70" height="258" style="width: 70px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-BTCUSDT" class="visual-arrow sell">▼</div>
+                        <div id="msg-BTCUSDT" class="visual-msg" style="color: var(--text-primary);">DISTRIBUSI TERDETEKSI</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-BTCUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-BTCUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-BTCUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-BTCUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;BTCUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-BTCUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;BTCUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;BTCUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-BTCUSDT">80138.77</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-BTCUSDT">81757.73</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-BTCUSDT"><b>SIGNAL SELL TERKONFIRMASI <span class="conf-badge conf-med">Win Prob: 55%</span></b> <br>Penolakan di area <i>Short Liq Cluster</i>. Eksekusi <b>SHORT</b> di 80948.25.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;BTCUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/BTCUSDT" target="_blank" class="btn-trade buy " id="btn-buy-BTCUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/BTCUSDT" target="_blank" class="btn-trade sell active" id="btn-sell-BTCUSDT">SHORT</a>
+                    </div>
+                </div><div class="card whale-mode" id="card-ETHUSDT">
+                    <div class="sniper-tag" id="tag-ETHUSDT" style="background: rgb(30, 35, 41); color: var(--text-primary);">POSISI AKTIF 🔒</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/eth@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">ETH/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-ETHUSDT">12,806</span> | Flow: <span id="delta-ETHUSDT" style="font-weight: bold; color: var(--binance-red);">- SELLER DOMINANCE</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-down" id="price-ETHUSDT" data-p="2328.89">2328.89</div>
+                            <div class="price-change" id="chg-ETHUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-ETHUSDT-1m" class="m-dot" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-ETHUSDT-15m" class="m-dot bear" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-ETHUSDT-1H" class="m-dot" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-ETHUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-ETHUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-ETHUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-ETHUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-ETHUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-ETHUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.891px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.891px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.891px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.891px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.891px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px; cursor: default;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-ETHUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-ETHUSDT" class="visual-msg" style="color: var(--text-secondary);">MEMANTAU PERGERAKAN HARGA...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-ETHUSDT">
+                    <div class="pos-active-state show" style="flex-direction:column; align-items:stretch;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #2b3139; padding-bottom:8px;">
+                            <span style="font-size:11px; color:var(--text-secondary); font-weight:bold;">
+                                <span style="color:var(--binance-green)">LONG</span> • 
+                                <span style="color:var(--text-primary);">CROSS 20x</span>
+                            </span>
+                            <button class="btn-pos clear" style="padding:0 8px; height: 24px; font-size:10px; flex:none;" onclick="clearPos(&#39;ETHUSDT&#39;)">TUTUP</button>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <div style="display:flex; flex-direction:column;">
+                                <span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">Entry Price</span>
+                                <span style="color:var(--text-primary); font-family:&#39;JetBrains Mono&#39;, monospace; font-weight:bold; font-size:14px;">2347.66</span>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                <span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">ROE (PNL%)</span>
+                                <span class="pnl-val loss">-15.99%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-ETHUSDT">2305.60</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-ETHUSDT">2352.18</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-ETHUSDT">Posisi BUY floating minus <span class="ai-highlight-red">-15.99%</span>. Harga berada dalam batas toleransi. <b>Tahan (Hold)</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;ETHUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/ETHUSDT" target="_blank" class="btn-trade buy " id="btn-buy-ETHUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/ETHUSDT" target="_blank" class="btn-trade sell " id="btn-sell-ETHUSDT">SHORT</a>
+                    </div>
+                </div><div class="card" id="card-SOLUSDT">
+                    <div class="sniper-tag" id="tag-SOLUSDT" style="background: rgb(43, 49, 57); color: var(--text-secondary);">MENUNGGU KONFIRMASI</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/sol@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">SOL/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-SOLUSDT">107,767</span> | Flow: <span id="delta-SOLUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-down" id="price-SOLUSDT" data-p="93.63">93.6300</div>
+                            <div class="price-change" id="chg-SOLUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-SOLUSDT-1m" class="m-dot" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-SOLUSDT-15m" class="m-dot bull" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-SOLUSDT-1H" class="m-dot bull" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-SOLUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-SOLUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-SOLUSDT-1D" class="m-dot bull" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-SOLUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-SOLUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-SOLUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.875px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.875px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.875px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px; cursor: default;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-SOLUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-SOLUSDT" class="visual-msg" style="color: var(--text-secondary);">ANALISIS CG LIQUIDATION MAP...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-SOLUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-SOLUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-SOLUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-SOLUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;SOLUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-SOLUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;SOLUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;SOLUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-SOLUSDT">92.9040</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-SOLUSDT">94.5663</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-SOLUSDT"><b>STATUS: KONSOLIDASI (WAIT &amp; SEE) <span class="conf-badge conf-low">Volatilitas: 32%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di 92.9040</b> atau <b>Limit SHORT di 94.5663</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;SOLUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/SOLUSDT" target="_blank" class="btn-trade buy " id="btn-buy-SOLUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/SOLUSDT" target="_blank" class="btn-trade sell " id="btn-sell-SOLUSDT">SHORT</a>
+                    </div>
+                </div><div class="card" id="card-BNBUSDT">
+                    <div class="sniper-tag" id="tag-BNBUSDT" style="background: rgb(43, 49, 57); color: var(--text-secondary);">MENUNGGU KONFIRMASI</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/bnb@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">BNB/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-BNBUSDT">4,527</span> | Flow: <span id="delta-BNBUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-up" id="price-BNBUSDT" data-p="650.89">650.89</div>
+                            <div class="price-change" id="chg-BNBUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-BNBUSDT-1m" class="m-dot" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-BNBUSDT-15m" class="m-dot bull" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-BNBUSDT-1H" class="m-dot" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-BNBUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-BNBUSDT-6H" class="m-dot bull" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-BNBUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-BNBUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-BNBUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-BNBUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.891px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.891px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 336.891px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="336" height="258" style="width: 336.891px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="336" height="258" style="width: 336.891px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 58px; left: 0px; position: relative; min-width: 58px; cursor: default;"><canvas width="58" height="258" style="width: 58px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="58" height="258" style="width: 58px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-BNBUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-BNBUSDT" class="visual-msg" style="color: var(--text-secondary);">ANALISIS CG LIQUIDATION MAP...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-BNBUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-BNBUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-BNBUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-BNBUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;BNBUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-BNBUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;BNBUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;BNBUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-BNBUSDT">644.37</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-BNBUSDT">657.39</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-BNBUSDT"><b>STATUS: KONSOLIDASI (WAIT &amp; SEE) <span class="conf-badge conf-low">Volatilitas: 30%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di 644.37</b> atau <b>Limit SHORT di 657.39</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;BNBUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/BNBUSDT" target="_blank" class="btn-trade buy " id="btn-buy-BNBUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/BNBUSDT" target="_blank" class="btn-trade sell " id="btn-sell-BNBUSDT">SHORT</a>
+                    </div>
+                </div><div class="card sniper-mode" id="card-XRPUSDT">
+                    <div class="sniper-tag" id="tag-XRPUSDT" style="background: var(--binance-green); color: rgb(255, 255, 255);">BUY EXECUTION</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/xrp@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">XRP/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-XRPUSDT">3,540,192</span> | Flow: <span id="delta-XRPUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-up" id="price-XRPUSDT" data-p="1.4318">1.4318</div>
+                            <div class="price-change" id="chg-XRPUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-XRPUSDT-1m" class="m-dot" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-XRPUSDT-15m" class="m-dot bull" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-XRPUSDT-1H" class="m-dot bull" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-XRPUSDT-4H" class="m-dot bull active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-XRPUSDT-6H" class="m-dot bull" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-XRPUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-XRPUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-XRPUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-XRPUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.875px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.875px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 336.875px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="336" height="258" style="width: 336.875px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="336" height="258" style="width: 336.875px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 58px; left: 0px; position: relative; min-width: 58px; cursor: default;"><canvas width="58" height="258" style="width: 58px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="58" height="258" style="width: 58px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-XRPUSDT" class="visual-arrow buy">▲</div>
+                        <div id="msg-XRPUSDT" class="visual-msg" style="color: var(--text-primary);">AKUMULASI TERDETEKSI</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-XRPUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-XRPUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-XRPUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-XRPUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;XRPUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-XRPUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;XRPUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;XRPUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-XRPUSDT">1.4282</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-XRPUSDT">1.4461</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-XRPUSDT"><b>SIGNAL BUY TERKONFIRMASI <span class="conf-badge conf-high">Win Prob: 75%</span></b> <br>Harga menguji area <i>Long Liq Cluster</i>. Eksekusi <b>LONG</b> di 1.4318.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;XRPUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/XRPUSDT" target="_blank" class="btn-trade buy active" id="btn-buy-XRPUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/XRPUSDT" target="_blank" class="btn-trade sell " id="btn-sell-XRPUSDT">SHORT</a>
+                    </div>
+                </div><div class="card" id="card-DOGEUSDT">
+                    <div class="sniper-tag" id="tag-DOGEUSDT" style="background: rgb(43, 49, 57); color: var(--text-secondary);">MENUNGGU KONFIRMASI</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/doge@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">DOGE/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-DOGEUSDT">27,362,259</span> | Flow: <span id="delta-DOGEUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-down" id="price-DOGEUSDT" data-p="0.10817">0.10817</div>
+                            <div class="price-change" id="chg-DOGEUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-DOGEUSDT-1m" class="m-dot bear" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-DOGEUSDT-15m" class="m-dot" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-DOGEUSDT-1H" class="m-dot" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-DOGEUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-DOGEUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-DOGEUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-DOGEUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-DOGEUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-DOGEUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.875px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.875px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.875px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-DOGEUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-DOGEUSDT" class="visual-msg" style="color: var(--text-secondary);">ANALISIS CG LIQUIDATION MAP...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-DOGEUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-DOGEUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-DOGEUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-DOGEUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;DOGEUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-DOGEUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;DOGEUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;DOGEUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-DOGEUSDT">0.10709</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-DOGEUSDT">0.10925</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-DOGEUSDT"><b>STATUS: KONSOLIDASI (WAIT &amp; SEE) <span class="conf-badge conf-low">Volatilitas: 30%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di 0.10709</b> atau <b>Limit SHORT di 0.10925</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;DOGEUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/DOGEUSDT" target="_blank" class="btn-trade buy " id="btn-buy-DOGEUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/DOGEUSDT" target="_blank" class="btn-trade sell " id="btn-sell-DOGEUSDT">SHORT</a>
+                    </div>
+                </div><div class="card" id="card-ADAUSDT">
+                    <div class="sniper-tag" id="tag-ADAUSDT" style="background: rgb(43, 49, 57); color: var(--text-secondary);">MENUNGGU KONFIRMASI</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/ada@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">ADA/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-ADAUSDT">3,455,941</span> | Flow: <span id="delta-ADAUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-up" id="price-ADAUSDT" data-p="0.2733">0.27330</div>
+                            <div class="price-change" id="chg-ADAUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-ADAUSDT-1m" class="m-dot bear" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-ADAUSDT-15m" class="m-dot bull" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-ADAUSDT-1H" class="m-dot" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-ADAUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-ADAUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-ADAUSDT-1D" class="m-dot bull" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-ADAUSDT-1W" class="m-dot bear" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-ADAUSDT-1M" class="m-dot bear" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-ADAUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.891px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.891px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.891px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.891px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.891px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-ADAUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-ADAUSDT" class="visual-msg" style="color: var(--text-secondary);">ANALISIS CG LIQUIDATION MAP...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-ADAUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-ADAUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-ADAUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-ADAUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;ADAUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-ADAUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;ADAUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;ADAUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-ADAUSDT">0.27322</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-ADAUSDT">0.27603</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-ADAUSDT"><b>STATUS: KONSOLIDASI (WAIT &amp; SEE) <span class="conf-badge conf-med">Volatilitas: 48%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di 0.27322</b> atau <b>Limit SHORT di 0.27603</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;ADAUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/ADAUSDT" target="_blank" class="btn-trade buy " id="btn-buy-ADAUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/ADAUSDT" target="_blank" class="btn-trade sell " id="btn-sell-ADAUSDT">SHORT</a>
+                    </div>
+                </div><div class="card sniper-mode" id="card-XAUTUSDT">
+                    <div class="sniper-tag" id="tag-XAUTUSDT" style="background: var(--binance-red); color: rgb(255, 255, 255);">SELL EXECUTION</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/5186.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="color:var(--gold)">XAUT/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-XAUTUSDT">50</span> | Flow: <span id="delta-XAUTUSDT" style="font-weight: bold; color: var(--binance-red);">- SELLER DOMINANCE</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-up" id="price-XAUTUSDT" data-p="4717.76">4717.76</div>
+                            <div class="price-change" id="chg-XAUTUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-XAUTUSDT-1m" class="m-dot bull" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-XAUTUSDT-15m" class="m-dot" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-XAUTUSDT-1H" class="m-dot bear" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-XAUTUSDT-4H" class="m-dot bear active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-XAUTUSDT-6H" class="m-dot bear" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-XAUTUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-XAUTUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-XAUTUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-XAUTUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.875px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.875px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.875px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-XAUTUSDT" class="visual-arrow sell">▼</div>
+                        <div id="msg-XAUTUSDT" class="visual-msg" style="color: var(--text-primary);">DISTRIBUSI TERDETEKSI</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-XAUTUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-XAUTUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-XAUTUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-XAUTUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;XAUTUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-XAUTUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;XAUTUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;XAUTUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-XAUTUSDT">4655.67</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-XAUTUSDT">4764.94</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-XAUTUSDT"><b>SIGNAL SELL TERKONFIRMASI <span class="conf-badge conf-high">Win Prob: 70%</span></b> <br>Penolakan di area <i>Short Liq Cluster</i>. Eksekusi <b>SHORT</b> di 4717.76.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;XAUTUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/XAUTUSDT" target="_blank" class="btn-trade buy " id="btn-buy-XAUTUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/XAUTUSDT" target="_blank" class="btn-trade sell active" id="btn-sell-XAUTUSDT">SHORT</a>
+                    </div>
+                </div><div class="card sniper-mode" id="card-PAXGUSDT">
+                    <div class="sniper-tag" id="tag-PAXGUSDT" style="background: var(--binance-red); color: rgb(255, 255, 255);">SELL EXECUTION</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/paxg@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="color:var(--gold)">PAXG/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-PAXGUSDT">96</span> | Flow: <span id="delta-PAXGUSDT" style="font-weight: bold; color: var(--binance-red);">- SELLER DOMINANCE</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-down" id="price-PAXGUSDT" data-p="4721.01">4721.01</div>
+                            <div class="price-change" id="chg-PAXGUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-PAXGUSDT-1m" class="m-dot" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-PAXGUSDT-15m" class="m-dot" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-PAXGUSDT-1H" class="m-dot bull" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-PAXGUSDT-4H" class="m-dot bear active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-PAXGUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-PAXGUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-PAXGUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-PAXGUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-PAXGUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.891px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.891px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.891px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.891px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.891px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px; cursor: default;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-PAXGUSDT" class="visual-arrow sell">▼</div>
+                        <div id="msg-PAXGUSDT" class="visual-msg" style="color: var(--text-primary);">DISTRIBUSI TERDETEKSI</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-PAXGUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-PAXGUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-PAXGUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-PAXGUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;PAXGUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-PAXGUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;PAXGUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;PAXGUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-PAXGUSDT">4660.88</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-PAXGUSDT">4768.22</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-PAXGUSDT"><b>SIGNAL SELL TERKONFIRMASI <span class="conf-badge conf-high">Win Prob: 80%</span></b> <br>Penolakan di area <i>Short Liq Cluster</i>. Eksekusi <b>SHORT</b> di 4721.01.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;PAXGUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/PAXGUSDT" target="_blank" class="btn-trade buy " id="btn-buy-PAXGUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/PAXGUSDT" target="_blank" class="btn-trade sell active" id="btn-sell-PAXGUSDT">SHORT</a>
+                    </div>
+                </div><div class="card" id="card-ARKMUSDT">
+                    <div class="sniper-tag" id="tag-ARKMUSDT" style="background: rgb(43, 49, 57); color: var(--text-secondary);">MENUNGGU KONFIRMASI</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">ARKM/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-ARKMUSDT">419,844</span> | Flow: <span id="delta-ARKMUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-down" id="price-ARKMUSDT" data-p="0.1403">0.14030</div>
+                            <div class="price-change" id="chg-ARKMUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-ARKMUSDT-1m" class="m-dot" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-ARKMUSDT-15m" class="m-dot" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-ARKMUSDT-1H" class="m-dot" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-ARKMUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-ARKMUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-ARKMUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-ARKMUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-ARKMUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-ARKMUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.875px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.875px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.875px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-ARKMUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-ARKMUSDT" class="visual-msg" style="color: var(--text-secondary);">ANALISIS CG LIQUIDATION MAP...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-ARKMUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-ARKMUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-ARKMUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-ARKMUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;ARKMUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-ARKMUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;ARKMUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;ARKMUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-ARKMUSDT">0.13890</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-ARKMUSDT">0.14170</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-ARKMUSDT"><b>STATUS: KONSOLIDASI (WAIT &amp; SEE) <span class="conf-badge conf-low">Volatilitas: 30%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di 0.13890</b> atau <b>Limit SHORT di 0.14170</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;ARKMUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/ARKMUSDT" target="_blank" class="btn-trade buy " id="btn-buy-ARKMUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/ARKMUSDT" target="_blank" class="btn-trade sell " id="btn-sell-ARKMUSDT">SHORT</a>
+                    </div>
+                </div><div class="card" id="card-LINKUSDT">
+                    <div class="sniper-tag" id="tag-LINKUSDT" style="background: rgb(43, 49, 57); color: var(--text-secondary);">MENUNGGU KONFIRMASI</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/link@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">LINK/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-LINKUSDT">123,645</span> | Flow: <span id="delta-LINKUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-down" id="price-LINKUSDT" data-p="10.55">10.5500</div>
+                            <div class="price-change" id="chg-LINKUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-LINKUSDT-1m" class="m-dot" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-LINKUSDT-15m" class="m-dot bull" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-LINKUSDT-1H" class="m-dot bull" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-LINKUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-LINKUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-LINKUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-LINKUSDT-1W" class="m-dot bull" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-LINKUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-LINKUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.875px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.875px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.875px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-LINKUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-LINKUSDT" class="visual-msg" style="color: var(--text-secondary);">ANALISIS CG LIQUIDATION MAP...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-LINKUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-LINKUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-LINKUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-LINKUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;LINKUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-LINKUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;LINKUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;LINKUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-LINKUSDT">10.3978</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-LINKUSDT">10.6555</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-LINKUSDT"><b>STATUS: KONSOLIDASI (WAIT &amp; SEE) <span class="conf-badge conf-low">Volatilitas: 33%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di 10.3978</b> atau <b>Limit SHORT di 10.6555</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;LINKUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/LINKUSDT" target="_blank" class="btn-trade buy " id="btn-buy-LINKUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/LINKUSDT" target="_blank" class="btn-trade sell " id="btn-sell-LINKUSDT">SHORT</a>
+                    </div>
+                </div><div class="card" id="card-ONDOUSDT">
+                    <div class="sniper-tag" id="tag-ONDOUSDT" style="background: rgb(43, 49, 57); color: var(--text-secondary);">MENUNGGU KONFIRMASI</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/ondo@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">ONDO/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-ONDOUSDT">2,789,196</span> | Flow: <span id="delta-ONDOUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-up" id="price-ONDOUSDT" data-p="0.413">0.41300</div>
+                            <div class="price-change" id="chg-ONDOUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-ONDOUSDT-1m" class="m-dot" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-ONDOUSDT-15m" class="m-dot" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-ONDOUSDT-1H" class="m-dot" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-ONDOUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-ONDOUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-ONDOUSDT-1D" class="m-dot" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-ONDOUSDT-1W" class="m-dot" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-ONDOUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-ONDOUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.891px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.891px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.891px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.891px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.891px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px; cursor: default;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-ONDOUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-ONDOUSDT" class="visual-msg" style="color: var(--text-secondary);">ANALISIS CG LIQUIDATION MAP...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-ONDOUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-ONDOUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-ONDOUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-ONDOUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;ONDOUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-ONDOUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;ONDOUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;ONDOUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-ONDOUSDT">0.40887</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-ONDOUSDT">0.41713</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-ONDOUSDT"><b>STATUS: KONSOLIDASI (WAIT &amp; SEE) <span class="conf-badge conf-low">Volatilitas: 30%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di 0.40887</b> atau <b>Limit SHORT di 0.41713</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;ONDOUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/ONDOUSDT" target="_blank" class="btn-trade buy " id="btn-buy-ONDOUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/ONDOUSDT" target="_blank" class="btn-trade sell " id="btn-sell-ONDOUSDT">SHORT</a>
+                    </div>
+                </div><div class="card" id="card-SUIUSDT">
+                    <div class="sniper-tag" id="tag-SUIUSDT" style="background: rgb(43, 49, 57); color: var(--text-secondary);">MENUNGGU KONFIRMASI</div>
+                    <div class="card-header">
+                        <div class="coin-meta">
+                            <img src="./ZAVANA - Ockhand Tage_files/sui@2x.png" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
+                            <div>
+                                <div class="coin-title" style="">SUI/USDT</div>
+                                <div class="coin-vol">Vol: <span id="vol-SUIUSDT">5,868,532</span> | Flow: <span id="delta-SUIUSDT" style="font-weight: bold; color: var(--binance-green);">+ BUYER INFLOW</span></div>
+                            </div>
+                        </div>
+                        <div class="price-meta">
+                            <div class="price-main c-down" id="price-SUIUSDT" data-p="1.1276">1.1276</div>
+                            <div class="price-change" id="chg-SUIUSDT">--%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-strip">
+                        <div id="mtx-SUIUSDT-1m" class="m-dot bear" title="Switch to 1m" onclick="quickSwitchTF(&#39;1m&#39;)"></div><div id="mtx-SUIUSDT-15m" class="m-dot" title="Switch to 15m" onclick="quickSwitchTF(&#39;15m&#39;)"></div><div id="mtx-SUIUSDT-1H" class="m-dot" title="Switch to 1H" onclick="quickSwitchTF(&#39;1H&#39;)"></div><div id="mtx-SUIUSDT-4H" class="m-dot active" title="Switch to 4H" onclick="quickSwitchTF(&#39;4H&#39;)"></div><div id="mtx-SUIUSDT-6H" class="m-dot" title="Switch to 6H" onclick="quickSwitchTF(&#39;6H&#39;)"></div><div id="mtx-SUIUSDT-1D" class="m-dot bull" title="Switch to 1D" onclick="quickSwitchTF(&#39;1D&#39;)"></div><div id="mtx-SUIUSDT-1W" class="m-dot bull" title="Switch to 1W" onclick="quickSwitchTF(&#39;1W&#39;)"></div><div id="mtx-SUIUSDT-1M" class="m-dot" title="Switch to 1M" onclick="quickSwitchTF(&#39;1M&#39;)"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div id="chart-SUIUSDT" style="width:100%; height:100%"><div class="tv-lightweight-charts" style="overflow: hidden; width: 394.875px; height: 258.875px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 258.875px; width: 394.875px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 330.875px; height: 258.875px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="330" height="258" style="width: 330.875px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="height: 258.875px; overflow: hidden; width: 64px; left: 0px; position: relative; min-width: 64px; cursor: default;"><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="64" height="258" style="width: 64px; height: 258.875px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr style="display: none;"><td style="padding: 0px;"></td><td style="height: 25px; padding: 0px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="16" height="16" style="width: 16px; height: 16px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 25px; height: 100%; overflow: hidden;"><canvas width="16" height="16" style="width: 16px; height: 16px;"></canvas></div></td></tr></table></div></div>
+                        <div id="visual-SUIUSDT" class="visual-arrow">➤</div>
+                        <div id="msg-SUIUSDT" class="visual-msg" style="color: var(--text-secondary);">ANALISIS CG LIQUIDATION MAP...</div>
+                    </div>
+
+                    <div class="pos-tracker-box">
+                        <div class="pos-title"><span style="font-size:14px; margin-top:-2px;">🎯</span> BINANCE FUTURES MARGIN TRACKER</div>
+                        <div id="pos-tracker-content-SUIUSDT">
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-margin-SUIUSDT" class="tracker-input">
+                                <option value="Cross">Cross</option>
+                                <option value="Isolated">Isolated</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-lev-SUIUSDT" class="tracker-input with-suffix" value="20" min="1" max="125">
+                            <span class="tracker-suffix">x</span>
+                        </div>
+                    </div>
+                    <div class="tracker-row">
+                        <div class="tracker-col-left">
+                            <select id="pos-type-SUIUSDT" class="tracker-input" onchange="toggleOrderInput(&#39;SUIUSDT&#39;)">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                            </select>
+                        </div>
+                        <div class="tracker-col-right">
+                            <input type="number" id="pos-entry-input-SUIUSDT" class="tracker-input" placeholder="Otomatis Market" disabled="">
+                        </div>
+                    </div>
+                    <div class="tracker-row" style="margin-bottom: 0;">
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;SUIUSDT&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;SUIUSDT&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="sl-SUIUSDT">1.1165</span>
+                        </div>
+                        <div class="data-item" style="text-align:right;">
+                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-val" id="tp-SUIUSDT">1.1391</span>
+                        </div>
+                    </div>
+                    
+                    <div class="market-note-box">
+                        <span class="market-note-icon">🤖</span>
+                        <span id="note-SUIUSDT"><b>STATUS: KONSOLIDASI (WAIT &amp; SEE) <span class="conf-badge conf-low">Volatilitas: 30%</span></b><br>Harga terjebak di antara zona likuiditas, hindari eksekusi *market*.<br><br>🎯 <b>Rekomendasi:</b> Pasang <b>Limit LONG di 1.1165</b> atau <b>Limit SHORT di 1.1391</b>.</span>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-trade ai-btn" onclick="askAIAboutCoin(&#39;SUIUSDT&#39;)" title="Analisis Spesifik Koin">✨ AI</button>
+                        <a href="https://www.binance.com/en/futures/SUIUSDT" target="_blank" class="btn-trade buy " id="btn-buy-SUIUSDT">LONG</a>
+                        <a href="https://www.binance.com/en/futures/SUIUSDT" target="_blank" class="btn-trade sell " id="btn-sell-SUIUSDT">SHORT</a>
+                    </div>
+                </div></div>
 
             <div class="dashboard-header-bar">
-                <h3>📊 Market Overview & Tracker</h3>
+                <h3>📊 Market Overview &amp; Tracker</h3>
                 <button onclick="generateMarketBriefing()" class="action-btn" style="background: var(--quantum-cyan); color: #000; border: none; padding: 8px 16px;">✨ Generate Market Briefing</button>
             </div>
 
@@ -531,15 +1623,69 @@
             <div class="ai-report-box" id="dynamicMarketAnalysis">
                 <div class="ai-col">
                     <h4>📰 TECHNICAL STATE &amp; ATR</h4>
-                    <div id="dyn-news-state">Memuat...</div>
+                    <div id="dyn-news-state">
+                <div class="ai-item" style="flex: 1;">Tren Makro (EMA 50/200): <b style="color: var(--binance-green)">BULLISH (Uptrend)</b></div>
+                <div class="ai-item" style="flex: 1;">Volatilitas Harian (ATR): <b>429.67 USDT</b> per candle. Pasar Stabil.</div>
+                <div class="ai-item ai-divider" style="margin-bottom: 0;">Sistem Tracker: <b>Memantau 1 Posisi Terbuka.</b></div>
+            </div>
                 </div>
                 <div class="ai-col">
                     <h4>📊 COINGLASS LIQUIDATION MAP</h4>
-                    <div id="dyn-btc-short">Memuat...</div>
+                    <div id="dyn-btc-short">
+                <div class="proyeksi-row">
+                    <span class="proyeksi-label" style="color:var(--coinglass-orange); font-weight:bold;">Short Liquidation Cluster (Squeeze)</span>
+                    <div class="proyeksi-val">
+                        <span class="proyeksi-price up">81757.73</span>
+                        <span class="proyeksi-date">Potensi Kenaikan Cepat</span>
+                    </div>
+                </div>
+                <div class="proyeksi-row">
+                    <span class="proyeksi-label" style="color:var(--coinglass-orange); font-weight:bold;">Long Liquidation Cluster (Squeeze)</span>
+                    <div class="proyeksi-val">
+                        <span class="proyeksi-price down">80138.77</span>
+                        <span class="proyeksi-date">Potensi Penurunan Cepat</span>
+                    </div>
+                </div>
+                <div class="ai-divider" style="margin: 5px 0;"></div>
+                <div class="proyeksi-row">
+                    <span class="proyeksi-label">Batas Volatilitas Atas (ATR Breakout)</span>
+                    <div class="proyeksi-val">
+                        <span class="proyeksi-price up">82022.44</span>
+                        <span class="proyeksi-date">Area Rawan Koreksi (Overbought)</span>
+                    </div>
+                </div>
+                <div class="proyeksi-row">
+                    <span class="proyeksi-label">Batas Volatilitas Bawah (ATR Support)</span>
+                    <div class="proyeksi-val">
+                        <span class="proyeksi-price down">79874.06</span>
+                        <span class="proyeksi-date">Area Pantulan (Oversold)</span>
+                    </div>
+                </div>
+            </div>
                 </div>
                 <div class="ai-col">
                     <h4>🎯 TARGET MAKRO &amp; FIBONACCI</h4>
-                    <div id="dyn-btc-long">Memuat...</div>
+                    <div id="dyn-btc-long">
+                <div class="proyeksi-row">
+                    <span class="proyeksi-label">Target Ekstensi (Fibonacci 1.618)</span>
+                    <div class="proyeksi-val">
+                        <span class="proyeksi-price up">130974.27</span>
+                        <span class="proyeksi-date">Level Puncak Makrocycle</span>
+                    </div>
+                </div>
+                <div class="proyeksi-row">
+                    <span class="proyeksi-label">Golden Ratio Support (Fib 0.618)</span>
+                    <div class="proyeksi-val">
+                        <span class="proyeksi-price down">50026.02</span>
+                        <span class="proyeksi-date">Zona Akumulasi Siklus</span>
+                    </div>
+                </div>
+                <div class="ai-divider">
+                    <div class="ai-item" style="margin-bottom: 0; color:var(--accent);">
+                        <b>STRATEGI OBJEKTIF:</b> Pantau area <b>CoinGlass Liquidation Nodes</b> di 80138.77 dan 81757.73. Biasanya harga akan bergerak menyerang likuiditas terdekat.
+                    </div>
+                </div>
+            </div>
                 </div>
             </div>
         </div>
@@ -574,10 +1720,10 @@
                 <label>Watchlist (USDT Pairs, Comma Separated)</label>
                 <textarea id="coinInput" rows="4"></textarea>
             
-                <label style="margin-top:10px; display:block;">Custom Gemini API Key (Akan diabaikan di lingkungan ini, mengacu pada environment Runtime)</label>
+                <label style="margin-top:10px; display:block;">Gemini API Key — <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--quantum-cyan);">Dapatkan GRATIS di sini</a></label>
                 <input type="text" id="geminiApiKey" placeholder="Paste kunci AIzaSy... milik Anda di sini">
 
-                <button type="button" class="btn-primary" onclick="saveSettings()">Save Configuration</button>
+                <button type="button" class="btn-primary" onclick="saveSettings()" style="opacity: 1;">Save Configuration</button>
             </div>
         </div>
     </main>
@@ -587,7 +1733,7 @@
         <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
     </div>
 
-    <div id="ai-chat-window">
+    <div id="ai-chat-window" class="">
         <div class="chat-header">
             <div class="chat-header-title">
                 <div class="dot"></div> ZAVANA Quantum AI
@@ -599,12 +1745,12 @@
                 <p>Halo! Saya sistem AI Otonom ditenagai <b>Gemini API</b> yang terhubung langsung dengan *live chart* dan estimasi <b>CoinGlass Liquidation Map</b>.</p>
                 <p>Anda sedang berada di timeframe <b><span id="chat-tf-info">4H</span></b>. Gunakan tombol ✨ AI pada koin, atau ketik pertanyaan strategi Anda di sini!</p>
             </div>
-            <div class="typing-indicator" id="typingIndicator">
+            <div class="chat-msg msg-user">Analisis mendalam untuk koin SUIUSDT ✨</div><div class="chat-msg msg-ai"><span style="color:var(--binance-red);">⚠️ Gagal menganalisis SUIUSDT: Gagal terhubung dengan server AI setelah beberapa percobaan.</span></div><div class="chat-msg msg-user">d</div><div class="chat-msg msg-ai">⚠️ <b>Koneksi AI Gagal:</b><br><span style="color:var(--binance-red)">Gagal terhubung dengan server AI setelah beberapa percobaan.</span><br><br>📝 <i>Sistem sedang mengalami gangguan komunikasi dengan API LLM.</i></div><div class="chat-msg msg-user">Analisis mendalam untuk koin BTCUSDT ✨</div><div class="chat-msg msg-ai"><span style="color:var(--binance-red);">⚠️ Gagal menganalisis BTCUSDT: Gagal terhubung dengan server AI setelah beberapa percobaan.</span></div><div class="typing-indicator" id="typingIndicator">
                 <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
             </div>
         </div>
         <div class="chat-footer">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Ketik pertanyaan strategi Anda..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ketik pertanyaan strategi Anda..." onkeypress="if(event.key === &#39;Enter&#39;) sendChatMessage()">
             <button class="chat-send" onclick="sendChatMessage()">
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
@@ -622,15 +1768,15 @@
 
     <!-- NAVBAR BOTTOM MOBILE -->
     <nav class="navbar-bottom">
-        <div class="mobile-nav-item active" onclick="showPage('dashboard', this)">
+        <div class="mobile-nav-item" onclick="showPage(&#39;dashboard&#39;, this)">
             <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg>
             <span>Home</span>
         </div>
-        <div class="mobile-nav-item" onclick="showPage('screener', this)">
+        <div class="mobile-nav-item" onclick="showPage(&#39;screener&#39;, this)">
             <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"></path></svg>
             <span>Matrix</span>
         </div>
-        <div class="mobile-nav-item" onclick="showPage('settings', this)">
+        <div class="mobile-nav-item" onclick="showPage(&#39;settings&#39;, this)">
             <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l2.49-1c-.23-.09-.49 0-.61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>
             <span>Config</span>
         </div>
@@ -1907,8 +3053,8 @@
         // Fungsi pusat pemanggilan Gemini API dengan Exponential Backoff
         async function fetchGeminiWithBackoff(payload) {
             // Environment menyediakan API key pada runtime melalui const ini
-            const apiKey = ""; 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const apiKey = localStorage.getItem('zavana_gemini_key') || ""; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
             const delays = [1000, 2000, 4000, 8000, 16000];
 
             for (let i = 0; i < 5; i++) {
@@ -1933,7 +3079,7 @@
                 }
                 await new Promise(r => setTimeout(r, delays[i]));
             }
-            throw new Error("Gagal terhubung dengan server AI setelah beberapa percobaan.");
+            throw new Error(apiKey ? "Gagal terhubung dengan server AI setelah beberapa percobaan." : "API Key belum diisi. Buka Settings → isi Gemini API Key → Save.");
         }
 
         function generateAIContext(specificCoin = null) {
@@ -2059,6 +3205,33 @@
             body.scrollTop = body.scrollHeight;
         }
 
+
+        // =========================================
+        // SETUP MODAL LOGIC
+        // =========================================
+        (function() {
+            if (localStorage.getItem('zavana_gemini_key')) {
+                var el = document.getElementById('zavana-setup-overlay');
+                if (el) el.classList.add('hidden');
+            }
+        })();
+
+        window.zavanaSetupSave = function() {
+            var key = document.getElementById('zavana-setup-key-input').value.trim();
+            if (!key) { alert('Masukkan API Key terlebih dahulu, atau klik "Lewati".'); return; }
+            localStorage.setItem('zavana_gemini_key', key);
+            document.getElementById('zavana-setup-overlay').classList.add('hidden');
+            // Refresh settings form jika sudah terbuka
+            var settingsInput = document.getElementById('geminiApiKey');
+            if (settingsInput) settingsInput.value = key;
+            if (typeof showToast === 'function') showToast('✅ API Key tersimpan! Fitur AI aktif.');
+        };
+
+        window.zavanaSetupSkip = function() {
+            document.getElementById('zavana-setup-overlay').classList.add('hidden');
+            if (typeof showToast === 'function') showToast('⚠️ AI tidak aktif. Isi API Key di menu Settings kapan saja.');
+        };
+
         const checkLib = setInterval(() => { 
             if (typeof LightweightCharts !== 'undefined') { 
                 clearInterval(checkLib); 
@@ -2066,5 +3239,6 @@
             } 
         }, 200);
     </script>
-</body>
-</html>
+
+
+</body></html>
