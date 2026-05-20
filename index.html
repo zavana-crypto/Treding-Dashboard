@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>ZAVANA - Ockhand Tage Pro (Auto-AI & CoinGlass Liq)</title>
+<!-- saved from url=(0050)https://zavana-crypto.github.io/Treding-Dashboard/ -->
+<html lang="id"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>ZAVANA - Ockhand Tage Pro (Auto-AI &amp; CoinGlass Liq)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="theme-color" content="#0b0e11">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
 
     <!-- [NEUROBRO FIX] Menggunakan CDN Global dengan versi terkunci agar tidak error -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 
@@ -613,11 +613,11 @@
     <div id="zavana-setup-overlay" class="hidden">
         <div class="zavana-setup-box">
             <h2>⚡ ZAVANA Setup</h2>
-            <p>Masukkan <b style="color:#eaecef;">Gemini API Key</b> gratis kamu untuk mengaktifkan fitur AI Analisis & Market Briefing. Klik link di bawah untuk mendapatkannya dalam 1 menit menggunakan akun Google.</p>
+            <p>Masukkan <b style="color:#eaecef;">Gemini API Key</b> gratis kamu untuk mengaktifkan fitur AI Analisis &amp; Market Briefing. Klik link di bawah untuk mendapatkannya dalam 1 menit menggunakan akun Google.</p>
             <label>Gemini API Key</label>
             <input type="text" class="zavana-setup-input" id="zavana-setup-key-input" placeholder="AIzaSy...">
             <a href="https://aistudio.google.com/app/apikey" target="_blank" class="zavana-setup-link">→ Dapatkan API Key GRATIS di aistudio.google.com</a>
-            <button class="zavana-setup-btn" onclick="zavanaSetupSave()">✅ Simpan & Mulai Dashboard</button>
+            <button class="zavana-setup-btn" onclick="zavanaSetupSave()">✅ Simpan &amp; Mulai Dashboard</button>
             <button class="zavana-setup-skip" onclick="zavanaSetupSkip()">Lewati — AI tidak aktif</button>
         </div>
     </div>
@@ -625,14 +625,14 @@
     <!-- OVERLAY LOADING -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div style="font-family:'JetBrains Mono', monospace; color:var(--text-primary); font-size:14px; font-weight:600;">NEUROBRO VERIFIED: INITIALIZING...</div>
+        <div style="font-family:'JetBrains Mono', monospace; color:var(--text-primary); font-size:14px; font-weight:600;">QUANT ENGINE: INITIALIZING...</div>
     </div>
 
     <div id="toast-container"></div>
 
     <!-- NAVBAR TOP -->
     <header class="navbar-top">
-        <div class="brand">ZAVANA<span>Ockhand Tage Pro (Neurobro Verified)</span></div>
+        <div class="brand">ZAVANA<span>Ockhand Tage Pro (Institutional Quant)</span></div>
         <div class="nav-links">
             <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
             <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
@@ -653,10 +653,12 @@
                 <div class="toolbar-group" id="tfToolbar"></div>
             </div>
             
-            <div class="grid" id="grid"></div>
+            <div class="grid" id="grid">
+                <!-- Cards will be injected here dynamically -->
+            </div>
 
             <div class="dashboard-header-bar">
-                <h3>📊 Market Overview & Tracker</h3>
+                <h3>📊 Market Overview &amp; Tracker</h3>
                 <button onclick="generateMarketBriefing()" class="action-btn" style="background: var(--quantum-cyan); color: #000; border: none; padding: 8px 16px;">✨ Generate Market Briefing</button>
             </div>
 
@@ -667,16 +669,22 @@
 
             <div class="ai-report-box" id="dynamicMarketAnalysis">
                 <div class="ai-col">
-                    <h4>📰 TECHNICAL STATE & ATR</h4>
-                    <div id="dyn-news-state">Sistem Sedang Menghitung...</div>
+                    <h4>📰 TECHNICAL STATE &amp; ATR</h4>
+                    <div id="dyn-news-state">
+                        <div class="ai-item">Menunggu sinkronisasi data kuantitatif...</div>
+                    </div>
                 </div>
                 <div class="ai-col">
                     <h4>📊 COINGLASS LIQUIDATION MAP</h4>
-                    <div id="dyn-btc-short">Memindai Kluster Likuiditas...</div>
+                    <div id="dyn-btc-short">
+                         <div class="ai-item">Mengkalkulasi zona likuidasi institusional...</div>
+                    </div>
                 </div>
                 <div class="ai-col">
-                    <h4>🎯 TARGET MAKRO & FIBONACCI</h4>
-                    <div id="dyn-btc-long">Mengkalkulasi Probabilitas...</div>
+                    <h4>🎯 TARGET MAKRO &amp; FIBONACCI</h4>
+                    <div id="dyn-btc-long">
+                         <div class="ai-item">Menganalisa struktur siklus harga...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -684,7 +692,7 @@
         <!-- Screener Page -->
         <div id="page-screener" class="page">
             <h2 style="font-weight:500; margin-bottom:5px; font-size:24px;">Market Matrix Overview</h2>
-            <p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px;">Analisis probabilitas kemenangan (Win Rate) berdasarkan konfluensi EMA, Estimasi CoinGlass Liquidation, RSI (Neurobro Smooth), dan Volume Delta.</p>
+            <p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px;">Analisis probabilitas kemenangan berbasis Volume, Order Block, SMC, ADX, dan Volatilitas.</p>
             <div class="table-wrapper" style="overflow-x:auto;">
                 <table>
                     <thead>
@@ -698,7 +706,9 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="screenerTable"></tbody>
+                    <tbody id="screenerTable">
+                        <!-- Screener data here -->
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -721,20 +731,20 @@
 
     <!-- AI CHAT WIDGET -->
     <div id="ai-fab" onclick="toggleChat()" title="Tanya AI ZAVANA">
-        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
     </div>
 
     <div id="ai-chat-window">
         <div class="chat-header">
             <div class="chat-header-title">
-                <div class="dot"></div> ZAVANA Quantum AI (Neurobro Verified)
+                <div class="dot"></div> ZAVANA Quantum AI (Institutional Verified)
             </div>
             <div class="close-chat" onclick="toggleChat(false)">×</div>
         </div>
         <div class="chat-body" id="chatBody">
             <div class="chat-msg msg-ai">
-                <p>Halo! Saya sistem AI Otonom ditenagai <b>Gemini API</b> yang telah diverifikasi oleh Neurobro AI.</p>
-                <p>Kalkulasi RSI (Wilder's) dan S/R ATR Threshold telah diperbaiki. Gunakan tombol ✨ AI pada koin, atau ketik pertanyaan strategi Anda di sini!</p>
+                <p>Halo! Saya mesin Quant AI yang mengkalkulasi <b>Smart Money Concepts, Volatilitas, & Order Blocks</b> secara real-time.</p>
+                <p>Klik tombol ✨ AI pada koin, atau ketik strategi fundamental yang ingin didiskusikan.</p>
             </div>
             <div class="typing-indicator" id="typingIndicator">
                 <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
@@ -754,7 +764,7 @@
             <div class="health-dot ok" id="healthDot"></div>
             <span id="healthText" style="color: var(--binance-green);">SYNC: WEBSOCKET LIVE (0ms)</span>
         </div>
-        <div>© ZAVANA Ockhand Tage Pro <span>•</span> Neurobro AI Verified Engine.</div>
+        <div>© ZAVANA Ockhand Tage Pro <span>•</span> Institutional Quant Engine.</div>
     </footer>
 
     <!-- NAVBAR BOTTOM MOBILE -->
@@ -801,14 +811,14 @@
         let audioCtx = null;
 
         const TIMEFRAMES = [
-            { label: '1m',  ws: '1m',  limit: 400, agg: 1,     type: 'SCALP' }, 
-            { label: '15m', ws: '15m', limit: 400, agg: 15,    type: 'DAY' },
-            { label: '1H',  ws: '1h',  limit: 400, agg: 60,    type: 'DAY' },
-            { label: '4H',  ws: '4h',  limit: 400, agg: 240,   type: 'SWING' },
-            { label: '6H',  ws: '6h',  limit: 400, agg: 360,   type: 'SWING' },
-            { label: '1D',  ws: '1d',  limit: 400, agg: 1440,  type: 'INVEST' },
-            { label: '1W',  ws: '1w',  limit: 400, agg: 10080, type: 'MACRO' },
-            { label: '1M',  ws: '1M',  limit: 400, agg: 43200, type: 'MACRO' }
+            { label: '1m',  ws: '1m',  limit: 1000, agg: 1,     type: 'SCALP' }, 
+            { label: '15m', ws: '15m', limit: 1000, agg: 15,    type: 'DAY' },
+            { label: '1H',  ws: '1h',  limit: 1000, agg: 60,    type: 'DAY' },
+            { label: '4H',  ws: '4h',  limit: 1000, agg: 240,   type: 'SWING' },
+            { label: '6H',  ws: '6h',  limit: 1000, agg: 360,   type: 'SWING' },
+            { label: '1D',  ws: '1d',  limit: 1000, agg: 1440,  type: 'INVEST' },
+            { label: '1W',  ws: '1w',  limit: 1000, agg: 10080, type: 'MACRO' },
+            { label: '1M',  ws: '1M',  limit: 1000, agg: 43200, type: 'MACRO' }
         ];
 
         let CURRENT_TF = TIMEFRAMES[3]; // Default ke 4H 
@@ -819,6 +829,13 @@
         const marketData = new Map();
         const MTF_MATRIX = new Map(); 
         const analysisResults = new Map(); 
+
+        // MACRO CONTEXT PROXY: Digunakan untuk memfilter fake signal pada Altcoin
+        let MacroEnvironment = {
+            btcTrendDir: 0, // 1 (Bull), -1 (Bear), 0 (Neutral)
+            btcAtrPct: 0,
+            globalRiskStatus: 'NORMAL' // NORMAL, SHOCK, RISK_OFF
+        };
 
         function formatPrecision(price) {
             if (!price) return "0.00";
@@ -1124,7 +1141,7 @@
                     <div class="chart-container">
                         <div id="chart-${s}" style="width:100%; height:100%"></div>
                         <div id="visual-${s}" class="visual-arrow">➤</div>
-                        <div id="msg-${s}" class="visual-msg">KALKULASI CG LIQUIDITY...</div>
+                        <div id="msg-${s}" class="visual-msg">KALKULASI QUANTITATIVE DATA...</div>
                     </div>
 
                     <div class="pos-tracker-box">
@@ -1134,11 +1151,11 @@
                     
                     <div class="data-row">
                         <div class="data-item">
-                            <span class="d-label">CG Est. Longs Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-label">Dynamic Sup / OB <span style="color:#5e6673"></span></span>
                             <span class="d-val" id="sl-${s}">--</span>
                         </div>
                         <div class="data-item" style="text-align:right;">
-                            <span class="d-label">CG Est. Shorts Liq <span style="color:#5e6673">(50x)</span></span>
+                            <span class="d-label">Dynamic Res / OB <span style="color:#5e6673"></span></span>
                             <span class="d-val" id="tp-${s}">--</span>
                         </div>
                     </div>
@@ -1158,7 +1175,7 @@
                     <div class="market-note-box">
                         <div class="log-header">
                             <div class="ping"></div>
-                            NEUROBRO QUANTUM LOG
+                            INSTITUTIONAL QUANT LOG
                         </div>
                         <div id="note-${s}" style="width:100%; margin-top:4px;">
                             <span style="color:var(--text-secondary); font-size:11px;">Sinkronisasi data awal...</span>
@@ -1208,7 +1225,7 @@
                 const ema200Series = chart.addLineSeries({ color: 'rgba(41, 98, 255, 0.8)', lineWidth: 2, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
                 const vwapSeries = chart.addLineSeries({ color: 'rgba(128, 0, 128, 0.6)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
                 
-                // Garis untuk CoinGlass estimation
+                // Garis untuk CoinGlass/OB estimation
                 const cgShortSeries = chart.addLineSeries({ color: '#f5b041', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
                 const cgLongSeries = chart.addLineSeries({ color: '#f5b041', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
                 
@@ -1340,7 +1357,9 @@
             }
         }
 
-        let tickDebounce = {};
+        let tickCounter = 0;
+        const lastCalcTime = new Map(); // Untuk throttling berbasis waktu riil per koin
+
         function handleStream(sym, candle) {
             const arr = marketData.get(sym);
             if (!arr) return;
@@ -1353,7 +1372,9 @@
                 arr[arr.length-1] = candle; 
             } else { 
                 arr.push(candle); 
-                if (arr.length > 600) arr.shift(); 
+                // [OPTIMASI QUANT] Meningkatkan buffer retensi array menjadi 1500 agar 
+                // tidak membuang data historis 1.000 candle yang baru saja diambil.
+                if (arr.length > 1500) arr.shift(); 
                 isNewCandle = true; 
             }
             
@@ -1374,13 +1395,21 @@
                 });
             }
             
-            analyzeQuantum(sym, arr, CURRENT_TF, false, false); 
+            // [OPTIMASI QUANT] Menghindari eksekusi siklus komputasi berat (SMC, OBV, ADX)
+            // pada setiap tick mikro. Kalkulasi hanya dilakukan jika ada pembukaan candle baru, 
+            // atau jika waktu eksekusi terakhir sudah lewat 2000 milidetik (2 detik).
+            const now = Date.now();
+            const lastCalc = lastCalcTime.get(sym) || 0;
 
-            if (userPositions[sym]) renderPosBox(sym);
+            if (isNewCandle || (now - lastCalc) > 2000) {
+                 lastCalcTime.set(sym, now);
+                 analyzeQuantum(sym, arr, CURRENT_TF, false, false); 
+                 if (userPositions[sym]) renderPosBox(sym);
+            }
         }
 
         /* =========================================
-           INDICATOR MATH FUNCTIONS
+           ADVANCED INSTITUTIONAL INDICATOR MATH
            ========================================= */
         function calcATRArray(data, period) {
             let results = new Array(data.length).fill(0); 
@@ -1455,6 +1484,94 @@
                 vwapArr[i] = cumVol === 0 ? typical : cumPV / cumVol;
             }
             return vwapArr;
+        }
+
+        function calcOBV(data) {
+            let obvArr = new Array(data.length).fill(0);
+            let currentObv = 0;
+            for(let i=1; i<data.length; i++) {
+                if(data[i].close > data[i-1].close) currentObv += data[i].volume;
+                else if(data[i].close < data[i-1].close) currentObv -= data[i].volume;
+                obvArr[i] = currentObv;
+            }
+            return obvArr;
+        }
+
+        function calcADX(data, period=14) {
+            let adxArr = new Array(data.length).fill(0);
+            let plusDI = new Array(data.length).fill(0);
+            let minusDI = new Array(data.length).fill(0);
+            
+            if (data.length <= period) return {adx: adxArr, pDI: plusDI, mDI: minusDI};
+
+            let tr = new Array(data.length).fill(0);
+            let plusDM = new Array(data.length).fill(0);
+            let minusDM = new Array(data.length).fill(0);
+
+            for (let i = 1; i < data.length; i++) {
+                const highDiff = data[i].high - data[i-1].high;
+                const lowDiff = data[i-1].low - data[i].low;
+                
+                tr[i] = Math.max(data[i].high - data[i].low, Math.abs(data[i].high - data[i-1].close), Math.abs(data[i].low - data[i-1].close));
+                
+                plusDM[i] = (highDiff > lowDiff && highDiff > 0) ? highDiff : 0;
+                minusDM[i] = (lowDiff > highDiff && lowDiff > 0) ? lowDiff : 0;
+            }
+
+            let smoothTR = 0, smoothPDM = 0, smoothMDM = 0;
+            for(let i=1; i<=period; i++) {
+                smoothTR += tr[i]; smoothPDM += plusDM[i]; smoothMDM += minusDM[i];
+            }
+
+            for(let i=period; i<data.length; i++) {
+                if (i > period) {
+                    smoothTR = smoothTR - (smoothTR/period) + tr[i];
+                    smoothPDM = smoothPDM - (smoothPDM/period) + plusDM[i];
+                    smoothMDM = smoothMDM - (smoothMDM/period) + minusDM[i];
+                }
+                plusDI[i] = smoothTR === 0 ? 0 : 100 * (smoothPDM / smoothTR);
+                minusDI[i] = smoothTR === 0 ? 0 : 100 * (smoothMDM / smoothTR);
+            }
+
+            let dx = new Array(data.length).fill(0);
+            for(let i=period; i<data.length; i++) {
+                let sum = plusDI[i] + minusDI[i];
+                dx[i] = sum === 0 ? 0 : 100 * Math.abs(plusDI[i] - minusDI[i]) / sum;
+            }
+
+            let sumDx = 0;
+            for(let i=period; i<period*2 && i<data.length; i++) sumDx += dx[i];
+            let currentAdx = sumDx / period;
+            
+            for(let i=period*2; i<data.length; i++) {
+                currentAdx = ((currentAdx * (period-1)) + dx[i]) / period;
+                adxArr[i] = currentAdx;
+            }
+            return { adx: adxArr, pDI: plusDI, mDI: minusDI };
+        }
+
+        function calcOrderBlocks(data, lookback = 30) {
+            // Institutional Order Block Detection (SMC)
+            let obBull = null;
+            let obBear = null;
+            const end = data.length - 1;
+            const start = Math.max(1, end - lookback);
+
+            for (let i = start; i < end - 1; i++) {
+                const isDownCandle = data[i].close < data[i].open;
+                const isUpCandle = data[i].close > data[i].open;
+                
+                // Bullish OB: Terakhir turun sebelum engulfing naik besar (Inst. Buying)
+                if (isDownCandle && data[i+1].close > data[i].high && data[i+1].volume > data[i].volume * 1.5) {
+                    obBull = { top: data[i].high, bottom: data[i].low, time: data[i].time };
+                }
+                
+                // Bearish OB: Terakhir naik sebelum engulfing turun besar (Inst. Selling)
+                if (isUpCandle && data[i+1].close < data[i].low && data[i+1].volume > data[i].volume * 1.5) {
+                    obBear = { top: data[i].high, bottom: data[i].low, time: data[i].time };
+                }
+            }
+            return { obBull, obBear };
         }
 
         function calcLuxAlgoLiquiditySwings(data, length = 14) {
@@ -1573,31 +1690,6 @@
             return { structure, swingHighs, swingLows };
         }
 
-        function findKeyLevels(data, i) {
-            const lookback = Math.min(100, i - 3);
-            let resistances = [], supports = [];
-            for (let j = Math.max(3, i - lookback); j < i - 2; j++) {
-                let isPH = true, isPL = true;
-                for (let k = 1; k <= 3; k++) {
-                    if (data[j-k] && data[j+k]) {
-                        if (data[j-k].high >= data[j].high || data[j+k].high >= data[j].high) isPH = false;
-                        if (data[j-k].low  <= data[j].low  || data[j+k].low  <= data[j].low)  isPL = false;
-                    }
-                }
-                if (isPH) resistances.push(data[j].high);
-                if (isPL) supports.push(data[j].low);
-            }
-            const price = data[i].close;
-            const aboveRes = resistances.filter(r => r > price).sort((a,b)=>a-b);
-            const belowSup = supports.filter(s => s < price).sort((a,b)=>b-a);
-            return {
-                nearestRes: aboveRes[0] || null,
-                nearestSup: belowSup[0] || null,
-                allRes: aboveRes.slice(0,5),
-                allSup: belowSup.slice(0,5)
-            };
-        }
-
         function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
             if (data.length < 60) return;
 
@@ -1605,25 +1697,42 @@
             const current = data[i];
             const prev    = i > 0 ? data[i-1] : current;
 
+            // Indicator Calculation
             const ema50Arr  = calcEMA(data, 50);
             const ema200Arr = calcEMA(data, 200);
             const vwapArr   = calcVWAP(data);
             const atrArr    = calcATRArray(data, 14);
             const rsiArr    = calcRSIArray(data, 14);
+            const obvArr    = calcOBV(data);
+            const adxData   = calcADX(data, 14);
             const macdData  = calcMACDArray(data, 12, 26, 9);
             const liqSwings = calcLuxAlgoLiquiditySwings(data, 10);
+            const orderBlk  = calcOrderBlocks(data, 30);
             const mktStr    = detectMarketStructure(data, 60);
-            const keyLvl    = findKeyLevels(data, i);
 
+            // Fetch current values
             const ema50   = ema50Arr[i];
             const ema200  = ema200Arr[i];
             const vwap    = vwapArr[i];
             const atr     = atrArr[i];
             const rsi     = Math.min(100, Math.max(0, rsiArr[i] || 50));
+            const obv     = obvArr[i];
+            const obvPrev = obvArr[i-1];
+            const adx     = adxData.adx[i];
+            const pDI     = adxData.pDI[i];
+            const mDI     = adxData.mDI[i];
             const macdH   = macdData.histogram[i];
             const macdHp  = macdData.histogram[Math.max(0,i-1)];
             const cgNodes = calcLiquidationZones(data, i, atr);
 
+            // Set Global Macro Proxy (Membaca Trend BTC untuk memfilter Altcoin)
+            if (sym === "BTCUSDT") {
+                MacroEnvironment.btcTrendDir = ema50 > ema200 ? 1 : (ema50 < ema200 ? -1 : 0);
+                MacroEnvironment.btcAtrPct = (atr / current.close) * 100;
+                MacroEnvironment.globalRiskStatus = adx > 40 ? 'SHOCK' : 'NORMAL';
+            }
+
+            // Technical Analysis Validations
             const pattern = detectCandlePattern(data, i);
             const isBullPat = ['HAMMER','BULL_ENGULF','BULL_MARUBOZU'].includes(pattern);
             const isBearPat = ['SHOOTING_STAR','BEAR_ENGULF','BEAR_MARUBOZU'].includes(pattern);
@@ -1634,133 +1743,95 @@
             const buyRatio  = current.volume > 0 ? takerBuy / current.volume : 0.5;
 
             const candleSpread = current.high - current.low;
-            const isShock = candleSpread > atr * 3.2; 
+            const isShock = candleSpread > atr * 3.5 || MacroEnvironment.globalRiskStatus === 'SHOCK'; 
 
             const emaBull         = ema50 > ema200;
             const priceAboveEma50  = current.close > ema50;
             const priceAboveEma200 = current.close > ema200;
-            const priceAboveVwap   = current.close > vwap;
-
+            
             const structureBull = mktStr.structure === 'BULLISH';
             const structureBear = mktStr.structure === 'BEARISH';
+            const isTrending    = adx > 25; // Filter Ranging Market
 
-            const strongBullTrend = emaBull && structureBull;
-            const strongBearTrend = !emaBull && structureBear;
-
+            // Liquidity Sweep Logic
             let isBullSweep = false, isBearSweep = false;
             for (let l of liqSwings.activeLows) {
-                if (current.low < l.btm && current.close > l.btm && prev.low >= l.btm) {
-                    isBullSweep = true; 
-                }
+                if (current.low < l.btm && current.close > l.btm && prev.low >= l.btm) { isBullSweep = true; }
             }
             for (let h of liqSwings.activeHighs) {
-                if (current.high > h.top && current.close < h.top && prev.high <= h.top) {
-                    isBearSweep = true; 
-                }
+                if (current.high > h.top && current.close < h.top && prev.high <= h.top) { isBearSweep = true; }
             }
 
-            const nearEma50Bull = emaBull && current.low <= ema50 * 1.008 && current.close >= ema50 * 0.992;
-            const nearEma50Bear = !emaBull && current.high >= ema50 * 0.992 && current.close <= ema50 * 1.008;
-            const nearVwapBull  = priceAboveEma200 && current.low <= vwap * 1.005 && current.close >= vwap * 0.995;
-            const nearVwapBear  = !priceAboveEma200 && current.high >= vwap * 0.995 && current.close <= vwap * 1.005;
-
-            const macdBullCross = macdH > 0 && macdHp <= 0; 
-            const macdBearCross = macdH < 0 && macdHp >= 0; 
-            const macdRising    = macdH > macdHp;            
-            const macdFalling   = macdH < macdHp;            
-
-            const hitSupport    = keyLvl.nearestSup !== null && current.low <= keyLvl.nearestSup + (atr * 0.4) && current.close >= keyLvl.nearestSup - (atr * 0.4);
-            const hitResistance = keyLvl.nearestRes !== null && current.high >= keyLvl.nearestRes - (atr * 0.4) && current.close <= keyLvl.nearestRes + (atr * 0.4);
-
-            const rsiOversold   = rsi < 35;
-            const rsiOverbought = rsi > 65;
-
+            // Institutional Matrix Scoring (Bayesian Approach)
             let buyScore = 0, sellScore = 0;
             let buyFactors = [], sellFactors = [];
 
-            if (emaBull && priceAboveEma200) { buyScore += 18; buyFactors.push('Tren Bullish Makro (EMA50 > EMA200)'); }
-            else if (emaBull)                { buyScore += 10; buyFactors.push('EMA50 > EMA200 (Awal Tren)'); }
-            if (structureBull)               { buyScore += 12; buyFactors.push('Struktur Harga Higher High + Higher Low'); }
-            if (strongBullTrend)             { buyScore += 5;  } 
+            // 1. Trend & Macro Convergence
+            if (emaBull && priceAboveEma200) { buyScore += 15; buyFactors.push('Trend Makro Sejalan (EMA Bullish)'); }
+            if (!emaBull && !priceAboveEma200) { sellScore += 15; sellFactors.push('Trend Makro Bearish (Distribusi)'); }
+            if (structureBull) { buyScore += 10; buyFactors.push('Market Structure: Higher Highs'); }
+            if (structureBear) { sellScore += 10; sellFactors.push('Market Structure: Lower Lows'); }
+            
+            if (sym !== "BTCUSDT") { // Macro Correlation Filter
+                if (MacroEnvironment.btcTrendDir === 1) { buyScore += 10; buyFactors.push('Suntikan Likuiditas Global (BTC Proxy Up)'); }
+                if (MacroEnvironment.btcTrendDir === -1) { sellScore += 10; sellFactors.push('Tarikan Likuiditas Global (BTC Proxy Down)'); }
+            }
 
-            if (isBullSweep) { buyScore += 25; buyFactors.push('Liquidity Sweep Terkonfirmasi (Smart Money Trap)'); }
+            // 2. Momentum & Breakout Quality (Fakeout Protection)
+            if (isTrending) {
+                if (pDI > mDI) { buyScore += 10; buyFactors.push(`Momentum Valid (ADX: ${adx.toFixed(1)} > 25)`); }
+                if (mDI > pDI) { sellScore += 10; sellFactors.push(`Momentum Valid (ADX: ${adx.toFixed(1)} > 25)`); }
+            } else {
+                // Ranging Market: Penalize breakouts, favor mean reversion
+                buyScore -= 5; sellScore -= 5;
+            }
 
-            if (nearEma50Bull) { buyScore += 10; buyFactors.push('Pullback Sehat ke Area EMA50'); }
-            if (nearVwapBull)  { buyScore += 8;  buyFactors.push('Pantulan Akumulasi pada Garis VWAP'); }
-            if (hitSupport)    { buyScore += 8;  buyFactors.push('Harga Tertahan di Zona Support Fraktal'); }
+            // 3. Volume / Smart Money Dynamics (OBV & SMC)
+            if (obv > obvPrev && current.close > prev.close) { buyScore += 15; buyFactors.push('Konfirmasi Smart Money Volume (OBV Naik)'); }
+            if (obv < obvPrev && current.close > prev.close) { buyScore -= 20; sellScore += 10; sellFactors.push('⚠️ Bearish Divergence (Fake Pump)'); } // Fakeout protection
+            
+            if (obv < obvPrev && current.close < prev.close) { sellScore += 15; sellFactors.push('Smart Money Distribusi (OBV Turun)'); }
+            if (obv > obvPrev && current.close < prev.close) { sellScore -= 20; buyScore += 10; buyFactors.push('⚠️ Bullish Divergence (Absorption)'); }
 
-            if (rsiOversold)      { buyScore += 12; buyFactors.push(`RSI Oversold (${Math.round(rsi)}) - Area Diskon`); }
-            else if (rsi < 50)    { buyScore += 6;  buyFactors.push(`RSI Netral-Low (${Math.round(rsi)}) - Potensi Momentum`); }
-            if (rsiOverbought)    { buyScore -= 18; } 
+            if (isBullSweep) { buyScore += 25; buyFactors.push('🚨 Liquidity Sweep Bawah (Stop Loss Hunt)'); }
+            if (isBearSweep) { sellScore += 25; sellFactors.push('🚨 Liquidity Sweep Atas (Bull Trap)'); }
+            
+            if (orderBlk.obBull && current.low <= orderBlk.obBull.top && current.close >= orderBlk.obBull.bottom) {
+                buyScore += 15; buyFactors.push('Pantulan di Zona Bullish Order Block (Institusional)');
+            }
+            if (orderBlk.obBear && current.high >= orderBlk.obBear.bottom && current.close <= orderBlk.obBear.top) {
+                sellScore += 15; sellFactors.push('Penolakan di Zona Bearish Order Block (Institusional)');
+            }
 
-            if (macdBullCross)     { buyScore += 12; buyFactors.push('MACD Golden Cross Terkonfirmasi'); }
-            else if (macdRising && macdH > 0) { buyScore += 6; buyFactors.push('Momentum Histogram MACD Bullish'); }
-            else if (macdFalling && macdH < 0){ buyScore -= 5; }
+            // 4. Overbought/Oversold Oscillators
+            if (rsi < 30) { buyScore += 15; buyFactors.push(`RSI Oversold Ekstrem (${Math.round(rsi)})`); }
+            if (rsi > 70) { sellScore += 15; sellFactors.push(`RSI Overbought Ekstrem (${Math.round(rsi)})`); }
+            if (macdH > 0 && macdH > macdHp) { buyScore += 5; buyFactors.push('MACD Akselerasi Naik'); }
+            if (macdH < 0 && macdH < macdHp) { sellScore += 5; sellFactors.push('MACD Akselerasi Turun'); }
+            
+            if (isBullPat) { buyScore += 10; buyFactors.push(`Price Action: ${pattern}`); }
+            if (isBearPat) { sellScore += 10; sellFactors.push(`Price Action: ${pattern}`); }
 
-            if (buyRatio >= 0.62)  { buyScore += 10; buyFactors.push(`Tekanan Beli Mendominasi: ${(buyRatio*100).toFixed(0)}%`); }
-            else if (buyRatio <= 0.38) { buyScore -= 8; }
-
-            if (isBullPat) { buyScore += 10; buyFactors.push(`Pola Reversal Candlestick: ${pattern}`); }
-            if (isBearPat) { buyScore -= 8; }
-
-            if (isShock)         buyScore -= 25; 
-            if (strongBearTrend) buyScore -= 30; 
-            if (!emaBull && rsi > 55) buyScore -= 12;
-
-            if (!emaBull && !priceAboveEma200) { sellScore += 18; sellFactors.push('Tren Bearish Makro (EMA50 < EMA200)'); }
-            else if (!emaBull)                 { sellScore += 10; sellFactors.push('EMA50 < EMA200 (Awal Tren Turun)'); }
-            if (structureBear)                 { sellScore += 12; sellFactors.push('Struktur Harga Lower High + Lower Low'); }
-            if (strongBearTrend)               { sellScore += 5; }
-
-            if (isBearSweep) { sellScore += 25; sellFactors.push('Liquidity Sweep Terkonfirmasi (Smart Money Trap)'); }
-
-            if (nearEma50Bear)  { sellScore += 10; sellFactors.push('Rally Palsu Tertolak di EMA50'); }
-            if (nearVwapBear)   { sellScore += 8;  sellFactors.push('Rejection Distribusi pada Garis VWAP'); }
-            if (hitResistance)  { sellScore += 8;  sellFactors.push('Harga Tertahan di Zona Resistance Fraktal'); }
-
-            if (rsiOverbought)    { sellScore += 12; sellFactors.push(`RSI Overbought (${Math.round(rsi)}) - Jenuh Beli`); }
-            else if (rsi > 50)    { sellScore += 6;  sellFactors.push(`RSI Netral-High (${Math.round(rsi)}) - Kehilangan Momentum`); }
-            if (rsiOversold)      { sellScore -= 18; }
-
-            if (macdBearCross)     { sellScore += 12; sellFactors.push('MACD Death Cross Terkonfirmasi'); }
-            else if (macdFalling && macdH < 0) { sellScore += 6; sellFactors.push('Momentum Histogram MACD Bearish'); }
-            else if (macdRising && macdH > 0)  { sellScore -= 5; }
-
-            if (buyRatio <= 0.38) { sellScore += 10; sellFactors.push(`Tekanan Jual Mendominasi: ${((1-buyRatio)*100).toFixed(0)}%`); }
-            else if (buyRatio >= 0.62) { sellScore -= 8; }
-
-            if (isBearPat) { sellScore += 10; sellFactors.push(`Pola Reversal Candlestick: ${pattern}`); }
-            if (isBullPat) { sellScore -= 8; }
-
-            if (isShock)         sellScore -= 25;
-            if (strongBullTrend) sellScore -= 30;
-            if (emaBull && rsi < 45) sellScore -= 12;
-
+            // Normalize Scores
             buyScore  = Math.max(0, Math.min(100, buyScore));
             sellScore = Math.max(0, Math.min(100, sellScore));
 
             const tfThresholds = {
-                '1m': 74, '15m': 70, '1H': 65, '4H': 58, '6H': 55, '1D': 50, '1W': 47, '1M': 44
+                '1m': 75, '15m': 72, '1H': 68, '4H': 65, '6H': 62, '1D': 55, '1W': 50, '1M': 45
             };
-            const minScore = tfThresholds[tf.label] || 58;
+            const minScore = tfThresholds[tf.label] || 65;
 
             let signal = 'WAIT';
             let confidence = 0;
             let activeFactors = [];
             let leaningDir = 'NEUTRAL';
 
-            const clearWinner = Math.abs(buyScore - sellScore) >= 10; 
+            const clearWinner = Math.abs(buyScore - sellScore) >= 15; // Must have strong dominance
 
             if (buyScore > sellScore && buyScore >= minScore && clearWinner && !isShock) {
-                signal = 'BUY';
-                confidence = Math.round(buyScore);
-                activeFactors = buyFactors;
-                leaningDir = 'LONG';
+                signal = 'BUY'; confidence = Math.round(buyScore); activeFactors = buyFactors; leaningDir = 'LONG';
             } else if (sellScore > buyScore && sellScore >= minScore && clearWinner && !isShock) {
-                signal = 'SELL';
-                confidence = Math.round(sellScore);
-                activeFactors = sellFactors;
-                leaningDir = 'SHORT';
+                signal = 'SELL'; confidence = Math.round(sellScore); activeFactors = sellFactors; leaningDir = 'SHORT';
             } else {
                 confidence = Math.max(15, Math.min(49, Math.round(Math.max(buyScore, sellScore) * 0.65)));
                 activeFactors = buyScore > sellScore ? buyFactors : sellFactors;
@@ -1770,22 +1841,19 @@
             const currPrice = current.close;
             let stopLoss, target, riskReward;
 
+            // Dynamic Risk Management (Based on Order Blocks & ATR)
             if (signal === 'BUY' || leaningDir === 'LONG Bias') {
-                const recentSwingLow = liqSwings.activeLows.length > 0
-                    ? Math.min(...liqSwings.activeLows.slice(-3).map(l => l.btm))
-                    : currPrice - atr;
-                stopLoss   = Math.min(recentSwingLow - atr*0.2, currPrice - atr);
-                target     = cgNodes.shortLiq > currPrice ? cgNodes.shortLiq : currPrice + atr*2;
+                const slBase = orderBlk.obBull ? orderBlk.obBull.bottom : cgNodes.longLiq;
+                stopLoss   = Math.min(slBase - atr*0.5, currPrice - atr);
+                target     = cgNodes.shortLiq > currPrice ? cgNodes.shortLiq : currPrice + atr*2.5;
                 riskReward = Math.abs(target - currPrice) / Math.abs(currPrice - stopLoss);
-                if (riskReward < 1.5 && signal === 'BUY') confidence = Math.max(15, confidence - 15);
+                if (riskReward < 1.2 && signal === 'BUY') { signal = 'WAIT'; confidence = 49; activeFactors.push("Dibatalkan: Risk/Reward Ratio Buruk (<1.2)"); }
             } else if (signal === 'SELL' || leaningDir === 'SHORT Bias') {
-                const recentSwingHigh = liqSwings.activeHighs.length > 0
-                    ? Math.max(...liqSwings.activeHighs.slice(-3).map(h => h.top))
-                    : currPrice + atr;
-                stopLoss   = Math.max(recentSwingHigh + atr*0.2, currPrice + atr);
-                target     = cgNodes.longLiq < currPrice ? cgNodes.longLiq : currPrice - atr*2;
+                const slBase = orderBlk.obBear ? orderBlk.obBear.top : cgNodes.shortLiq;
+                stopLoss   = Math.max(slBase + atr*0.5, currPrice + atr);
+                target     = cgNodes.longLiq < currPrice ? cgNodes.longLiq : currPrice - atr*2.5;
                 riskReward = Math.abs(currPrice - target) / Math.abs(stopLoss - currPrice);
-                if (riskReward < 1.5 && signal === 'SELL') confidence = Math.max(15, confidence - 15);
+                if (riskReward < 1.2 && signal === 'SELL') { signal = 'WAIT'; confidence = 49; activeFactors.push("Dibatalkan: Risk/Reward Ratio Buruk (<1.2)"); }
             } else {
                 stopLoss   = currPrice - atr;
                 target     = cgNodes.shortLiq;
@@ -1806,86 +1874,58 @@
                     ? `<span style="color:var(--binance-green)">+${pnl.toFixed(2)}%</span>`
                     : `<span style="color:var(--binance-red)">${pnl.toFixed(2)}%</span>`;
 
-                // [NEUROBRO ANTI-DILEMMA ENGINE]
-                let adviceTitle = "";
-                let adviceDesc = "";
-                let actionColor = "";
-
-                // Kondisi Trigger Likuiditas
                 const hitTpBuy = type === 'BUY' && currPrice >= cgNodes.shortLiq * 0.998;
                 const hitTpSell = type === 'SELL' && currPrice <= cgNodes.longLiq * 1.002;
-                const riskBreached = (type === 'BUY' && currPrice < cgNodes.longLiq - atr*0.3) || 
-                                     (type === 'SELL' && currPrice > cgNodes.shortLiq + atr*0.3);
+                const riskBreached = (type === 'BUY' && currPrice < stopLoss) || 
+                                     (type === 'SELL' && currPrice > stopLoss);
 
                 if (type === 'BUY') {
-                    if (signal === 'SELL' && confidence >= 60) {
-                        // Sinyal berbalik tajam melawan posisi
-                        exitAdvice = 'EMERGENCY CLOSE';
-                        actionColor = 'var(--binance-red)';
-                        adviceTitle = "🚨 REVERSAL FATAL TERDETEKSI";
-                        adviceDesc = "Algoritma mendeteksi pembalikan tren berlawanan secara kuat (Sinyal berubah menjadi SHORT). <b>Segera TUTUP posisi LONG Anda</b> sekarang untuk menghindari kerugian/likuidasi lebih besar.";
-                    } else if (riskBreached || pnl < -10 * lev) {
-                        exitAdvice = 'CUT LOSS';
-                        actionColor = 'var(--danger)';
-                        adviceTitle = "🛡️ PROTEKSI BATAS RISIKO";
-                        adviceDesc = "Harga telah menembus level dukungan krusial (Support jebol). Modul menyarankan untuk memotong kerugian (Cut Loss) sekarang secara disiplin.";
+                    if (signal === 'SELL' && confidence >= 65) {
+                        exitAdvice = 'EMERGENCY CLOSE'; actionColor = 'var(--binance-red)';
+                        adviceTitle = "🚨 REVERSAL STRUKTURAL TERDETEKSI";
+                        adviceDesc = "Volume jual institusional (OBV) mendominasi. Sinyal sistem beralih ke SHORT. <b>TUTUP LONG Anda sekarang.</b>";
+                    } else if (riskBreached || pnl < -15 * lev) {
+                        exitAdvice = 'CUT LOSS'; actionColor = 'var(--danger)';
+                        adviceTitle = "🛡️ PROTEKSI BATAS RISIKO (SL HIT)";
+                        adviceDesc = "Harga menembus batas bawah Order Block. Potong kerugian secara disiplin.";
                     } else if (hitTpBuy) {
-                        if (buyScore >= 75 && !rsiOverbought) {
-                            // Target kena, tapi tren masih sangat kuat
-                            exitAdvice = 'HOLD (TREND EXTENSION)';
-                            actionColor = 'var(--binance-green)';
-                            adviceTitle = "🔥 TARGET TERCAPAI - MOMENTUM KUAT";
-                            adviceDesc = "Harga telah menyentuh Target TP, namun tekanan Buyer masih sangat masif. <b>TETAP HOLD posisi Anda</b> dan geser Stop Loss ke atas (Trailing Stop). Harga kemungkinan berlanjut melesat.";
+                        if (adx > 30 && !rsiOverbought) {
+                            exitAdvice = 'HOLD (TREND EXTENSION)'; actionColor = 'var(--binance-green)';
+                            adviceTitle = "🔥 TARGET TERCAPAI - MOMENTUM EKSPLOSIF";
+                            adviceDesc = "Likuiditas atas tersapu namun tren (ADX) sangat kuat. Gunakan Trailing Stop.";
                         } else {
-                            exitAdvice = 'TAKE PROFIT SEKARANG';
-                            actionColor = 'var(--accent)';
-                            adviceTitle = "✅ TARGET TERCAPAI - MOMENTUM JNUH";
-                            adviceDesc = "Harga telah mencapai area target likuiditas dan indikator momentum mulai melemah. <b>Segera realisasikan PROFIT Anda (Close)</b> sebelum harga terbanting turun (Pullback).";
+                            exitAdvice = 'TAKE PROFIT SEKARANG'; actionColor = 'var(--accent)';
+                            adviceTitle = "✅ TARGET TERCAPAI - MOMENTUM JENUH";
+                            adviceDesc = "Distribusi Volume mulai terlihat. Realisasikan PROFIT sekarang.";
                         }
-                    } else if (buyScore < 45 && pnl > 0) {
-                         exitAdvice = 'TAKE PROFIT DINI';
-                         actionColor = 'var(--accent)';
-                         adviceTitle = "⚠️ MOMENTUM MEMUDAR";
-                         adviceDesc = "Meskipun belum reversal, sinyal LONG mulai kehabisan bensin. <b>Amankan profit yang ada sekarang</b> sebelum tergerus oleh volatilitas acak.";
                     } else {
-                        exitAdvice = 'HOLD POSITION';
-                        actionColor = 'var(--quantum-cyan)';
+                        exitAdvice = 'HOLD POSITION'; actionColor = 'var(--quantum-cyan)';
                         adviceTitle = "🔒 TREN TERKAWAL STABIL";
-                        adviceDesc = `Sinyal konfluensi masih mendukung posisi LONG Anda (Kekuatan Tren: ${buyScore}%). Jangan panik oleh volatilitas minor. <b>Tetap tenang dan tahan posisi (Hold).</b>`;
+                        adviceDesc = `Konfluensi sistem mendukung LONG. Matrix Score: ${buyScore}%. Abaikan noise.`;
                     }
                 } else if (type === 'SELL') {
-                     if (signal === 'BUY' && confidence >= 60) {
-                        exitAdvice = 'EMERGENCY CLOSE';
-                        actionColor = 'var(--binance-red)';
-                        adviceTitle = "🚨 REVERSAL FATAL TERDETEKSI";
-                        adviceDesc = "Algoritma mendeteksi pembalikan tren berlawanan secara kuat (Sinyal berubah menjadi LONG). <b>Segera TUTUP posisi SHORT Anda</b> sekarang untuk menghindari kerugian/likuidasi beruntun.";
-                    } else if (riskBreached || pnl < -10 * lev) {
-                        exitAdvice = 'CUT LOSS';
-                        actionColor = 'var(--danger)';
-                        adviceTitle = "🛡️ PROTEKSI BATAS RISIKO";
-                        adviceDesc = "Harga telah menembus level atap resistensi (Resistance jebol). Modul menyarankan untuk memotong kerugian (Cut Loss) sekarang secara disiplin.";
+                     if (signal === 'BUY' && confidence >= 65) {
+                        exitAdvice = 'EMERGENCY CLOSE'; actionColor = 'var(--binance-red)';
+                        adviceTitle = "🚨 REVERSAL STRUKTURAL TERDETEKSI";
+                        adviceDesc = "Smart money akumulasi terdeteksi (OBV Divergence). Sinyal beralih LONG. <b>TUTUP SHORT Anda.</b>";
+                    } else if (riskBreached || pnl < -15 * lev) {
+                        exitAdvice = 'CUT LOSS'; actionColor = 'var(--danger)';
+                        adviceTitle = "🛡️ PROTEKSI BATAS RISIKO (SL HIT)";
+                        adviceDesc = "Harga menembus batas atas Order Block/Resistance. Potong kerugian secara disiplin.";
                     } else if (hitTpSell) {
-                        if (sellScore >= 75 && !rsiOversold) {
-                            exitAdvice = 'HOLD (TREND EXTENSION)';
-                            actionColor = 'var(--binance-green)';
-                            adviceTitle = "🔥 TARGET TERCAPAI - MOMENTUM KUAT";
-                            adviceDesc = "Harga telah menyentuh Target TP, namun tekanan Seller/Buangan masih sangat masif. <b>TETAP HOLD posisi Anda</b> dan geser Stop Loss ke bawah. Harga kemungkinan lanjut longsor.";
+                        if (adx > 30 && !rsiOversold) {
+                            exitAdvice = 'HOLD (TREND EXTENSION)'; actionColor = 'var(--binance-green)';
+                            adviceTitle = "🔥 TARGET TERCAPAI - MOMENTUM EKSPLOSIF";
+                            adviceDesc = "Likuiditas bawah tersapu namun seller mendominasi (ADX Tinggi). Gunakan Trailing Stop.";
                         } else {
-                            exitAdvice = 'TAKE PROFIT SEKARANG';
-                            actionColor = 'var(--accent)';
+                            exitAdvice = 'TAKE PROFIT SEKARANG'; actionColor = 'var(--accent)';
                             adviceTitle = "✅ TARGET TERCAPAI - MOMENTUM JENUH";
-                            adviceDesc = "Harga telah mencapai area target likuiditas bawah dan sentimen mulai oversold. <b>Segera realisasikan PROFIT Anda (Close)</b> sebelum harga dipantulkan naik oleh paus (Bounce).";
+                            adviceDesc = "Volume beli institusional mulai masuk di area support. Realisasikan PROFIT.";
                         }
-                    } else if (sellScore < 45 && pnl > 0) {
-                         exitAdvice = 'TAKE PROFIT DINI';
-                         actionColor = 'var(--accent)';
-                         adviceTitle = "⚠️ MOMENTUM MEMUDAR";
-                         adviceDesc = "Meskipun belum reversal, sinyal SHORT mulai kehilangan kekuatan. <b>Amankan profit yang ada sekarang</b> sebelum diserang oleh aksi beli balasan.";
                     } else {
-                        exitAdvice = 'HOLD POSITION';
-                        actionColor = 'var(--quantum-cyan)';
+                        exitAdvice = 'HOLD POSITION'; actionColor = 'var(--quantum-cyan)';
                         adviceTitle = "🔒 TREN TERKAWAL STABIL";
-                        adviceDesc = `Sinyal konfluensi masih mendukung posisi SHORT Anda (Kekuatan Tren: ${sellScore}%). Jangan panik oleh volatilitas minor. <b>Tetap tenang dan tahan posisi (Hold).</b>`;
+                        adviceDesc = `Konfluensi sistem mendukung SHORT. Matrix Score: ${sellScore}%. Abaikan noise.`;
                     }
                 }
 
@@ -1900,20 +1940,18 @@
                         <div class="audit-title" style="color:${actionColor}">${adviceTitle}</div>
                         <div style="font-size:11px; color:var(--text-primary); line-height:1.5; margin-top:2px;">${adviceDesc}</div>
                         <div class="audit-row" style="margin-top:6px; border-top:1px dashed rgba(255,255,255,0.05); padding-top:6px;">
-                            <span class="audit-label" style="font-size:10px;">Neurobro Anti-Dilemma</span>
+                            <span class="audit-label" style="font-size:10px;">Institutional Quant System</span>
                             <span class="audit-val" style="font-size:10px; font-weight:normal; color:var(--text-secondary); max-width:65%; text-align:right;">
-                                Ikuti instruksi ini tanpa bias emosional.
+                                Validasi via Order Flow & ADX.
                             </span>
                         </div>
                     </div>
                 `;
 
             } else {
-                
-                // [NEUROBRO RE-DESIGN] New Beautiful Dynamic Cybernetic Log
                 const factorListHtm = activeFactors.length > 0 
                     ? activeFactors.slice(0, 4).map(f => `<div class="factor-item"><span class="factor-icon">▰</span><span>${f}</span></div>`).join('')
-                    : '<div class="factor-item"><span class="factor-icon" style="color:var(--text-secondary)">▱</span><span style="color:var(--text-secondary)">Konsolidasi ketat. Belum ada konfluensi yang terdeteksi secara algoritma.</span></div>';
+                    : '<div class="factor-item"><span class="factor-icon" style="color:var(--text-secondary)">▱</span><span style="color:var(--text-secondary)">Noise Market. Parameter Smart Money belum sinkron (Chop zone).</span></div>';
 
                 let auditColor = 'var(--text-secondary)';
                 let logTitle = `VERIFIKASI LOGIKA: ${confidence}%`;
@@ -1932,11 +1970,13 @@
 
                 let mainActionHtm = '';
                 if (signal === 'BUY' || signal === 'SELL') {
-                    mainActionHtm = `<div style="font-size:12px; margin-bottom:4px; color:var(--text-primary); line-height:1.4;">Mesin mengidentifikasi titik jenuh dan potensi ekspansi arah tren secara matematis. Probabilitas unggul.</div>`;
+                    mainActionHtm = `<div style="font-size:12px; margin-bottom:4px; color:var(--text-primary); line-height:1.4;">Konfluensi Order Block dan Volume (OBV) tervalidasi. Setup eksekusi High-Probability.</div>`;
                 } else {
                     const waitReason = isShock
-                        ? 'Terdeteksi volatilitas abnormal (Shock). Menghindari selip harga (slippage).'
-                        : 'Kekuatan momentum di bawah batas minimal aman (Syarat minimal: ' + minScore + '%).';
+                        ? 'Macro Risk-Off / Volatilitas Abnormal terdeteksi. Menghindari Liquidiation Hunt.'
+                        : !isTrending 
+                            ? 'Fase Akumulasi/Distribusi (Sideways). ADX < 25. Rawan Fakeout.'
+                            : 'Kondisi Syarat Algoritma belum terpenuhi penuh (Skor < ' + minScore + '%).';
                     mainActionHtm = `<div style="font-size:12px; margin-bottom:4px; color:var(--text-secondary); line-height:1.4;">Penahanan eksekusi otomatis. ${waitReason}</div>`;
                 }
 
@@ -1948,26 +1988,26 @@
                     ${mainActionHtm}
                     
                     <div class="audit-section">
-                        <div class="audit-title">KATALIS MOMENTUM</div>
+                        <div class="audit-title">QUANT MULTI-FACTOR ANALYSIS</div>
                         <div class="factor-list">
                             ${factorListHtm}
                         </div>
                     </div>
 
                     <div class="audit-section" style="margin-top: 4px;">
-                        <div class="audit-title">PROYEKSI ALGORITMA</div>
+                        <div class="audit-title">PROYEKSI MANAJEMEN RISIKO (SMC)</div>
                         <div class="audit-row">
                             <span class="audit-label">Target Profit (TP)</span>
                             <span class="audit-val" style="color:var(--binance-green)">${formatPrecision(target)}</span>
                         </div>
                         <div class="audit-row">
-                            <span class="audit-label">Stop Loss (SL)</span>
+                            <span class="audit-label">Dynamic Stop Loss (SL)</span>
                             <span class="audit-val" style="color:var(--binance-red)">${formatPrecision(stopLoss)}</span>
                         </div>
                         <div class="audit-row" style="margin-top:4px; border-top:1px dashed rgba(255,255,255,0.05); padding-top:6px;">
                             <span class="audit-label" style="font-size:10px;">Justifikasi</span>
                             <span class="audit-val" style="font-size:10px; font-weight:normal; color:var(--text-secondary); max-width:65%; text-align:right;">
-                                ${signal !== 'WAIT' ? `Mengincar Liquidity Squeeze (R:R ${riskReward.toFixed(1)})` : 'Sistem menunggu konfirmasi lanjutan.'}
+                                ${signal !== 'WAIT' ? `Optimal R:R = ${riskReward.toFixed(1)} Based on Order Blocks.` : 'Menunggu Setup Validasi Volume.'}
                             </span>
                         </div>
                     </div>
@@ -1980,7 +2020,7 @@
                 signal, confidence, rsi, isShock,
                 price: currPrice, volume: current.volume,
                 volDelta, buyRatio,
-                tp: cgNodes.shortLiq, sl: cgNodes.longLiq,
+                tp: target, sl: stopLoss, // Mapping tp/sl view to calculated Dynamic Targets
                 stopLoss, target, riskReward,
                 exitAdvice, note: aiNote,
                 atr, emaBull,
@@ -2021,13 +2061,14 @@
                             } else { cObj.liqLowSeries[k].setData([]); }
                         }
 
+                        // Use actual dynamic TP/SL for line projections
                         cObj.cgShortSeries.setData([
-                            { time: data[Math.max(0,data.length-30)].time, value: cgNodes.shortLiq },
-                            { time: current.time, value: cgNodes.shortLiq }
+                            { time: data[Math.max(0,data.length-30)].time, value: target },
+                            { time: current.time, value: target }
                         ]);
                         cObj.cgLongSeries.setData([
-                            { time: data[Math.max(0,data.length-30)].time, value: cgNodes.longLiq },
-                            { time: current.time, value: cgNodes.longLiq }
+                            { time: data[Math.max(0,data.length-30)].time, value: stopLoss },
+                            { time: current.time, value: stopLoss }
                         ]);
 
                         cObj.ema50Series.setData(ema50Arr.map((v,idx) => ({time: data[idx].time, value: v})));
@@ -2046,7 +2087,6 @@
             updateMatrixUI(sym);
         }
 
-
         /* =========================================
            HELPER UPDATE UI & REPORT
            ========================================= */
@@ -2062,7 +2102,7 @@
                 noteBoxEl.innerHTML = `
                     <div class="log-header">
                         <div class="ping"></div>
-                        NEUROBRO QUANTUM LOG
+                        INSTITUTIONAL QUANT LOG
                     </div>
                     <div style="width:100%; margin-top:4px;">
                         ${res.note}
@@ -2088,35 +2128,35 @@
             const hasPos = userPositions[sym];
 
             if (res.isShock && !hasPos) {
-                if (tag) { tag.textContent = '⚠️ HIGH VOLATILITY'; tag.style.background = '#2b3139'; tag.style.color = '#fff'; }
-                if (msgEl) { msgEl.textContent = `PERGERAKAN EKSTREM TERDETEKSI`; msgEl.style.color = 'var(--text-secondary)'; }
+                if (tag) { tag.textContent = '⚠️ RISK-OFF SHOCK'; tag.style.background = '#2b3139'; tag.style.color = '#fff'; }
+                if (msgEl) { msgEl.textContent = `VOLATILITAS MAKRO TINGGI. WAIT.`; msgEl.style.color = 'var(--text-secondary)'; }
                 if (visualEl) { visualEl.textContent = '🛑'; visualEl.className = 'visual-arrow prep'; }
                 card.classList.add('fomo-mode');
             } else if (res.signal === 'BUY' && !res.isShock) {
                 if (tag) { tag.textContent = 'BUY EXECUTION'; tag.style.background = 'var(--binance-green)'; tag.style.color = '#fff'; }
-                if (msgEl) { msgEl.textContent = `AKUMULASI TERDETEKSI`; msgEl.style.color = 'var(--text-primary)'; }
+                if (msgEl) { msgEl.textContent = `INSTITUTIONAL ACCUMULATION (SMC)`; msgEl.style.color = 'var(--text-primary)'; }
                 if (visualEl) { visualEl.textContent = '▲'; visualEl.className = 'visual-arrow buy'; }
                 card.classList.add('sniper-mode');
             } else if (res.signal === 'SELL' && !res.isShock) {
                 if (tag) { tag.textContent = 'SELL EXECUTION'; tag.style.background = 'var(--binance-red)'; tag.style.color = '#fff'; }
-                if (msgEl) { msgEl.textContent = `DISTRIBUSI TERDETEKSI`; msgEl.style.color = 'var(--text-primary)'; }
+                if (msgEl) { msgEl.textContent = `INSTITUTIONAL DISTRIBUTION (SMC)`; msgEl.style.color = 'var(--text-primary)'; }
                 if (visualEl) { visualEl.textContent = '▼'; visualEl.className = 'visual-arrow sell'; }
                 card.classList.add('sniper-mode');
             } else {
                 if (hasPos) {
                     if (tag) { tag.textContent = res.isShock ? '⚠️ VOLATILITY GUARD' : 'POSISI AKTIF 🔒'; tag.style.background = '#1e2329'; tag.style.color = 'var(--text-primary)'; }
-                    if (msgEl) { msgEl.textContent = res.isShock ? `WASPADA VOLATILITAS` : `MEMANTAU PERGERAKAN HARGA...`; msgEl.style.color = 'var(--text-secondary)'; }
+                    if (msgEl) { msgEl.textContent = res.isShock ? `MANAJEMEN RISIKO AKTIF` : `MEMANTAU PERGERAKAN HARGA...`; msgEl.style.color = 'var(--text-secondary)'; }
                     card.classList.add('whale-mode');
                 } else {
-                    if (tag) { tag.textContent = 'MENUNGGU KONFIRMASI'; tag.style.background = '#2b3139'; tag.style.color = 'var(--text-secondary)'; }
-                    if (msgEl) { msgEl.textContent = `ANALISIS CG LIQUIDATION MAP...`; msgEl.style.color = 'var(--text-secondary)'; }
+                    if (tag) { tag.textContent = 'MENCARI KONFIRMASI (OBV)'; tag.style.background = '#2b3139'; tag.style.color = 'var(--text-secondary)'; }
+                    if (msgEl) { msgEl.textContent = `ANALISIS ORDER BLOCK & VOLUME...`; msgEl.style.color = 'var(--text-secondary)'; }
                 }
             }
             
             const tpEl = document.getElementById(`tp-${sym}`);
             const slEl = document.getElementById(`sl-${sym}`);
-            if (tpEl) tpEl.textContent = formatPrecision(res.tp);
-            if (slEl) slEl.textContent = formatPrecision(res.sl);
+            if (tpEl) tpEl.textContent = formatPrecision(res.signal !== 'WAIT' ? res.target : res.tp); // Fallback logic
+            if (slEl) slEl.textContent = formatPrecision(res.signal !== 'WAIT' ? res.stopLoss : res.sl); // Fallback logic
 
             const sigDirEl = document.getElementById(`sig-dir-${sym}`);
             const sigConfEl = document.getElementById(`sig-conf-${sym}`);
@@ -2195,48 +2235,48 @@
             const currentBTC = btcData.price;
             const isBull = btcData.emaBull; 
             const baseAtr = btcData.atr || (currentBTC * 0.005);
-            const swingRes = btcData.tp; 
-            const swingSup = btcData.sl; 
+            const swingRes = btcData.target; 
+            const swingSup = btcData.stopLoss; 
             
-            const volDevHigh = currentBTC + (baseAtr * 2.5);
-            const volDevLow = currentBTC - (baseAtr * 2.5);
+            const volDevHigh = currentBTC + (baseAtr * 3.0); // Extreme Deviation
+            const volDevLow = currentBTC - (baseAtr * 3.0);
             const fib1618 = currentBTC * 1.618;
             const fib0618 = currentBTC * 0.618;
 
             elNews.innerHTML = `
-                <div class="ai-item" style="flex: 1;">Tren Makro (EMA 50/200): <b style="color: ${isBull ? 'var(--binance-green)' : 'var(--binance-red)'}">${isBull ? 'BULLISH (Uptrend)' : 'BEARISH (Downtrend)'}</b></div>
-                <div class="ai-item" style="flex: 1;">Volatilitas Harian (ATR): <b>${formatPrecision(baseAtr)} USDT</b> per candle. ${btcData.isShock ? '<span class="ai-highlight-red">Risiko Tinggi</span>' : 'Pasar Stabil'}.</div>
+                <div class="ai-item" style="flex: 1;">Konteks Makro Global (BTC Proxy): <b style="color: ${isBull ? 'var(--binance-green)' : 'var(--binance-red)'}">${isBull ? 'RISK-ON (Accumulation)' : 'RISK-OFF (Distribution)'}</b></div>
+                <div class="ai-item" style="flex: 1;">Volatilitas Teragregasi (ATR): <b>${formatPrecision(baseAtr)} USDT</b>. ${MacroEnvironment.globalRiskStatus === 'SHOCK' ? '<span style="color:var(--danger)">Waspada Noise / V-Shape Reversal Tinggi</span>' : 'Likuiditas dan Order Flow Sehat'}.</div>
                 <div class="ai-item ai-divider" style="margin-bottom: 0;">Sistem Tracker: <b>Memantau ${totalPos} Posisi Terbuka.</b></div>
             `;
 
             elBtcShort.innerHTML = `
                 <div class="proyeksi-row">
-                    <span class="proyeksi-label" style="color:var(--coinglass-orange); font-weight:bold;">Short Liquidation Cluster (Squeeze)</span>
+                    <span class="proyeksi-label" style="color:var(--coinglass-orange); font-weight:bold;">Inst. Dynamic Resistance (Squeeze)</span>
                     <div class="proyeksi-val">
                         <span class="proyeksi-price up">${formatPrecision(swingRes)}</span>
-                        <span class="proyeksi-date">Potensi Kenaikan Cepat</span>
+                        <span class="proyeksi-date">Potensi Supply Zone & Penolakan</span>
                     </div>
                 </div>
                 <div class="proyeksi-row">
-                    <span class="proyeksi-label" style="color:var(--coinglass-orange); font-weight:bold;">Long Liquidation Cluster (Squeeze)</span>
+                    <span class="proyeksi-label" style="color:var(--coinglass-orange); font-weight:bold;">Inst. Dynamic Support (Squeeze)</span>
                     <div class="proyeksi-val">
                         <span class="proyeksi-price down">${formatPrecision(swingSup)}</span>
-                        <span class="proyeksi-date">Potensi Penurunan Cepat</span>
+                        <span class="proyeksi-date">Potensi Demand Zone & Pantulan</span>
                     </div>
                 </div>
                 <div class="ai-divider" style="margin: 5px 0;"></div>
                 <div class="proyeksi-row">
-                    <span class="proyeksi-label">Batas Volatilitas Atas (ATR Breakout)</span>
+                    <span class="proyeksi-label">Upper Order Block / Breakout Point</span>
                     <div class="proyeksi-val">
                         <span class="proyeksi-price up">${formatPrecision(volDevHigh)}</span>
-                        <span class="proyeksi-date">Area Rawan Koreksi (Overbought)</span>
+                        <span class="proyeksi-date">Konfirmasi Tren Bullish Lanjutan</span>
                     </div>
                 </div>
                 <div class="proyeksi-row">
-                    <span class="proyeksi-label">Batas Volatilitas Bawah (ATR Support)</span>
+                    <span class="proyeksi-label">Lower Order Block / Breakdown Point</span>
                     <div class="proyeksi-val">
                         <span class="proyeksi-price down">${formatPrecision(volDevLow)}</span>
-                        <span class="proyeksi-date">Area Pantulan (Oversold)</span>
+                        <span class="proyeksi-date">Konfirmasi Tren Bearish Parah</span>
                     </div>
                 </div>
             `;
@@ -2246,19 +2286,19 @@
                     <span class="proyeksi-label">Target Ekstensi (Fibonacci 1.618)</span>
                     <div class="proyeksi-val">
                         <span class="proyeksi-price up">${formatPrecision(fib1618)}</span>
-                        <span class="proyeksi-date">Level Puncak Makrocycle</span>
+                        <span class="proyeksi-date">Level Puncak Makrocycle BTO</span>
                     </div>
                 </div>
                 <div class="proyeksi-row">
                     <span class="proyeksi-label">Golden Ratio Support (Fib 0.618)</span>
                     <div class="proyeksi-val">
                         <span class="proyeksi-price down">${formatPrecision(fib0618)}</span>
-                        <span class="proyeksi-date">Zona Akumulasi Siklus</span>
+                        <span class="proyeksi-date">Zona Fair Value Gap (FVG)</span>
                     </div>
                 </div>
                 <div class="ai-divider">
                     <div class="ai-item" style="margin-bottom: 0; color:var(--accent);">
-                        <b>STRATEGI OBJEKTIF:</b> Pantau area <b>CoinGlass Liquidation Nodes</b> di ${formatPrecision(swingSup)} dan ${formatPrecision(swingRes)}. Biasanya harga akan bergerak menyerang likuiditas terdekat.
+                        <b>STRATEGI OBJEKTIF:</b> Algoritma fokus pada penolakan *Fake Breakout* (via OBV/Volume) di zona ${formatPrecision(swingSup)} dan ${formatPrecision(swingRes)}. Hanya masuk saat R:R rasio &gt; 1.25.
                     </div>
                 </div>
             `;
@@ -2326,12 +2366,12 @@
                 const base = sym.replace('USDT','');
                 
                 let flowHtml = res.volDelta > 0 
-                    ? `<span style="background:var(--binance-green); color:white; padding:2px 6px; border-radius:4px;">BUY PRESSURE</span>` 
-                    : `<span style="background:var(--binance-red); color:white; padding:2px 6px; border-radius:4px;">SELL PRESSURE</span>`;
+                    ? `<span style="background:var(--binance-green); color:white; padding:2px 6px; border-radius:4px;">INST. BUY 📈</span>` 
+                    : `<span style="background:var(--binance-red); color:white; padding:2px 6px; border-radius:4px;">INST. SELL 📉</span>`;
                 
                 let probHtml = '--';
                 if (res.confidence) {
-                    let color = res.confidence >= 70 ? 'var(--binance-green)' : (res.confidence >= 55 ? 'var(--accent)' : 'var(--binance-red)');
+                    let color = res.confidence >= 70 ? 'var(--binance-green)' : (res.confidence >= 60 ? 'var(--accent)' : 'var(--binance-red)');
                     probHtml = `<b style="color:${color};">${res.confidence}%</b>`;
                 }
 
@@ -2339,7 +2379,7 @@
                     <tr style="border-bottom:1px solid var(--border);">
                         <td><b style="color:var(--text-primary);">${base}</b></td>
                         <td style="font-family:'JetBrains Mono', monospace;">${res.price ? formatPrecision(res.price) : '---'}</td>
-                        <td style="font-size:11px; font-weight:700;">${res.isShock ? '⚠️ SHOCK' : (res.signal || 'WAIT')}</td>
+                        <td style="font-size:11px; font-weight:700; color:${res.signal === 'BUY' ? 'var(--binance-green)' : res.signal === 'SELL' ? 'var(--binance-red)' : 'var(--text-secondary)'}">${res.isShock ? '⚠️ MACRO SHOCK' : (res.signal || 'WAIT')}</td>
                         <td>${probHtml}</td>
                         <td>${flowHtml}</td>
                         <td style="font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;">${res.exitAdvice || '--'}</td>
@@ -2364,7 +2404,7 @@
 
         async function fetchGeminiWithBackoff(payload) {
             const apiKey = localStorage.getItem('zavana_gemini_key') || ""; 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const delays = [1000, 2000, 4000, 8000, 16000];
 
             for (let i = 0; i < 5; i++) {
@@ -2392,25 +2432,25 @@
         }
 
         function generateAIContext(specificCoin = null) {
-            let context = `Anda adalah 'ZAVANA Quantum AI', seorang analis institusional kripto kuantitatif. Jawab dalam bahasa Indonesia yang profesional, padat, dan ringkas.\n`;
-            context += `[KONTEKS PASAR]\nTimeframe: ${CURRENT_TF.label}\n`;
+            let context = `Anda adalah 'ZAVANA Quant AI', sistem analisis institusional kripto yang mengutamakan konsep Volume, ADX, Order Block, dan Smart Money. Jawab layaknya profesional Wall Street dalam bahasa Indonesia.\n`;
+            context += `[KONTEKS PASAR]\nTimeframe: ${CURRENT_TF.label}\nStatus Risiko Makro (BTC Proxy): ${MacroEnvironment.globalRiskStatus}\n`;
             
             if (specificCoin) {
                 let d = analysisResults.get(specificCoin);
                 if (d) {
                     let rsiFixed = d.rsi ? Math.round(d.rsi) : 50;
-                    context += `Fokus Koin: ${specificCoin}\nHarga: ${formatPrecision(d.price)}\nSignal AI: ${d.signal} (Win Probabilitas: ${d.confidence}%)\nRSI: ${rsiFixed}\nTren (EMA): ${d.emaBull ? 'Bullish' : 'Bearish'}\nEstimasi Target Short Liquidation (Atas): ${formatPrecision(d.tp)}\nEstimasi Target Long Liquidation (Bawah): ${formatPrecision(d.sl)}.\nSaran Exit: ${d.exitAdvice}\n`;
-                    context += `\nInstruksi: Berikan ulasan spesifik 1-2 paragraf mengenai kondisi koin ini. Jelaskan apakah aman untuk entry sekarang berdasarkan jarak ke area likuiditas.`;
+                    context += `Fokus Aset: ${specificCoin}\nHarga Terkini: ${formatPrecision(d.price)}\nKeputusan Sistem Algoritma: ${d.signal} (Win Rate Prob.: ${d.confidence}%)\nRSI: ${rsiFixed}\nStruktur: ${d.mktStructure}\nTarget Dynamic Order Block Bawah (SL/Sup): ${formatPrecision(d.stopLoss)}\nTarget Dynamic Order Block Atas (TP/Res): ${formatPrecision(d.target)}.\nSaran Modul Risk Management: ${d.exitAdvice}\n`;
+                    context += `\nInstruksi Tambahan: Jelaskan peluang trading ini menggunakan terminologi Supply/Demand, Momentum (jika ADX tinggi), dan Smart Money Concept. Abaikan analisa koin lain.`;
                 }
             } else {
-                context += `DATA KOIN (Real-Time):\n`;
+                context += `DATA ASSET MATRIX (Real-Time):\n`;
                 COINS.forEach(sym => {
                     let d = analysisResults.get(sym);
                     if (d) {
-                        context += `- ${sym}: Harga ${formatPrecision(d.price)}. Sinyal: ${d.signal} (${d.confidence}%). Tren: ${d.emaBull ? 'Bull' : 'Bear'}. Res(Short Liq): ${formatPrecision(d.tp)}. Sup(Long Liq): ${formatPrecision(d.sl)}.\n`;
+                        context += `- ${sym}: Px ${formatPrecision(d.price)}. Alg: ${d.signal} (${d.confidence}%). Str: ${d.mktStructure}. Din. Sup: ${formatPrecision(d.stopLoss)}. Din. Res: ${formatPrecision(d.target)}.\n`;
                     }
                 });
-                context += `\nInstruksi: Jawab ringkas. Perhatikan target likuidasi (Squeeze potential). Jika probabilitas < 50%, sarankan Wait and See.`;
+                context += `\nInstruksi: Tulis rangkuman pasar secara profesional berdasarkan dominasi sinyal (Bullish/Bearish). Jelaskan apakah market saat ini aman ditradingkan berdasarkan status Risiko Makro (Global Risk Status).`;
             }
             return context;
         }
@@ -2419,12 +2459,12 @@
             const outputBox = document.getElementById('ai-briefing-box');
             const contentBox = document.getElementById('ai-briefing-content');
             outputBox.classList.add('show');
-            contentBox.innerHTML = `<span style="color:var(--text-secondary);">Menganalisis matriks data seluruh koin... Mohon tunggu ✨</span>`;
+            contentBox.innerHTML = `<span style="color:var(--text-secondary);">Mengompilasi data Volume dan Order Block institusional... Mohon tunggu ✨</span>`;
 
             try {
                 const context = generateAIContext();
                 const payload = {
-                    contents: [{ parts: [{ text: "Buatkan saya ringkasan eksekutif pasar kripto saat ini (maksimal 2 paragraf). Soroti 2-3 koin dengan peluang terbaik (Signal terkuat) dan sebutkan area likuidasi utamanya. Format respons Anda menggunakan tag HTML dasar seperti <b>, <ul>, dan <li> tanpa menggunakan markdown code blocks." }] }],
+                    contents: [{ parts: [{ text: "Buatkan laporan eksekutif (Executive Summary) market crypto berdasarkan data kuantitatif saat ini. Highlight aset dengan konfluensi (probabilitas) paling tinggi, serta peringatkan risiko jika status makro sedang 'SHOCK'. Maksimal 2 paragraf padat. Gunakan tag HTML <b>, <ul>, <li> murni." }] }],
                     systemInstruction: { parts: [{ text: context }] }
                 };
 
@@ -2437,7 +2477,7 @@
 
         function askAIAboutCoin(sym) {
             toggleChat(true);
-            const promptMsg = `Analisis mendalam untuk koin ${sym} ✨`;
+            const promptMsg = `Eksekusi Analisis Kuantitatif untuk ${sym} ✨`;
             appendMessage('user', promptMsg);
             
             const typing = document.getElementById('typingIndicator');
@@ -2448,7 +2488,7 @@
                 try {
                     const context = generateAIContext(sym);
                     const payload = {
-                        contents: [{ parts: [{ text: `Tolong berikan analisis teknikal lengkap dan saran manajemen risiko untuk koin ${sym} berdasarkan data live saat ini.` }] }],
+                        contents: [{ parts: [{ text: `Berikan rincian teknikal dan rekomendasi strategi manajemen risiko presisi (SL/TP) untuk koin ${sym} berdasarkan zona Order Block institusional.` }] }],
                         systemInstruction: { parts: [{ text: context }] }
                     };
 
@@ -2544,5 +2584,4 @@
             } 
         }, 200);
     </script>
-</body>
-</html>
+</body></html>
