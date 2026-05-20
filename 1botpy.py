@@ -1,40 +1,42 @@
-# file: bot.py
-from binance.client import Client
 import pandas as pd
 import numpy as np
+import requests
+from binance.client import Client
 
-# === API Key Binance (isi dengan punyamu) ===
-API_KEY = "2pj9OyoSm2Lcy2BXKIxkMkRuMJuGBWuiEPPSsb0XzyxDxqODrj7AM1jEMvcNkY6o"
-API_SECRET = "e0V0bEObM5oTmvgZVlp7MRYHNwT76jJcG9r2YLRpON7dTq1fvvDEshUN8nQMQwSy"
-client = Client(API_KEY, API_SECRET, testnet=False)  # testnet=True kalau mau coba aman
+# --- KONFIGURASI TELEGRAM ---
+# Ganti dengan token dan chat_id Anda
+TELEGRAM_TOKEN = "7780808936:AAGcJIentExOQ95Z2NdN8T7ON_LEzLRG1WI"
+TELEGRAM_CHAT_ID = "2009096437"
 
-# === Daftar Market (dari HTML kamu) ===
-MARKETS = [
-    "BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT","XRPUSDT","ADAUSDT",
-    "DOGEUSDT","TRXUSDT","DOTUSDT","LTCUSDT","SHIBUSDT","AVAXUSDT",
-    "PEPEUSDT","CAKEUSDT"
-]
+# --- INISIALISASI ---
+# API Key dikosongkan agar aman. Jika butuh eksekusi trade, 
+# gunakan variable environment (.env)
+client = Client("", "") 
 
-# === Timeframes ===
-TIMEFRAMES = {
-    "1m": Client.KLINE_INTERVAL_1MINUTE,
-    "15m": Client.KLINE_INTERVAL_15MINUTE,
-    "1h": Client.KLINE_INTERVAL_1HOUR
-}
+MARKETS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "ADAUSDT", 
+           "DOGEUSDT", "TRXUSDT", "DOTUSDT", "LTCUSDT", "SHIBUSDT", "AVAXUSDT", 
+           "PEPEUSDT", "CAKEUSDT"]
 
-# === Fungsi ambil candlestick ===
+TIMEFRAMES = {"1m": Client.KLINE_INTERVAL_1MINUTE, 
+              "15m": Client.KLINE_INTERVAL_15MINUTE, 
+              "1h": Client.KLINE_INTERVAL_1HOUR}
+
+def kirim_telegram(pesan):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    params = {'chat_id': TELEGRAM_CHAT_ID, 'text': pesan}
+    try:
+        requests.get(url, params=params)
+    except:
+        pass
+
 def get_klines(symbol, interval, limit=200):
     raw = client.get_klines(symbol=symbol, interval=interval, limit=limit)
-    df = pd.DataFrame(raw, columns=[
-        "time","open","high","low","close","volume",
-        "close_time","qav","trades","tbb","tbq","ignore"
-    ])
+    df = pd.DataFrame(raw, columns=["time","open","high","low","close","volume", 
+                                    "close_time","qav","trades","tbb","tbq","ignore"])
     df["close"] = df["close"].astype(float)
     return df
 
-# === Indikator EMA & RSI ===
-def EMA(series, period=14):
-    return series.ewm(span=period, adjust=False).mean()
+def EMA(series, period): return series.ewm(span=period, adjust=False).mean()
 
 def RSI(series, period=14):
     delta = series.diff()
@@ -45,37 +47,25 @@ def RSI(series, period=14):
     rs = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
 
-# === Sinyal trading ===
 def make_signal(df):
     df["ema_fast"] = EMA(df["close"], 9)
     df["ema_slow"] = EMA(df["close"], 21)
     df["rsi"] = RSI(df["close"], 14)
     last = df.iloc[-1]
+    if last["ema_fast"] > last["ema_slow"] and last["rsi"] < 70: return "BUY"
+    elif last["ema_fast"] < last["ema_slow"] and last["rsi"] > 30: return "SELL"
+    return "HOLD"
 
-    if last["ema_fast"] > last["ema_slow"] and last["rsi"] < 70:
-        return "BUY"
-    elif last["ema_fast"] < last["ema_slow"] and last["rsi"] > 30:
-        return "SELL"
-    else:
-        return "HOLD"
-
-# === Loop semua market & timeframe ===
-def check_all():
-    signals = {}
+if __name__ == "__main__":
+    print("Menganalisis sinyal...")
     for sym in MARKETS:
-        signals[sym] = {}
         for tf_name, tf in TIMEFRAMES.items():
             try:
                 df = get_klines(sym, tf, 200)
                 sig = make_signal(df)
-                signals[sym][tf_name] = sig
+                if sig != "HOLD":
+                    pesan = f"🚀 Sinyal {sig} pada {sym} ({tf_name})"
+                    print(pesan)
+                    kirim_telegram(pesan)
             except Exception as e:
-                signals[sym][tf_name] = f"ERR: {str(e)}"
-    return signals
-
-if __name__ == "__main__":
-    results = check_all()
-    for sym, tf_signals in results.items():
-        print(f"\n=== {sym} ===")
-        for tf, sig in tf_signals.items():
-            print(f" {tf} : {sig}")
+                print(f"Error {sym}: {e}")
