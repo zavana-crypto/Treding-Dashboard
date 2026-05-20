@@ -10,7 +10,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     
     <!-- [FIX TERAPKAN] Mengunci versi lightweight-charts ke v4.1.1 untuk menghindari error perubahan API di v5+ -->
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
@@ -265,6 +265,49 @@
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typePulse { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
+        /* SETUP MODAL */
+        #zavana-setup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 14, 17, 0.96); z-index: 99999; display: flex; align-items: center; justify-content: center; }
+        #zavana-setup-overlay.hidden { display: none; }
+        .zavana-setup-box { background: #1e2329; border: 1px solid #00e5ff; border-radius: 10px; padding: 36px; max-width: 460px; width: 90%; }
+        .zavana-setup-box h2 { color: #FCD535; margin: 0 0 6px; font-family: 'JetBrains Mono', monospace; font-size: 20px; }
+        .zavana-setup-box p { color: #848e9c; font-size: 13px; line-height: 1.6; margin: 0 0 22px; }
+        .zavana-setup-box label { color: #eaecef; font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+        .zavana-setup-input { width: 100%; background: #0b0e11; border: 1px solid #474d57; color: #eaecef; padding: 12px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 10px; outline: none; box-sizing: border-box; }
+        .zavana-setup-input:focus { border-color: #00e5ff; }
+        .zavana-setup-link { color: #00e5ff; font-size: 12px; display: block; margin-bottom: 22px; text-decoration: none; }
+        .zavana-setup-link:hover { text-decoration: underline; }
+        .zavana-setup-btn { width: 100%; background: #00e5ff; color: #0b0e11; font-weight: 700; padding: 13px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; }
+        .zavana-setup-btn:hover { background: #33eaff; }
+        .zavana-setup-skip { width: 100%; background: transparent; color: #848e9c; font-weight: 600; padding: 10px; border: 1px solid #2b3139; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 8px; font-family: 'IBM Plex Sans', sans-serif; }
+        .zavana-setup-skip:hover { border-color: #848e9c; color: #eaecef; }
+
+        /* =========================================
+           PATCH: AUTO TRADING & REPORT TAB STYLES
+           ========================================= */
+        .auto-status-bar { background: rgba(0, 229, 255, 0.05); border: 1px solid var(--quantum-cyan); padding: 12px 20px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .auto-status-left { display: flex; align-items: center; gap: 15px; font-weight: bold; color: var(--quantum-cyan); }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #474d57; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--binance-green); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        
+        .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .metric-card { background: var(--bg-card); border: 1px solid var(--border); padding: 20px; border-radius: 8px; text-align: center; }
+        .metric-title { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .metric-value { font-size: 24px; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: var(--text-primary); }
+        .metric-value.profit { color: var(--binance-green); }
+        .metric-value.loss { color: var(--binance-red); }
+
+        .portfolio-alloc { display: flex; gap: 10px; margin-top: 15px; }
+        .alloc-bar { height: 8px; border-radius: 4px; transition: width 0.3s; }
+        .alloc-scalp { background: var(--binance-green); }
+        .alloc-swing { background: var(--warning); }
+        .alloc-hold { background: var(--whale-blue); }
+
+        .server-warning { background: rgba(255, 170, 0, 0.1); border: 1px solid var(--warning); color: var(--warning); padding: 10px; border-radius: 4px; font-size: 12px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+
         /* MOBILE ADJUSTMENTS */
         @media (max-width: 768px) {
             .navbar-top { display: none; }
@@ -283,22 +326,6 @@
             #ai-fab { bottom: 90px; right: 20px; width: 50px; height: 50px; }
             #ai-chat-window { bottom: 0; right: 0; width: 100%; height: 100%; border-radius: 0; z-index: 1001; position: fixed; }
         }
-
-        /* SETUP MODAL */
-        #zavana-setup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 14, 17, 0.96); z-index: 99999; display: flex; align-items: center; justify-content: center; }
-        #zavana-setup-overlay.hidden { display: none; }
-        .zavana-setup-box { background: #1e2329; border: 1px solid #00e5ff; border-radius: 10px; padding: 36px; max-width: 460px; width: 90%; }
-        .zavana-setup-box h2 { color: #FCD535; margin: 0 0 6px; font-family: 'JetBrains Mono', monospace; font-size: 20px; }
-        .zavana-setup-box p { color: #848e9c; font-size: 13px; line-height: 1.6; margin: 0 0 22px; }
-        .zavana-setup-box label { color: #eaecef; font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
-        .zavana-setup-input { width: 100%; background: #0b0e11; border: 1px solid #474d57; color: #eaecef; padding: 12px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-bottom: 10px; outline: none; box-sizing: border-box; }
-        .zavana-setup-input:focus { border-color: #00e5ff; }
-        .zavana-setup-link { color: #00e5ff; font-size: 12px; display: block; margin-bottom: 22px; text-decoration: none; }
-        .zavana-setup-link:hover { text-decoration: underline; }
-        .zavana-setup-btn { width: 100%; background: #00e5ff; color: #0b0e11; font-weight: 700; padding: 13px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; }
-        .zavana-setup-btn:hover { background: #33eaff; }
-        .zavana-setup-skip { width: 100%; background: transparent; color: #848e9c; font-weight: 600; padding: 10px; border: 1px solid #2b3139; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 8px; font-family: 'IBM Plex Sans', sans-serif; }
-        .zavana-setup-skip:hover { border-color: #848e9c; color: #eaecef; }
     </style>
 </head>
 <body>
@@ -317,22 +344,32 @@
     </div>
 
     <!-- OVERLAY LOADING -->
-    <div id="loading-overlay">
+    <div id="loading-overlay" style="display: none;">
         <div class="spinner"></div>
-        <div style="font-family:'JetBrains Mono', monospace; color:var(--text-primary); font-size:14px; font-weight:600;">QUANT ENGINE V2: INITIALIZING...</div>
+        <div style="font-family:&#39;JetBrains Mono&#39;, monospace; color:var(--text-primary); font-size:14px; font-weight:600;">QUANT ENGINE V3: INITIALIZING...</div>
     </div>
 
     <div id="toast-container"></div>
 
     <!-- NAVBAR TOP -->
     <header class="navbar-top">
-        <div class="brand">ZAVANA<span>Ockhand Tage Pro v2.0 (High Frequency Edition)</span></div>
+        <div class="brand">ZAVANA<span>Ockhand Tage Pro v3.0 (High Frequency Edition)</span></div>
         <div class="nav-links">
-            <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
-            <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
-            <div class="nav-link" onclick="showPage('settings', this)">Settings</div>
+            <div class="nav-link active" onclick="showPage(&#39;dashboard&#39;, this)">Dashboard</div>
+            <div class="nav-link" onclick="showPage(&#39;screener&#39;, this)">Market Matrix</div>
+            <div class="nav-link" onclick="showPage(&#39;report&#39;, this)">Kinerja</div>
+            <div class="nav-link" onclick="showPage(&#39;settings&#39;, this)">Settings</div>
         </div>
         <div class="nav-actions">
+            <!-- Global Auto Trading Toggle -->
+            <div style="display:flex; align-items:center; gap:8px; border:1px solid var(--border); padding:4px 8px; border-radius:4px; background:var(--bg-base); font-size:11px;">
+                <span style="font-weight:bold; color:var(--text-secondary);">AUTO TRADE</span>
+                <label class="switch">
+                    <input type="checkbox" id="masterAutoToggle" onchange="toggleAutoTrading(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button id="modeToggleBtn" class="action-btn" onclick="toggleTradingMode()" style="border-color: var(--warning); color: var(--warning); font-size:11px; padding:4px 8px;">PAPER MODE</button>
             <button id="audioInitBtn" class="action-btn audio-btn needed" onclick="initAudioContext()">🔊 INIT AUDIO</button>
             <button id="wakeLockBtn" class="action-btn wakelock-btn" onclick="toggleWakeLock()">⚡ ACTIVE</button>
         </div>
@@ -342,13 +379,22 @@
     <main class="main-content">
         <!-- Dashboard Page -->
         <div id="page-dashboard" class="page active">
+            
+            <div class="auto-status-bar" id="autoStatusBar" style="display:none;">
+                <div class="auto-status-left">
+                    <div class="health-dot ok" style="box-shadow: 0 0 10px var(--quantum-cyan); background: var(--quantum-cyan); width:6px; height:6px; border-radius:50%;"></div>
+                    AUTO EXECUTION ACTIVE
+                </div>
+                <div style="font-size: 12px; font-family: 'JetBrains Mono';">Modus: <span id="currentModeLabel" style="color:var(--warning)">PAPER TRADING</span> | Bal: <span id="navBalanceDisplay" style="color:var(--binance-green)">100.00 USDT</span></div>
+            </div>
+
             <div class="toolbar-container">
-                <div id="strategyLabel" class="strategy-badge">MODE: SWING (4H)</div>
-                <div class="toolbar-group" id="tfToolbar"></div>
+                <div id="strategyLabel" class="strategy-badge">MODE: SWING CONFIRM (4H)</div>
+                <div class="toolbar-group" id="tfToolbar"><button class="tf-btn ">1m</button><button class="tf-btn ">15m</button><button class="tf-btn ">1H</button><button class="tf-btn active">4H</button><button class="tf-btn ">6H</button><button class="tf-btn ">1D</button><button class="tf-btn ">1W</button><button class="tf-btn ">1M</button></div>
             </div>
             
             <div class="grid" id="grid">
-                <!-- Data akan di-render via JS -->
+                <!-- Cards Injected via JS -->
             </div>
 
             <div class="dashboard-header-bar">
@@ -362,14 +408,14 @@
             </div>
 
             <div class="ai-report-box" id="dynamicMarketAnalysis">
-                <!-- Data akan di-render via JS -->
+                <!-- Injected via JS -->
             </div>
         </div>
 
         <!-- Screener Page -->
         <div id="page-screener" class="page">
             <h2 style="font-weight:500; margin-bottom:5px; font-size:24px;">Market Matrix Overview</h2>
-            <p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px;">Analisis probabilitas kemenangan berbasis Volume, SMC, ADX, dan Volatilitas v2.0.</p>
+            <p style="color:var(--text-secondary); margin-bottom:20px; font-size:13px;">Analisis probabilitas kemenangan berbasis Volume, SMC, ADX, dan Volatilitas v3.0.</p>
             <div class="table-wrapper" style="overflow-x:auto;">
                 <table>
                     <thead>
@@ -380,7 +426,6 @@
                             <th>Win Prob.</th>
                             <th>Order Flow</th>
                             <th>Matrix Advice</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="screenerTable">
@@ -388,6 +433,86 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- Performance/Kinerja Page (PATCH: MODULAR ADDITION) -->
+        <div id="page-report" class="page">
+            <div class="server-warning">
+                FRONTEND ENGINE CONNECTED. UNTUK BERJALAN 24/7 SAAT PC MATI, PORT LOGIC AUTO-ENGINE INI KE NODE.JS HEADLESS VPS.
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h2 style="font-weight:500; margin:0; font-size:24px;">Trading Performance Report</h2>
+                <select id="reportTimeFilter" style="width: auto; margin:0; padding: 6px 12px; background: var(--bg-hover);" onchange="renderReportDashboard()">
+                    <option value="1">1 Hari Terakhir</option>
+                    <option value="7">7 Hari Terakhir</option>
+                    <option value="30">1 Bulan Terakhir</option>
+                    <option value="all" selected>All Time</option>
+                </select>
+            </div>
+
+            <div class="report-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Total Asset (USDT)</div>
+                    <div class="metric-value" id="repTotalAsset">100.00</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Realized PNL</div>
+                    <div class="metric-value" id="repRealizedPnl">0.00</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Unrealized PNL</div>
+                    <div class="metric-value" id="repUnrealizedPnl">0.00</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Win Rate</div>
+                    <div class="metric-value" id="repWinRate">0.0%</div>
+                </div>
+            </div>
+
+            <div class="ai-report-box" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+                <div class="ai-col">
+                    <h4>💼 PORTFOLIO ALLOCATION (AUTO-ADJUSTED)</h4>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">Distribusi Modal Berdasarkan Market Volatility</div>
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
+                        <span style="color:var(--binance-green)">Scalp: <span id="allocScalpPct">30%</span></span>
+                        <span style="color:var(--warning)">Swing: <span id="allocSwingPct">40%</span></span>
+                        <span style="color:var(--whale-blue)">Hold: <span id="allocHoldPct">30%</span></span>
+                    </div>
+                    <div class="portfolio-alloc">
+                        <div class="alloc-bar alloc-scalp" id="allocBarScalp" style="width: 30%;"></div>
+                        <div class="alloc-bar alloc-swing" id="allocBarSwing" style="width: 40%;"></div>
+                        <div class="alloc-bar alloc-hold" id="allocBarHold" style="width: 30%;"></div>
+                    </div>
+                </div>
+                <div class="ai-col">
+                    <h4>🛡️ RISK MANAGEMENT STATUS</h4>
+                    <div class="proyeksi-row"><span class="proyeksi-label">Max Daily Loss Limit</span><div class="proyeksi-val"><b style="color:var(--binance-red)">2.0%</b></div></div>
+                    <div class="proyeksi-row"><span class="proyeksi-label">Max Open Positions</span><div class="proyeksi-val"><b style="color:var(--text-primary)">3 Pairs</b></div></div>
+                    <div class="proyeksi-row"><span class="proyeksi-label">Trailing Stop Status</span><div class="proyeksi-val"><b style="color:var(--binance-green)">ACTIVE (ATR Based)</b></div></div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">Auto Execution History</h3>
+            <div class="table-wrapper" style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Pair</th>
+                            <th>Action</th>
+                            <th>Entry Price</th>
+                            <th>Exit Price</th>
+                            <th>PNL</th>
+                            <th>Alasan Eksekusi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable">
+                        <!-- History injected here -->
+                    </tbody>
+                </table>
+            </div>
+            <button class="action-btn" style="margin-top:20px; border-color:var(--danger); color:var(--danger);" onclick="AutoEngine.resetPaperAccount()">Reset Akun Paper Trading (100 USDT)</button>
         </div>
 
         <!-- Settings Page -->
@@ -405,26 +530,26 @@
 
     <!-- AI CHAT WIDGET -->
     <div id="ai-fab" onclick="toggleChat()" title="Tanya AI ZAVANA">
-        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
     </div>
 
     <div id="ai-chat-window">
         <div class="chat-header">
             <div class="chat-header-title">
-                <div class="dot"></div> ZAVANA Quantum AI (v2.0 HFT Mode)
+                <div class="dot"></div> ZAVANA Quantum AI (v3.0 HFT Mode)
             </div>
             <div class="close-chat" onclick="toggleChat(false)">×</div>
         </div>
         <div class="chat-body" id="chatBody">
             <div class="chat-msg msg-ai">
-                <p>Halo! Saya mesin Quant AI v2.0. Saya membaca <b>SMC, Coinglass Data Proxies, &amp; Smart Money Momentum</b> secara real-time.</p>
+                <p>Halo! Saya mesin Quant AI v3.0. Saya membaca <b>SMC, Coinglass Data Proxies, &amp; Smart Money Momentum</b> secara real-time.</p>
             </div>
             <div class="typing-indicator" id="typingIndicator">
                 <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
             </div>
         </div>
         <div class="chat-footer">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Ketik pertanyaan strategi Anda..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ketik pertanyaan strategi Anda..." onkeypress="if(event.key === &#39;Enter&#39;) sendChatMessage()">
             <button class="chat-send" onclick="sendChatMessage()">
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
@@ -437,20 +562,24 @@
             <div class="health-dot ok" id="healthDot"></div>
             <span id="healthText" style="color: var(--binance-green);">SYNC: WEBSOCKET LIVE (0ms)</span>
         </div>
-        <div>© ZAVANA Ockhand Tage Pro v2.0 <span>•</span> Multi-Timeframe High Frequency Engine.</div>
+        <div>© ZAVANA Ockhand Tage Pro v3.0 <span>•</span> Multi-Timeframe High Frequency Engine.</div>
     </footer>
 
     <!-- NAVBAR BOTTOM MOBILE -->
     <nav class="navbar-bottom">
-        <div class="mobile-nav-item" onclick="showPage('dashboard', this)">
+        <div class="mobile-nav-item" onclick="showPage(&#39;dashboard&#39;, this)">
             <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg>
             <span>Home</span>
         </div>
-        <div class="mobile-nav-item" onclick="showPage('screener', this)">
+        <div class="mobile-nav-item" onclick="showPage(&#39;screener&#39;, this)">
             <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"></path></svg>
             <span>Matrix</span>
         </div>
-        <div class="mobile-nav-item" onclick="showPage('settings', this)">
+        <div class="mobile-nav-item" onclick="showPage(&#39;report&#39;, this)">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"></path></svg>
+            <span>Report</span>
+        </div>
+        <div class="mobile-nav-item" onclick="showPage(&#39;settings&#39;, this)">
             <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l2.49-1c-.23-.09-.49 0-.61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>
             <span>Config</span>
         </div>
@@ -458,7 +587,7 @@
 
     <script>
         /* =========================================
-           CORE CONFIG & QUANTUM STATE V2
+           CORE CONFIG & QUANTUM STATE V2 (MURNI ASLI)
            ========================================= */
         const DEFAULT_COINS = [
             "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT", 
@@ -479,9 +608,6 @@
         let wakeLock = null;
         let audioCtx = null;
 
-        /* =========================================
-           CORE CONFIG, NARRATIVE & AUTO-DISCOVERY V3
-           ========================================= */
         const PRIORITY_COINS = [
             "BTCUSDT", "ETHUSDT", "SOLUSDT", "LINKUSDT", "SUIUSDT", "ONDOUSDT", 
             "BNBUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "XAUTUSDT", "PAXGUSDT", "ARKMUSDT"
@@ -496,42 +622,35 @@
         };
         
         let NARRATIVE_STRENGTH = {}; 
-        // COINS array sudah diinisialisasi dari localStorage di atas, 
-        // sehingga tidak perlu di-redeclare dengan 'let COINS = ...' untuk menghindari SyntaxError.
 
-        // Mesin pencari momentum dan deteksi smart-money rotasi
+        // Mesin pencari momentum dan deteksi smart-money rotasi (ASLI)
         async function runAutoDiscoveryEngine() {
             try {
                 const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
                 const tickers = await res.json();
                 
-                // 1. Analisis Narrative Strength (Sektor mana yang dibeli Smart Money hari ini?)
                 for (const [narrative, coins] of Object.entries(NARRATIVE_MAP)) {
                     let strength = 0, validCoins = 0;
                     tickers.forEach(t => { if (coins.includes(t.symbol)) { strength += parseFloat(t.priceChangePercent); validCoins++; } });
                     NARRATIVE_STRENGTH[narrative] = validCoins > 0 ? (strength / validCoins) : 0;
                 }
 
-                // 2. Anti-Manipulation Filter (Minimal $30 Juta Volume, Anti-Pump & Dump)
                 let validTickers = tickers.filter(t => t.symbol.endsWith('USDT') && parseFloat(t.quoteVolume) > 30000000);
                 
-                // 3. Dynamic Scoring (Volatilitas x Volume Growth x Narrative)
                 validTickers.forEach(t => {
                     const priceChg = parseFloat(t.priceChangePercent);
                     const volScore = parseFloat(t.quoteVolume) / 10000000;
                     let nScore = 0;
                     for (const [narrative, coins] of Object.entries(NARRATIVE_MAP)) {
-                        if (coins.includes(t.symbol) && NARRATIVE_STRENGTH[narrative] > 5) nScore += 15; // Narrative Boost
+                        if (coins.includes(t.symbol) && NARRATIVE_STRENGTH[narrative] > 5) nScore += 15;
                     }
                     t.discoveryScore = (priceChg * 2.5) + volScore + nScore; 
                 });
 
                 validTickers.sort((a, b) => b.discoveryScore - a.discoveryScore);
                 
-                // 4. Pilih Top 7 Coin Momentum Baru (Rotasi Otomatis)
                 const dynamicDiscoveredCoins = validTickers.filter(t => !PRIORITY_COINS.includes(t.symbol)).slice(0, 7).map(t => t.symbol);
 
-                // 5. Gabungkan dan Urutkan (PRIORITAS WAJIB TETAP DI ATAS)
                 const customCoins = JSON.parse(localStorage.getItem('zavana_coins_fixed_v6') || "[]");
                 let baseCoins = customCoins.length > 0 ? customCoins : PRIORITY_COINS;
                 
@@ -540,7 +659,7 @@
                 
                 if (JSON.stringify(COINS) !== JSON.stringify(newCoinsList)) {
                     COINS = newCoinsList;
-                    return true; // Sinyal struktur UI harus di-refresh karena ada koin baru masuk
+                    return true;
                 }
                 return false;
             } catch (e) {
@@ -549,7 +668,7 @@
             }
         }
 
-        // MULTI-TIMEFRAME ARCHITECTURE V2
+        // TIMEFRAMES
         const TIMEFRAMES = [
             { label: '1m',  ws: '1m',  limit: 1000, agg: 1,     type: 'ULTRA SCALP', emaF: 5, emaS: 13, adxLookback: 7 }, 
             { label: '15m', ws: '15m', limit: 1000, agg: 15,    type: 'SCALP/INTRADAY', emaF: 9, emaS: 21, adxLookback: 10 },
@@ -569,8 +688,6 @@
         const marketData = new Map();
         const MTF_MATRIX = new Map(); 
         const analysisResults = new Map(); 
-
-        // MACRO CONTEXT PROXY
         let MacroEnvironment = { btcTrendDir: 0, btcAtrPct: 0, globalRiskStatus: 'NORMAL' };
 
         function formatPrecision(price) {
@@ -582,8 +699,305 @@
             return price.toFixed(2);
         }
 
+        /* ===================================================================================
+           PATCH: MODULAR AUTO TRADING ENGINE (STATE MACHINE) - TIDAK MERUSAK LOGIC UTAMA
+           =================================================================================== */
+        const AutoEngine = {
+            isActive: false,
+            mode: 'PAPER', 
+            maxOpenPositions: 3,
+            maxRiskPerTradePct: 0.02, 
+            
+            state: {
+                balance: 100.0,
+                allocated: { scalp: 30, swing: 40, hold: 30 },
+                history: [],
+                cooldowns: {} 
+            },
+
+            init() {
+                const savedState = localStorage.getItem('zavana_auto_state');
+                if (savedState) {
+                    this.state = JSON.parse(savedState);
+                } else {
+                    this.saveState();
+                }
+                this.syncPositions();
+                this.updateUI();
+            },
+
+            saveState() {
+                localStorage.setItem('zavana_auto_state', JSON.stringify(this.state));
+                this.updateUI();
+            },
+
+            resetPaperAccount() {
+                if(confirm("Anda yakin ingin mereset akun simulasi kembali ke 100 USDT? Semua riwayat akan dihapus.")) {
+                    this.state.balance = 100.0;
+                    this.state.history = [];
+                    this.state.cooldowns = {};
+                    for(let sym in userPositions) {
+                        if(userPositions[sym].isAuto) delete userPositions[sym];
+                    }
+                    localStorage.setItem('zavana_positions_lux', JSON.stringify(userPositions));
+                    this.saveState();
+                    showToast("Akun Paper Trading direset.");
+                    location.reload();
+                }
+            },
+
+            syncPositions() {
+                localStorage.setItem('zavana_positions_lux', JSON.stringify(userPositions));
+            },
+
+            allocateCapital() {
+                if (MacroEnvironment.globalRiskStatus === 'SHOCK') {
+                    this.state.allocated = { scalp: 50, swing: 30, hold: 20 };
+                } else if (MacroEnvironment.btcTrendDir === 1) {
+                    this.state.allocated = { scalp: 20, swing: 40, hold: 40 }; 
+                } else {
+                    this.state.allocated = { scalp: 30, swing: 40, hold: 30 }; 
+                }
+                this.saveState();
+            },
+
+            processSignal(sym, res, tf, currentPrice, atr) {
+                if (!this.isActive) return;
+
+                const now = Date.now();
+                if (this.state.cooldowns[sym] && now - this.state.cooldowns[sym] < 1800000) return; // 30 menit cooldown per pair setelah close
+
+                const hasPos = userPositions[sym];
+                
+                if (hasPos && hasPos.isAuto) {
+                    const isLong = hasPos.type === 'BUY';
+                    const isShort = hasPos.type === 'SELL';
+                    
+                    if (isLong && res.signal === 'SELL' && res.confidence > 70) {
+                        this.closeTrade(sym, currentPrice, 'Reversal Sinyal Bearish');
+                    } else if (isShort && res.signal === 'BUY' && res.confidence > 70) {
+                        this.closeTrade(sym, currentPrice, 'Reversal Sinyal Bullish');
+                    }
+                    return; 
+                }
+
+                const openPosCount = Object.values(userPositions).filter(p => p.isAuto).length;
+                if (openPosCount >= this.maxOpenPositions) return;
+
+                if (res.signal === 'BUY' || res.signal === 'SELL') {
+                    if (res.confidence >= 65) {
+                        const rr = Math.abs(currentPrice - res.target) / (Math.abs(currentPrice - res.stopLoss) || 1);
+                        if (rr >= 1.5) {
+                            this.executeTrade(sym, res.signal, currentPrice, res.stopLoss, res.target, tf.agg, res.confidence);
+                        }
+                    }
+                }
+            },
+
+            executeTrade(sym, type, price, sl, tp, tfAgg, conf) {
+                this.allocateCapital();
+                
+                let bucket = 'swing';
+                if (tfAgg <= 15) bucket = 'scalp';
+                if (tfAgg >= 240) bucket = 'hold';
+
+                const bucketCapital = this.state.balance * (this.state.allocated[bucket] / 100);
+                const riskAmount = this.state.balance * this.maxRiskPerTradePct;
+                const priceRisk = Math.abs(price - sl) / price;
+                
+                let leverage = Math.ceil(0.05 / priceRisk); 
+                if (leverage > 20) leverage = 20;
+                if (leverage < 1) leverage = 1;
+
+                let marginUsed = riskAmount / priceRisk / leverage;
+                if (marginUsed > bucketCapital * 0.5) marginUsed = bucketCapital * 0.5; 
+
+                if (marginUsed < 1) return; 
+                
+                if (this.mode === 'PAPER') {
+                    userPositions[sym] = {
+                        isAuto: true,
+                        type: type,
+                        entry: price,
+                        sl: sl,
+                        tp: tp,
+                        leverage: leverage,
+                        margin: 'Isolated',
+                        marginUsd: marginUsed,
+                        bucket: bucket,
+                        time: Date.now(),
+                        highestPnl: 0
+                    };
+                    
+                    this.syncPositions();
+                    showToast(`🤖 [AUTO] Opened ${type} on ${sym} @ ${formatPrecision(price)}`);
+                    renderPosBox(sym);
+                } else {
+                    showToast(`⚠️ LIVE TRADING: Hubungkan ke server VPS Node.js`);
+                }
+            },
+
+            onTick(sym, currentPrice) {
+                if (!this.isActive) return;
+                const pos = userPositions[sym];
+                if (!pos || !pos.isAuto) return;
+
+                const isLong = pos.type === 'BUY';
+                const rawPnlPct = isLong ? ((currentPrice - pos.entry) / pos.entry) : ((pos.entry - currentPrice) / pos.entry);
+                const roePct = rawPnlPct * 100 * pos.leverage;
+
+                if (roePct > pos.highestPnl) pos.highestPnl = roePct;
+
+                let closeReason = null;
+
+                if ((isLong && currentPrice <= pos.sl) || (!isLong && currentPrice >= pos.sl)) {
+                    closeReason = 'Stop Loss Terkena';
+                }
+                else if ((isLong && currentPrice >= pos.tp) || (!isLong && currentPrice <= pos.tp)) {
+                    closeReason = 'Target Profit Tercapai';
+                }
+                else if (pos.highestPnl > 15 && roePct < (pos.highestPnl - 10)) {
+                    closeReason = 'Trailing Stop Locked';
+                }
+                else if (Date.now() - pos.time > 86400000 && Math.abs(roePct) < 5) {
+                    closeReason = 'Time Stop';
+                }
+
+                if (closeReason) {
+                    this.closeTrade(sym, currentPrice, closeReason, roePct, pos.marginUsd);
+                }
+            },
+
+            closeTrade(sym, exitPrice, reason) {
+                const pos = userPositions[sym];
+                if(!pos) return;
+
+                const isLong = pos.type === 'BUY';
+                const pnlMultiplier = isLong ? (exitPrice - pos.entry) / pos.entry : (pos.entry - exitPrice) / pos.entry;
+                const realizedPnlUsd = pos.marginUsd * pos.leverage * pnlMultiplier;
+
+                this.state.balance += realizedPnlUsd;
+
+                this.state.history.push({
+                    time: new Date().toLocaleString('id-ID'),
+                    sym: sym,
+                    type: pos.type,
+                    entry: pos.entry,
+                    exit: exitPrice,
+                    pnlUsd: realizedPnlUsd,
+                    pnlPct: (pnlMultiplier * 100 * pos.leverage),
+                    reason: reason
+                });
+
+                this.state.cooldowns[sym] = Date.now();
+
+                delete userPositions[sym];
+                this.syncPositions();
+                this.saveState();
+
+                showToast(`🤖 [AUTO] Closed ${sym} (${reason}). PNL: ${realizedPnlUsd > 0 ? '+' : ''}${realizedPnlUsd.toFixed(2)} USDT`);
+                renderPosBox(sym);
+            },
+
+            updateUI() {
+                const balEl = document.getElementById('navBalanceDisplay');
+                if (balEl) balEl.textContent = `${this.state.balance.toFixed(2)} USDT`;
+                renderReportDashboard();
+            }
+        };
+
+        // GLOBAL AUTOTRADER INTERACTION HOOKS
+        window.toggleAutoTrading = function(isActive) {
+            AutoEngine.isActive = isActive;
+            document.getElementById('autoStatusBar').style.display = isActive ? 'flex' : 'none';
+            showToast(isActive ? "🤖 Mesin Auto-Execution AKTIF." : "🛑 Mesin Auto-Execution DIMATIKAN.");
+        };
+
+        window.toggleTradingMode = function() {
+            if (AutoEngine.mode === 'PAPER') {
+                alert("Mode LIVE TRADING membutuhkan VPS Node.js eksternal untuk API Binance Key yang aman. Berjalan di Paper Trading Mode.");
+            }
+        };
+
+        window.renderReportDashboard = function() {
+            if (!document.getElementById('page-report').classList.contains('active')) return;
+            
+            const timeFilter = document.getElementById('reportTimeFilter').value;
+            let hist = AutoEngine.state.history || [];
+            
+            if (timeFilter !== 'all') {
+                const cutoff = Date.now() - (parseInt(timeFilter) * 86400000);
+                hist = hist.filter(h => {
+                    const parts = h.time.split(/[\s,/:]+/);
+                    if(parts.length < 5) return true;
+                    const dt = new Date(parts[2], parts[1]-1, parts[0], parts[3], parts[4], parts[5]);
+                    return dt.getTime() >= cutoff;
+                });
+            }
+
+            let realizedPnl = 0;
+            let wins = 0;
+            hist.forEach(h => {
+                realizedPnl += h.pnlUsd;
+                if (h.pnlUsd > 0) wins++;
+            });
+
+            const winRate = hist.length > 0 ? (wins / hist.length) * 100 : 0;
+
+            let unrealizedPnl = 0;
+            for(let sym in userPositions) {
+                const pos = userPositions[sym];
+                if(pos.isAuto) {
+                    const cp = analysisResults.get(sym)?.price || pos.entry;
+                    const pM = pos.type === 'BUY' ? (cp - pos.entry)/pos.entry : (pos.entry - cp)/pos.entry;
+                    unrealizedPnl += pos.marginUsd * pos.leverage * pM;
+                }
+            }
+
+            document.getElementById('repTotalAsset').textContent = AutoEngine.state.balance.toFixed(2);
+            const rpEl = document.getElementById('repRealizedPnl');
+            rpEl.textContent = `${realizedPnl >= 0 ? '+' : ''}${realizedPnl.toFixed(2)}`;
+            rpEl.className = `metric-value ${realizedPnl >= 0 ? 'profit' : 'loss'}`;
+
+            const upEl = document.getElementById('repUnrealizedPnl');
+            upEl.textContent = `${unrealizedPnl >= 0 ? '+' : ''}${unrealizedPnl.toFixed(2)}`;
+            upEl.className = `metric-value ${unrealizedPnl >= 0 ? 'profit' : 'loss'}`;
+
+            document.getElementById('repWinRate').textContent = `${winRate.toFixed(1)}%`;
+
+            AutoEngine.allocateCapital();
+            const alloc = AutoEngine.state.allocated;
+            document.getElementById('allocScalpPct').textContent = `${alloc.scalp}%`;
+            document.getElementById('allocSwingPct').textContent = `${alloc.swing}%`;
+            document.getElementById('allocHoldPct').textContent = `${alloc.hold}%`;
+            document.getElementById('allocBarScalp').style.width = `${alloc.scalp}%`;
+            document.getElementById('allocBarSwing').style.width = `${alloc.swing}%`;
+            document.getElementById('allocBarHold').style.width = `${alloc.hold}%`;
+
+            const tbody = document.getElementById('historyTable');
+            let html = '';
+            const sortedHist = [...hist].reverse();
+            sortedHist.forEach(h => {
+                const pColor = h.pnlUsd >= 0 ? 'var(--binance-green)' : 'var(--binance-red)';
+                const aColor = h.type === 'BUY' ? 'var(--binance-green)' : 'var(--binance-red)';
+                html += `
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <td style="font-size:11px; color:var(--text-secondary);">${h.time}</td>
+                        <td><b style="color:var(--text-primary);">${h.sym}</b></td>
+                        <td><span style="color:${aColor}; font-weight:bold;">${h.type}</span></td>
+                        <td style="font-family:'JetBrains Mono';">${formatPrecision(h.entry)}</td>
+                        <td style="font-family:'JetBrains Mono';">${formatPrecision(h.exit)}</td>
+                        <td style="color:${pColor}; font-weight:bold; font-family:'JetBrains Mono';">${h.pnlUsd >= 0 ? '+' : ''}${h.pnlUsd.toFixed(2)} USDT</td>
+                        <td style="font-size:11px; color:var(--text-secondary);">${h.reason}</td>
+                    </tr>
+                `;
+            });
+            if(html === '') html = '<tr><td colspan="7" style="text-align:center; color:var(--text-secondary);">Belum ada riwayat transaksi otomatis.</td></tr>';
+            tbody.innerHTML = html;
+        };
+
         /* =========================================
-           UI & NAVIGATION (SAMA DENGAN V1)
+           UI & NAVIGATION (ASLI)
            ========================================= */
         window.showPage = function(pageId, el) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -593,6 +1007,7 @@
             document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
             if (el && el.classList.contains('mobile-nav-item')) el.classList.add('active');
             if (pageId === 'screener') updateScreenerTable();
+            if (pageId === 'report') renderReportDashboard();
         };
 
         window.quickSwitchTF = function(label) {
@@ -625,14 +1040,13 @@
             } catch (err) {}
         };
 
-        // V3 PATCH: Ubah startApp menjadi Async untuk menahan boot UI sampai riset pasar selesai
         async function startApp() {
-            await runAutoDiscoveryEngine(); // Lakukan riset pasar institusional awal
+            AutoEngine.init(); // Inisialisasi Auto Execution
+            await runAutoDiscoveryEngine(); 
             
             renderToolbar(); renderGrid(); initSettingsForm(); 
             changeTimeframe(CURRENT_TF);
             
-            // Background Auto-Rotation Engine (Setiap 10 Menit cek rotasi koin paus)
             setInterval(async () => {
                 const isRotated = await runAutoDiscoveryEngine();
                 if(isRotated) {
@@ -646,6 +1060,7 @@
             setInterval(updateHealthMonitor, 1000); 
             startMatrixScanner();
             setInterval(updateDynamicMarketAnalysis, 3000); 
+            setInterval(renderReportDashboard, 5000); // Sinkronisasi realtime data report
             setTimeout(() => { document.getElementById('loading-overlay').style.display = 'none'; }, 1000);
         }
 
@@ -678,7 +1093,7 @@
         }
 
         /* =========================================
-           TRACKER / POSITION BOX (SAMA DENGAN V1)
+           TRACKER / POSITION BOX (ASLI DENGAN OPTIMALISASI DETEKSI AUTO)
            ========================================= */
         window.toggleOrderInput = function(sym) {
             const type = document.getElementById(`pos-type-${sym}`).value;
@@ -694,12 +1109,12 @@
             let val = orderType === 'MARKET' ? (analysisResults.get(sym)?.price || 0) : parseFloat(document.getElementById(`pos-entry-input-${sym}`).value);
             
             if (val > 0) {
-                userPositions[sym] = { entry: val, tf: CURRENT_TF.label, type: actionType || 'BUY', margin: marginMode, leverage: leverage };
+                userPositions[sym] = { isAuto: false, entry: val, tf: CURRENT_TF.label, type: actionType || 'BUY', margin: marginMode, leverage: leverage };
                 localStorage.setItem('zavana_positions_lux', JSON.stringify(userPositions));
                 renderPosBox(sym);
                 const hist = marketData.get(sym);
                 if (hist) analyzeQuantum(sym, hist, CURRENT_TF, false, false);
-                showToast(`Posisi ${sym} Berhasil Disimpan!`);
+                showToast(`[MANUAL] Posisi ${sym} Berhasil Disimpan!`);
             }
         };
 
@@ -726,14 +1141,17 @@
                 const pnlSign = pnl >= 0 ? '+' : '';
                 const typeColor = pos.type === 'SELL' ? 'var(--binance-red)' : 'var(--binance-green)';
                 
+                // Penanda Label Auto / Manual
+                const labelMod = pos.isAuto ? '<span style="background:var(--quantum-cyan); color:#000; padding:2px 4px; border-radius:2px; font-size:9px; font-weight:bold;">AUTO</span>' : '<span style="background:#474d57; color:#fff; padding:2px 4px; border-radius:2px; font-size:9px; font-weight:bold;">MANUAL</span>';
+
                 posBox.innerHTML = `
                     <div class="pos-active-state show" style="flex-direction:column; align-items:stretch;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #2b3139; padding-bottom:8px;">
-                            <span style="font-size:11px; color:var(--text-secondary); font-weight:bold;"><span style="color:${typeColor}">${pos.type === 'SELL' ? 'SHORT' : 'LONG'}</span> • <span style="color:var(--text-primary);">${(pos.margin || 'Cross').toUpperCase()} ${(pos.leverage || 20)}x</span></span>
+                            <span style="font-size:11px; color:var(--text-secondary); font-weight:bold;">${labelMod} <span style="color:${typeColor}">${pos.type === 'SELL' ? 'SHORT' : 'LONG'}</span> • <span style="color:var(--text-primary);">${(pos.margin || 'Cross').toUpperCase()} ${(pos.leverage || 20)}x</span></span>
                             <button class="btn-pos clear" style="padding:0 8px; height: 24px; font-size:10px; flex:none;" onclick="clearPos('${sym}')">TUTUP</button>
                         </div>
                         <div style="display:flex; justify-content:space-between;">
-                            <div style="display:flex; flex-direction:column;"><span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">Entry Price</span><span style="color:var(--text-primary); font-family:'JetBrains Mono', monospace; font-weight:bold; font-size:14px;">${formatPrecision(pos.entry)}</span></div>
+                            <div style="display:flex; flex-direction:column;"><span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">Entry Price</span><span style="color:var(--text-primary); font-family:&#39;JetBrains Mono&#39;, monospace; font-weight:bold; font-size:14px;">${formatPrecision(pos.entry)}</span></div>
                             <div style="display:flex; flex-direction:column; align-items:flex-end;"><span style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">ROE (PNL%)</span><span class="pnl-val ${pnlClass}">${pnlSign}${pnl.toFixed(2)}%</span></div>
                         </div>
                     </div>`;
@@ -744,18 +1162,18 @@
                         <div class="tracker-col-right"><input type="number" id="pos-lev-${sym}" class="tracker-input with-suffix" value="20" min="1" max="125"><span class="tracker-suffix">x</span></div>
                     </div>
                     <div class="tracker-row">
-                        <div class="tracker-col-left"><select id="pos-type-${sym}" class="tracker-input" onchange="toggleOrderInput('${sym}')"><option value="MARKET">Market</option><option value="LIMIT">Limit</option></select></div>
-                        <div class="tracker-col-right"><input type="number" id="pos-entry-input-${sym}" class="tracker-input" placeholder="Otomatis Market" disabled></div>
+                        <div class="tracker-col-left"><select id="pos-type-${sym}" class="tracker-input" onchange="toggleOrderInput(&#39;${sym}&#39;)"><option value="MARKET">Market</option><option value="LIMIT">Limit</option></select></div>
+                        <div class="tracker-col-right"><input type="number" id="pos-entry-input-${sym}" class="tracker-input" placeholder="Otomatis Market" disabled=""></div>
                     </div>
                     <div class="tracker-row" style="margin-bottom: 0;">
-                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos('${sym}', 'BUY')">OPEN LONG</button>
-                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos('${sym}', 'SELL')">OPEN SHORT</button>
+                        <button class="btn-pos" style="background:rgba(14,203,129,0.1); color:var(--binance-green); border-color:var(--binance-green);" onclick="setPos(&#39;${sym}&#39;, &#39;BUY&#39;)">OPEN LONG</button>
+                        <button class="btn-pos" style="background:rgba(246,70,93,0.1); color:var(--binance-red); border-color:var(--binance-red);" onclick="setPos(&#39;${sym}&#39;, &#39;SELL&#39;)">OPEN SHORT</button>
                     </div>`;
             }
         }
 
         /* =========================================
-           CARD GRID & CHART RENDERING
+           CARD GRID & CHART RENDERING (ASLI)
            ========================================= */
         function renderGrid() {
             const grid = document.getElementById('grid'); grid.innerHTML = ''; 
@@ -773,10 +1191,10 @@
                     <div class="sniper-tag" id="tag-${s}">INIT...</div>
                     <div class="card-header">
                         <div class="coin-meta">
-                            <img src="${icon}" class="coin-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg=='">
+                            <img src="${icon}" class="coin-icon" onerror="this.src=&#39;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkNENTM1Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPjwvc3ZnPg==&#39;">
                             <div>
                                 <div class="coin-title" style="${isGold ? 'color:var(--gold)' : ''}">${base}/USDT</div>
-                                <div class="coin-vol">Vol: <span id="vol-${s}">--</span> | Flow: <span id="delta-${s}" style="font-weight:bold;">--</span></div>
+                                <div class="coin-vol">Vol: <span id="vol-${s}">--</span> | Flow: <span id="delta-${s}" style="font-weight: bold;">--</span></div>
                             </div>
                         </div>
                         <div class="price-meta"><div class="price-main" id="price-${s}">---</div><div class="price-change" id="chg-${s}">--%</div></div>
@@ -807,7 +1225,7 @@
                         </div>
                     </div>
                     <div class="market-note-box">
-                        <div class="log-header"><div class="ping"></div>INSTITUTIONAL QUANT LOG</div>
+                        <div class="log-header"><div class="ping"></div>HFT QUANT LOG v3.0</div>
                         <div id="note-${s}" style="width:100%; margin-top:4px;"><span style="color:var(--text-secondary); font-size:11px;">Sinkronisasi data awal...</span></div>
                     </div>
                 `;
@@ -842,7 +1260,7 @@
         }
 
         /* =========================================
-           DATA FETCH & ADAPTIVE THROTTLE (V2 UPDATE)
+           DATA FETCH & ADAPTIVE THROTTLE (ASLI)
            ========================================= */
         async function changeTimeframe(tf) {
             CURRENT_TF = tf;
@@ -936,18 +1354,16 @@
             const cObj = charts.get(sym);
             if (cObj) requestAnimationFrame(() => { try { cObj.series.update(candle); } catch (e) {} });
             
-            // [V2] VOLATILITY-ADAPTIVE THROTTLE: Detect Volume Spikes to execute calculations faster
             const now = Date.now();
             const lastCalc = lastCalcTime.get(sym) || 0;
             const prevCandle = arr.length > 1 ? arr[arr.length-2] : candle;
-            const isVolSpike = candle.volume > (prevCandle.volume * 2.0); // 200% volume burst
+            const isVolSpike = candle.volume > (prevCandle.volume * 2.0); 
             
-            // Scalping TF requires faster processing. If 1m or 15m, drop throttle to 500ms on spikes
             let throttleLimit = 2000;
             if (CURRENT_TF.agg <= 15) {
-                throttleLimit = isVolSpike ? 400 : 1200; // Ultra fast response for scalping
+                throttleLimit = isVolSpike ? 400 : 1200; 
             } else if (CURRENT_TF.agg <= 60) {
-                throttleLimit = isVolSpike ? 800 : 2000; // Intraday
+                throttleLimit = isVolSpike ? 800 : 2000; 
             }
 
             if (isNewCandle || (now - lastCalc) > throttleLimit) {
@@ -955,10 +1371,13 @@
                  analyzeQuantum(sym, arr, CURRENT_TF, false, false); 
                  if (userPositions[sym]) renderPosBox(sym);
             }
+
+            // AUTO-TICK CHECK (HOOOK UNTUK AUTO TP / SL)
+            if (typeof AutoEngine !== 'undefined') AutoEngine.onTick(sym, candle.close);
         }
 
         /* =========================================
-           ADVANCED MATHEMATICS & SMC (V2 UPDATE)
+           ADVANCED MATHEMATICS & SMC (ASLI)
            ========================================= */
         function calcATRArray(data, period) {
             let results = new Array(data.length).fill(0), trs = new Array(data.length).fill(0);
@@ -1026,41 +1445,29 @@
             return { obBull, obBear };
         }
 
-        // [V2] SYNTHETIC COINGLASS DATA MAPPING
-        // Creates a proxy of Open Interest & Liquidation Imbalance based on pure order flow
         function calcCoinglassProxies(data, i, obvArr, atr) {
             const current = data[i];
             const takerBuy = current.takerBuy || 0;
             const takerSell = current.volume - takerBuy;
             const volDelta = takerBuy - takerSell;
-            
-            // Synthetic OI Trend: Expanding volume with trending price = Rising OI
             const isOIRising = current.volume > (data[i-1]?.volume || 0) * 1.2;
             
-            // Synthetic Liquidation Map Estimation
             let liqImbalance = 'NEUTRAL';
             let shortHeat = 0, longHeat = 0;
-
-            // Look back 15 candles for cluster build up
             for (let j = Math.max(0, i-15); j <= i; j++) {
-                if (data[j].close < data[j].open) shortHeat += data[j].volume; // Sellers building up
-                else longHeat += data[j].volume; // Buyers building up
+                if (data[j].close < data[j].open) shortHeat += data[j].volume;
+                else longHeat += data[j].volume;
             }
 
             if (shortHeat > longHeat * 1.5) liqImbalance = 'HEAVY_SHORTS (Squeeze Up Potential)';
             else if (longHeat > shortHeat * 1.5) liqImbalance = 'HEAVY_LONGS (Flush Down Potential)';
 
-            // Identify stops
             const shortLiq = current.high + (atr * 1.2);
             const longLiq = current.low - (atr * 1.2);
 
             return { volDelta, isOIRising, liqImbalance, shortLiq, longLiq };
         }
 
-        /* =========================================
-           PROFESSIONAL TRADING ENGINE V2.0
-           (Adaptive Logic & Score Modification)
-           ========================================= */
         function detectMarketStructure(data, lookback=60) {
             const end = data.length - 1; const start = Math.max(3, end - lookback);
             let swingHighs = [], swingLows = [];
@@ -1077,17 +1484,14 @@
             return { structure, swingHighs, swingLows };
         }
 
-        // [AKURASI] SMC Liquidity Sweep Detector (Stop Hunt Finder)
         function detectLiquiditySweep(current, swingHighs, swingLows) {
             let sweepBull = false, sweepBear = false;
             let sweptLow = 0, sweptHigh = 0;
             
-            // Cek apakah harga nge-wick ke bawah swing low sebelumnya lalu tutup di atasnya (Stop Hunt Ritel)
             for(let i = Math.max(0, swingLows.length - 3); i < swingLows.length; i++) {
                 let sl = swingLows[i].price;
                 if (current.low < sl && current.close > sl) { sweepBull = true; sweptLow = sl; break; }
             }
-            // Cek apakah harga nge-wick ke atas swing high sebelumnya lalu tutup di bawahnya
             for(let i = Math.max(0, swingHighs.length - 3); i < swingHighs.length; i++) {
                 let sh = swingHighs[i].price;
                 if (current.high > sh && current.close < sh) { sweepBear = true; sweptHigh = sh; break; }
@@ -1095,16 +1499,18 @@
             return { sweepBull, sweepBear, sweptLow, sweptHigh };
         }
 
+        /* =========================================
+           PROFESSIONAL TRADING ENGINE & ANALYZER (ASLI DENGAN HOOK AUTO ENGINE)
+           ========================================= */
         function analyzeQuantum(sym, data, tf = CURRENT_TF, isBackground = false, fullScan = false) {
             if (data.length < 60) return;
 
             const i = data.length - 1;
             const current = data[i]; const prev = i > 0 ? data[i-1] : current;
 
-            // [V2] Adaptive Timeframe Metrics
             const emaFastArr = calcEMA(data, tf.emaF);
             const emaSlowArr = calcEMA(data, tf.emaS);
-            const ema200Arr = calcEMA(data, 200); // Baseline Macro
+            const ema200Arr = calcEMA(data, 200); 
             const vwapArr = calcVWAP(data);
             const atrArr = calcATRArray(data, 14);
             const obvArr = calcOBV(data);
@@ -1114,28 +1520,23 @@
             const sweeps = detectLiquiditySweep(current, mktStr.swingHighs, mktStr.swingLows);
 
             const emaFast = emaFastArr[i], emaSlow = emaSlowArr[i], ema200 = ema200Arr[i];
-            const atr = atrArr[i], obv = obvArr[i], obvPrev = obvArr[i-1];
+            const atr = atrArr[i], obv = obvArr[i];
             const adx = adxData.adx[i], pDI = adxData.pDI[i], mDI = adxData.mDI[i];
             const vwap = vwapArr[i];
 
-            // [AKURASI] Deteksi Anomali Volume untuk Filter Fake Breakout
             const volAvg = i > 3 ? (data[i-1].volume + data[i-2].volume + data[i-3].volume) / 3 : current.volume;
             const isHighVolume = current.volume > (volAvg * 1.3); 
 
-            // [V3 ANTI-MANIPULATION & WASH TRADING FILTER]
             let isWashTrading = false;
-            // Jika volume melonjak ekstrim (>400%) tapi harga stagnan = Manipulasi / Wash Trading
             if (current.volume > (volAvg * 4) && Math.abs(current.close - current.open) < (atr * 0.3)) {
                 isWashTrading = true;
             }
 
-            // [V3 AUTO-CLASSIFICATION SYSTEM] Kategorisasi target gaya trading
             let tradeClass = "SWING TRADING";
             if (tf.agg <= 15 && (atr / current.close) > 0.005) tradeClass = "ULTRA-SCALP / HFT";
             else if (tf.agg <= 60) tradeClass = "INTRADAY MOMENTUM";
             else if (tf.agg >= 1440) tradeClass = "LONG TERM HOLD";
 
-            // [V2] Coinglass Synthetic Logic Integration
             const cgProxies = calcCoinglassProxies(data, i, obvArr, atr);
 
             if (sym === "BTCUSDT") {
@@ -1144,31 +1545,26 @@
                 MacroEnvironment.globalRiskStatus = (adx > 45 || current.high - current.low > atr * 3) ? 'SHOCK' : 'NORMAL';
             }
 
-            // [V2] DYNAMIC SCORING ENGINE
             let buyScore = 0, sellScore = 0;
             let buyFactors = [], sellFactors = [];
 
             const isUptrend = emaFast > emaSlow;
-            const priceAboveVwap = current.close > vwap;
             const structureBull = mktStr.structure === 'BULLISH';
             const structureBear = mktStr.structure === 'BEARISH';
-            const isTrending = adx > 20; // Lowered from 25 for earlier detection
+            const isTrending = adx > 20; 
 
-            // 1. Trend Alignment (Weight scales with TF)
             if (isUptrend && current.close > ema200) { buyScore += 15; buyFactors.push(`Trend Sejalan (EMA ${tf.emaF}/${tf.emaS})`); }
             if (!isUptrend && current.close < ema200) { sellScore += 15; sellFactors.push(`Trend Bearish (EMA ${tf.emaF}/${tf.emaS})`); }
             
             if (structureBull) { buyScore += 15; buyFactors.push('Market Structure: Higher Highs'); }
             if (structureBear) { sellScore += 15; sellFactors.push('Market Structure: Lower Lows'); }
 
-            // 2. Coinglass Proxy / Order Flow (Liquidity & Open Interest)
             if (cgProxies.volDelta > 0 && cgProxies.isOIRising) { buyScore += 20; buyFactors.push('🔥 Taker Buy Spiking + OI Naik (Smart Money Long)'); }
             if (cgProxies.volDelta < 0 && cgProxies.isOIRising) { sellScore += 20; sellFactors.push('🩸 Taker Sell Spiking + OI Naik (Smart Money Short)'); }
             
             if (cgProxies.liqImbalance === 'HEAVY_SHORTS (Squeeze Up Potential)') { buyScore += 15; buyFactors.push('⚠️ Coinglass: Heavy Shorts (Short Squeeze Target)'); }
             if (cgProxies.liqImbalance === 'HEAVY_LONGS (Flush Down Potential)') { sellScore += 15; sellFactors.push('⚠️ Coinglass: Heavy Longs (Liquidation Target)'); }
 
-            // 3. Momentum & Breakout (DIPERKETAT DENGAN VOLUME FILTER ANTI-FAKE)
             if (isTrending) {
                 if (pDI > mDI && pDI > 25) { 
                     if (isHighVolume) { buyScore += 10; buyFactors.push(`Momentum Valid & High Volume`); }
@@ -1179,61 +1575,47 @@
                     else { sellScore -= 15; sellFactors.push(`⚠️ Weak Momentum (Fake Breakout Risk)`); }
                 }
             } else {
-                // Adaptive Volatility: Don't penalize ranging if volume is exploding
                 if (Math.abs(cgProxies.volDelta) > (current.volume * 0.4)) {
                     buyFactors.push('⚠️ Early Breakout Attempt'); sellFactors.push('⚠️ Early Breakdown Attempt');
                 } else {
-                    buyScore -= 10; sellScore -= 10; // True chop zone
+                    buyScore -= 10; sellScore -= 10; 
                 }
             }
 
-            // 4. Institutional SMC (Order Blocks & Liquidity Sweeps)
             if (orderBlk.obBull && current.low <= orderBlk.obBull.top && current.close >= orderBlk.obBull.bottom) { buyScore += 20; buyFactors.push('✅ Pantulan Akurat Bullish Order Block'); }
             if (orderBlk.obBear && current.high >= orderBlk.obBear.bottom && current.close <= orderBlk.obBear.top) { sellScore += 20; sellFactors.push('🚫 Rejeksi Akurat Bearish Order Block'); }
             
-            // [AKURASI] Tambahan probabilitas besar untuk Liquidity Sweep yang tervalidasi Smart Money Flow
-            if (sweeps.sweepBull && cgProxies.volDelta > 0) { 
-                buyScore += 30; buyFactors.push('🐋 Bullish Liquidity Sweep (Stop Hunt Valid)'); 
-            }
-            if (sweeps.sweepBear && cgProxies.volDelta < 0) { 
-                sellScore += 30; sellFactors.push('🐋 Bearish Liquidity Sweep (Stop Hunt Valid)'); 
-            }
+            if (sweeps.sweepBull && cgProxies.volDelta > 0) { buyScore += 30; buyFactors.push('🐋 Bullish Liquidity Sweep (Stop Hunt Valid)'); }
+            if (sweeps.sweepBear && cgProxies.volDelta < 0) { sellScore += 30; sellFactors.push('🐋 Bearish Liquidity Sweep (Stop Hunt Valid)'); }
 
-            // [V3 NARRATIVE & ANTI-MANIPULATION SCORING]
             for (const [narrative, coins] of Object.entries(NARRATIVE_MAP)) {
                 if (coins.includes(sym) && NARRATIVE_STRENGTH[narrative] > 4) {
-                    buyScore += 15; buyFactors.push(`🚀 Narrative Boost (${narrative.replace('_', ' ')} Ekosistem)`);
+                    buyScore += 15; buyFactors.push(`🚀 Narrative Boost (${narrative.replace('_', ' ')})`);
                 }
             }
             if (isWashTrading) {
-                buyScore -= 40; sellScore -= 40; // Penalti hancur
+                buyScore -= 40; sellScore -= 40;
                 buyFactors.push("🚨 Anti-Manipulasi: Wash Trading / Fake Volume Terdeteksi");
                 sellFactors.push("🚨 Anti-Manipulasi: Wash Trading / Fake Volume Terdeteksi");
             }
 
-            // VWAP Bounce Logic (Especially powerful on 1m/15m/1h)
             if (tf.agg <= 60) {
                 if (current.low <= vwap && current.close > vwap) { buyScore += 15; buyFactors.push('✅ VWAP Bounce Support'); }
                 if (current.high >= vwap && current.close < vwap) { sellScore += 15; sellFactors.push('🚫 VWAP Rejection'); }
             }
 
-            // Normalize
             buyScore = Math.max(0, Math.min(100, buyScore));
             sellScore = Math.max(0, Math.min(100, sellScore));
 
-            // [V2] DYNAMIC THRESHOLDS BASED ON VOLATILITY
-            // In high volatility, we enter faster (lower threshold). In chop, we wait (higher threshold).
             const isVolatile = (current.high - current.low) > (atr * 1.5);
-            const baseThreshold = tf.agg <= 15 ? 55 : (tf.agg <= 240 ? 60 : 65); // Faster TF = Lower threshold to catch moves
+            const baseThreshold = tf.agg <= 15 ? 55 : (tf.agg <= 240 ? 60 : 65);
             const activeThreshold = isVolatile ? baseThreshold - 5 : baseThreshold + 5; 
 
-            // [V2] MULTI-LEVEL SIGNAL LOGIC
             let confidence = Math.max(buyScore, sellScore);
             let dominantDir = buyScore > sellScore ? 'LONG' : (sellScore > buyScore ? 'SHORT' : 'NEUTRAL');
             let signal = 'WAIT', subSignal = 'STANDBY';
             let activeFactors = dominantDir === 'LONG' ? buyFactors : sellFactors;
 
-            // Signal Mapping to maintain UI Compatibility
             if (confidence >= activeThreshold + 15) {
                 signal = dominantDir === 'LONG' ? 'BUY' : 'SELL';
                 subSignal = 'HIGH_CONFIDENCE';
@@ -1242,31 +1624,26 @@
                 subSignal = 'CONFIRMED';
             } else if (confidence >= activeThreshold - 15) {
                 signal = 'WAIT';
-                subSignal = 'PRE_SIGNAL'; // Early Momentum
+                subSignal = 'PRE_SIGNAL'; 
             } else {
                 signal = 'WAIT';
-                subSignal = 'WATCHLIST'; // Just monitoring
+                subSignal = 'WATCHLIST'; 
             }
 
             const currPrice = current.close;
-            let stopLoss, target, riskReward;
+            let stopLoss, target;
 
-            // [AKURASI] Dynamic Target & Precision Stop Loss
             if (dominantDir === 'LONG') {
-                // Jika terjadi sweep, SL sangat ketat tepat di bawah wick sweep. Jika tidak, pakai dasar OB/Liq Pool.
                 stopLoss = sweeps.sweepBull ? (current.low - (atr * 0.2)) : (orderBlk.obBull ? Math.min(orderBlk.obBull.bottom, cgProxies.longLiq) : cgProxies.longLiq);
                 target = cgProxies.shortLiq > currPrice ? cgProxies.shortLiq : currPrice + (atr * 2);
             } else {
-                // Jika terjadi sweep, SL sangat ketat tepat di atas wick sweep.
                 stopLoss = sweeps.sweepBear ? (current.high + (atr * 0.2)) : (orderBlk.obBear ? Math.max(orderBlk.obBear.top, cgProxies.shortLiq) : cgProxies.shortLiq);
                 target = cgProxies.longLiq < currPrice ? cgProxies.longLiq : currPrice - (atr * 2);
             }
-            riskReward = Math.abs(currPrice - target) / (Math.abs(currPrice - stopLoss) || 1);
 
-            // [V2] UI DATA PREPARATION
             let aiNote = '', exitAdvice = 'NEUTRAL', actionColor = 'var(--text-secondary)';
             const userPos = userPositions[sym];
-            const isShock = MacroEnvironment.globalRiskStatus === 'SHOCK' && tf.agg > 60; // Ignore macro shock for micro scalping
+            const isShock = MacroEnvironment.globalRiskStatus === 'SHOCK' && tf.agg > 60; 
 
             if (userPos) {
                 const entry = userPos.entry, type = userPos.type || 'BUY', lev = userPos.leverage || 1;
@@ -1287,9 +1664,11 @@
                     else { exitAdvice = 'HOLD POSITION'; actionColor = 'var(--quantum-cyan)'; }
                 }
 
+                const labelMod = userPos.isAuto ? '<span style="background:var(--quantum-cyan); color:#000; padding:2px 4px; border-radius:2px; font-size:9px; margin-right:4px;">AUTO</span>' : '';
+
                 aiNote = `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-                        <span style="background:rgba(255, 255, 255, 0.1); color:var(--text-primary); padding:3px 6px; border-radius:4px; font-weight:bold; border: 1px solid var(--text-secondary);">🔒 AKTIF</span>
+                        <span style="background:rgba(255, 255, 255, 0.1); color:var(--text-primary); padding:3px 6px; border-radius:4px; font-weight:bold; border: 1px solid var(--text-secondary);">${labelMod} 🔒 AKTIF</span>
                         <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--quantum-cyan); font-weight:700;">ROE: ${pnlStr}</span>
                     </div>
                     <div style="font-size:12px; margin-bottom:4px; color:var(--text-primary); line-height:1.4;">Eksekusi: <b style="color:${actionColor}">${exitAdvice}</b></div>
@@ -1338,10 +1717,13 @@
 
             updateCardUI(sym, lastState, tf);
             updateMatrixUI(sym);
+
+            // HOOK: AUTO ENGINE SIGNAL PROCESSING
+            if (typeof AutoEngine !== 'undefined') AutoEngine.processSignal(sym, lastState, tf, current.close, atr);
         }
 
         /* =========================================
-           UI UPDATER (SAMA DENGAN V1, ADAPTED FOR V2 DATA)
+           UI UPDATERS (ASLI)
            ========================================= */
         function updateCardUI(sym, res, tf) {
             const card = document.getElementById(`card-${sym}`);
@@ -1349,7 +1731,7 @@
             const msgEl = document.getElementById(`msg-${sym}`), visualEl = document.getElementById(`visual-${sym}`);
             
             const noteBoxEl = card.querySelector('.market-note-box');
-            if (noteBoxEl) noteBoxEl.innerHTML = `<div class="log-header"><div class="ping"></div>HFT QUANT LOG v2</div><div style="width:100%; margin-top:4px;">${res.note}</div>`;
+            if (noteBoxEl) noteBoxEl.innerHTML = `<div class="log-header"><div class="ping"></div>HFT QUANT LOG v3.0</div><div style="width:100%; margin-top:4px;">${res.note}</div>`;
             
             const volEl = document.getElementById(`vol-${sym}`), deltaEl = document.getElementById(`delta-${sym}`);
             if (volEl) volEl.textContent = (res.volume || 0).toLocaleString(undefined, {maximumFractionDigits: 0});
@@ -1382,7 +1764,7 @@
                 card.classList.add('sniper-mode');
             } else {
                 if (hasPos) {
-                    if (tag) { tag.textContent = 'POSISI AKTIF 🔒'; tag.style.background = '#1e2329'; tag.style.color = 'var(--text-primary)'; }
+                    if (tag) { tag.textContent = hasPos.isAuto ? 'AUTO POSISI AKTIF 🔒' : 'POSISI AKTIF 🔒'; tag.style.background = hasPos.isAuto ? 'var(--quantum-cyan)' : '#1e2329'; tag.style.color = hasPos.isAuto ? '#000' : 'var(--text-primary)'; }
                     if (msgEl) { msgEl.textContent = `MANAJEMEN RISIKO AKTIF`; msgEl.style.color = 'var(--text-secondary)'; }
                     card.classList.add('whale-mode');
                 } else {
@@ -1441,10 +1823,10 @@
             
             el.innerHTML = `
                 <div class="ai-col">
-                    <h4>📰 MACRO STATE V2</h4>
+                    <h4>📰 MACRO STATE V3</h4>
                     <div class="ai-item">Arah Macro (BTC Proxy): <b style="color: ${MacroEnvironment.btcTrendDir === 1 ? 'var(--binance-green)' : 'var(--binance-red)'}">${MacroEnvironment.btcTrendDir === 1 ? 'BULLISH' : (MacroEnvironment.btcTrendDir === -1 ? 'BEARISH' : 'NEUTRAL')}</b></div>
                     <div class="ai-item">Status Risiko: <b>${MacroEnvironment.globalRiskStatus}</b></div>
-                    <div class="ai-item ai-divider">Sistem: <b>Memantau ${Object.keys(userPositions).length} Posisi.</b></div>
+                    <div class="ai-item ai-divider">Sistem: <b>Memantau ${Object.keys(userPositions).length} Posisi Aktif.</b></div>
                 </div>
                 <div class="ai-col">
                     <h4>📊 COINGLASS PROXY</h4>
@@ -1453,15 +1835,19 @@
                 </div>
                 <div class="ai-col">
                     <h4>🎯 STRATEGY ADVICE</h4>
-                    <div class="ai-item" style="color:var(--accent);">Mesin HFT v2.0 aktif. Sinyal sekarang bersifat adaptif terhadap volatilitas. <b>Gunakan time-frame 15m - 1H untuk akurasi intraday terbaik.</b></div>
+                    <div class="ai-item" style="color:var(--accent);">Mesin HFT v3.0 siap. Auto-Trading dapat mengelola Stop Loss (ATR) dan Trailing Stop otomatis secara dinamis.</div>
                 </div>
             `;
         }
 
         /* =========================================
-           SETTINGS, AI CHAT & BOOT (SAMA DENGAN V1)
+           SETTINGS, AI CHAT & BRIEFING BOOT (ASLI)
            ========================================= */
-        function initSettingsForm() { document.getElementById('coinInput').value = COINS.join(', '); document.getElementById('geminiApiKey').value = localStorage.getItem('zavana_gemini_key') || ""; }
+        function initSettingsForm() { 
+            document.getElementById('coinInput').value = COINS.join(', '); 
+            document.getElementById('geminiApiKey').value = localStorage.getItem('zavana_gemini_key') || ""; 
+        }
+        
         window.saveSettings = function() {
             try {
                 const inputKey = document.getElementById('geminiApiKey').value.trim();
@@ -1490,7 +1876,6 @@
                         <td>${res.confidence ? `<b style="color:${res.confidence>=60 ? 'var(--binance-green)' : 'var(--text-primary)'};">${res.confidence}%</b>` : '--'}</td>
                         <td>${flowHtml}</td>
                         <td style="font-size:11px;">${res.exitAdvice || '--'}</td>
-                        <td><a href="https://www.binance.com/en/futures/${sym}" target="_blank" style="color:var(--text-primary); text-decoration:none; font-weight:bold;">TRADE</a></td>
                     </tr>
                 `;
             });
@@ -1514,7 +1899,98 @@
         };
         window.zavanaSetupSkip = function() { document.getElementById('zavana-setup-overlay').classList.add('hidden'); };
 
+        /* =========================================
+           GEMINI GENERATIVE ENGINE LOGICS (ASLI)
+           ========================================= */
+        async function generateMarketBriefing() {
+            const key = localStorage.getItem('zavana_gemini_key') || "";
+            const box = document.getElementById('ai-briefing-box');
+            const cont = document.getElementById('ai-briefing-content');
+            box.className = "show";
+            cont.textContent = "Sedang menganalisis kondisi pasar global...";
+
+            if(!key) {
+                cont.innerHTML = `<span style="color:var(--danger)">Gemini API Key belum dikonfigurasi di Pengaturan atau modal setup awal.</span>`;
+                return;
+            }
+
+            const prompt = `Anda adalah HFT Quant Trading Analyst. Analisis pasar saat ini berdasarkan watchlist: ${COINS.join(', ')}. Trend BTC saat ini adalah ${MacroEnvironment.btcTrendDir === 1 ? 'Bullish' : 'Bearish'}. Berikan briefing singkat, logis, dan taktis dalam Bahasa Indonesia maksimal 4 kalimat.`;
+            
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: [{parts: [{text: prompt}]}]
+                    })
+                });
+                const data = await res.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Gagal mendapatkan respons.";
+                cont.textContent = text;
+            } catch(e) {
+                cont.textContent = "Terjadi kesalahan saat memanggil Gemini API.";
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const query = input.value.trim();
+            if(!query) return;
+
+            const chatBody = document.getElementById('chatBody');
+            const indicator = document.getElementById('typingIndicator');
+
+            // Append User Message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-msg msg-user';
+            userMsg.innerHTML = `<p>${query}</p>`;
+            chatBody.insertBefore(userMsg, indicator);
+            input.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Show Typing
+            indicator.className = 'typing-indicator show';
+
+            const key = localStorage.getItem('zavana_gemini_key') || "";
+            if(!key) {
+                setTimeout(() => {
+                    indicator.className = 'typing-indicator';
+                    const botMsg = document.createElement('div');
+                    botMsg.className = 'chat-msg msg-ai';
+                    botMsg.innerHTML = `<p>Maaf, Gemini API Key belum diset di pengaturan. Harap masukkan kunci API Anda terlebih dahulu agar saya bisa memproses sinyal Quant secara penuh.</p>`;
+                    chatBody.insertBefore(botMsg, indicator);
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }, 1000);
+                return;
+            }
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: [{parts: [{text: `Anda adalah ZAVANA Quantum AI v3.0. Jawab pertanyaan pengguna secara taktis berbasis SMC & Order Flow: "${query}"`}]}]
+                    })
+                });
+                const data = await res.json();
+                const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, sistem mengalami kendala jaringan.";
+                
+                indicator.className = 'typing-indicator';
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chat-msg msg-ai';
+                botMsg.innerHTML = `<p>${reply}</p>`;
+                chatBody.insertBefore(botMsg, indicator);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            } catch(e) {
+                indicator.className = 'typing-indicator';
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chat-msg msg-ai';
+                botMsg.innerHTML = `<p>Error memproses asisten AI.</p>`;
+                chatBody.insertBefore(botMsg, indicator);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        }
+
         const checkLib = setInterval(() => { if (typeof LightweightCharts !== 'undefined') { clearInterval(checkLib); startApp(); } }, 200);
     </script>
-</body>
-</html>
+</body></html>
