@@ -546,7 +546,7 @@
 
     <!-- AI CHAT WIDGET -->
     <div id="ai-fab" onclick="toggleChat()" title="Tanya AI ZAVANA">
-        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
     </div>
 
     <div id="ai-chat-window">
@@ -779,7 +779,7 @@
                     // Normal / Bearish / Sideways
                     this.state.allocated = { scalp: 25, intraday: 25, swing: 30, hold: 20 }; 
                 }
-                this.saveState();
+                // Removed this.saveState() to prevent infinite loop.
             },
 
             // 2. SIGNAL PROCESSING (Entry Gate)
@@ -2204,7 +2204,7 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        contents: [{parts: [{text: `Anda adalah ZAVANA Quantum AI v3.0, spesialis manajemen risiko dan compounding. Jawab: "${query}"`}]}]
+                        contents: [{parts: [{text: `Anda adalah ZAVANA Quantum AI v3.0. Jawab pertanyaan pengguna secara taktis berbasis SMC & Order Flow: "${query}"`}]}]
                     })
                 });
                 const data = await res.json();
