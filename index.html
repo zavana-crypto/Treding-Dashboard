@@ -10,8 +10,9 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-    <link href="./ZAVANA - Ockhand Tage_files/css2" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     
+    <!-- PATCH: Locked library version to 4.1.1 to prevent upstream breaking changes from v5+ causing 'addCandlestickSeries is not a function' -->
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 
     <style>
@@ -326,9 +327,9 @@
     <header class="navbar-top">
         <div class="brand">ZAVANA<span>Ockhand Tage Pro v3.0 (Portfolio Edition)</span></div>
         <div class="nav-links">
-            <div class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</div>
+            <div class="nav-link" onclick="showPage('dashboard', this)">Dashboard</div>
             <div class="nav-link" onclick="showPage('screener', this)">Market Matrix</div>
-            <div class="nav-link" onclick="showPage('report', this)">Kinerja / Portofolio</div>
+            <div class="nav-link active" onclick="showPage('report', this)">Kinerja / Portofolio</div>
             <div class="nav-link" onclick="showPage('settings', this)">Settings</div>
         </div>
         <div class="nav-actions">
@@ -349,9 +350,9 @@
     <!-- MAIN CONTENT -->
     <main class="main-content">
         <!-- Dashboard Page -->
-        <div id="page-dashboard" class="page active">
+        <div id="page-dashboard" class="page">
             
-            <div class="auto-status-bar" id="autoStatusBar" style="display: flex;">
+            <div class="auto-status-bar" id="autoStatusBar" style="display: none;">
                 <div class="auto-status-left">
                     <div class="health-dot ok" style="box-shadow: 0 0 10px var(--quantum-cyan); background: var(--quantum-cyan); width:6px; height:6px; border-radius:50%;"></div>
                     AUTO EXECUTION ACTIVE
@@ -360,13 +361,11 @@
             </div>
 
             <div class="toolbar-container">
-                <div id="strategyLabel" class="strategy-badge">MODE: SWING CONFIRM (4H)</div>
+                <div id="strategyLabel" class="strategy-badge">MODE: INTRADAY (1H)</div>
                 <div class="toolbar-group" id="tfToolbar"></div>
             </div>
             
-            <div class="grid" id="grid">
-                <!-- Cards Injected via JS -->
-            </div>
+            <div class="grid" id="grid"></div>
 
             <div class="dashboard-header-bar">
                 <h3>📊 Market Overview &amp; Tracker</h3>
@@ -379,7 +378,21 @@
             </div>
 
             <div class="ai-report-box" id="dynamicMarketAnalysis">
-                <!-- Injected AI Macro Analysis -->
+                <div class="ai-col">
+                    <h4>📰 MACRO STATE V3</h4>
+                    <div class="ai-item">Arah Macro (BTC Proxy): <b>NEUTRAL</b></div>
+                    <div class="ai-item">Status Risiko: <b>NORMAL</b></div>
+                    <div class="ai-item ai-divider">Sistem: <b>Memantau 0 Posisi Aktif.</b></div>
+                </div>
+                <div class="ai-col">
+                    <h4>📊 COINGLASS PROXY</h4>
+                    <div class="proyeksi-row"><span class="proyeksi-label">Liq Pool Atas</span><div class="proyeksi-val"><span class="proyeksi-price up">0.00</span></div></div>
+                    <div class="proyeksi-row"><span class="proyeksi-label">Liq Pool Bawah</span><div class="proyeksi-val"><span class="proyeksi-price down">0.00</span></div></div>
+                </div>
+                <div class="ai-col">
+                    <h4>🎯 STRATEGY ADVICE</h4>
+                    <div class="ai-item" style="color:var(--accent);">Mesin HFT v3.0 siap. Auto-Trading dapat mengelola SL berbasis (ATR) &amp; Compounding secara dinamis.</div>
+                </div>
             </div>
         </div>
 
@@ -407,13 +420,13 @@
         </div>
 
         <!-- Performance/Kinerja Page (PATCH: PROFESIONAL PORTFOLIO MANAGEMENT) -->
-        <div id="page-report" class="page">
+        <div id="page-report" class="page active">
             <div class="server-warning">
                 FRONTEND ENGINE CONNECTED. UNTUK BERJALAN 24/7 SAAT PC MATI, PORT LOGIC AUTO-ENGINE INI KE NODE.JS HEADLESS VPS.
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                <h2 style="font-weight:500; margin:0; font-size:24px;">Futures Portfolio & Margin</h2>
+                <h2 style="font-weight:500; margin:0; font-size:24px;">Futures Portfolio &amp; Margin</h2>
                 <select id="reportTimeFilter" style="width: auto; margin:0; padding: 6px 12px; background: var(--bg-hover);" onchange="renderReportDashboard()">
                     <option value="1">1 Hari Terakhir</option>
                     <option value="7">7 Hari Terakhir</option>
@@ -437,15 +450,15 @@
                 </div>
                 <div class="metric-card">
                     <div class="metric-title">Unrealized PNL</div>
-                    <div class="metric-value" id="repUnrealizedPnl">0.00</div>
+                    <div class="metric-value profit" id="repUnrealizedPnl">0.00</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-title">Margin Ratio</div>
-                    <div class="metric-value" id="repMarginRatio">0.00%</div>
+                    <div class="metric-value" id="repMarginRatio" style="color: var(--text-primary);">0.00%</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-title">Realized PNL</div>
-                    <div class="metric-value" id="repRealizedPnl">+0.00</div>
+                    <div class="metric-value profit" id="repRealizedPnl">0.00</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-title">Win Rate</div>
@@ -478,7 +491,7 @@
                         </tr>
                     </thead>
                     <tbody id="activePositionsTable">
-                        <!-- Active Positions injected here -->
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-secondary); padding:20px;">Tidak ada posisi Futures yang aktif.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -486,7 +499,7 @@
             <div class="ai-report-box" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
                 <div class="ai-col">
                     <h4>💼 ADAPTIVE PORTFOLIO ALLOCATION</h4>
-                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">Distribusi Modal Dinamis Berdasarkan Tren Makro & Volatilitas</div>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">Distribusi Modal Dinamis Berdasarkan Tren Makro &amp; Volatilitas</div>
                     <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
                         <span style="color:var(--binance-green)">Scalp: <span id="allocScalpPct">25%</span></span>
                         <span style="color:var(--intraday-purple)">Intra: <span id="allocIntradayPct">25%</span></span>
@@ -524,7 +537,7 @@
                         </tr>
                     </thead>
                     <tbody id="historyTable">
-                        <!-- History injected here -->
+                        <tr><td colspan="8" style="text-align:center; color:var(--text-secondary);">Belum ada riwayat transaksi otomatis.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -546,7 +559,7 @@
 
     <!-- AI CHAT WIDGET -->
     <div id="ai-fab" onclick="toggleChat()" title="Tanya AI ZAVANA">
-        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"></path></svg>
     </div>
 
     <div id="ai-chat-window">
@@ -591,7 +604,7 @@
             <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"></path></svg>
             <span>Matrix</span>
         </div>
-        <div class="mobile-nav-item" onclick="showPage('report', this)">
+        <div class="mobile-nav-item active" onclick="showPage('report', this)">
             <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"></path></svg>
             <span>Report</span>
         </div>
@@ -833,8 +846,10 @@
                 const slDistancePct = Math.abs(price - sl) / price;
                 
                 // ANTI-LIQUIDATION LEVERAGE CALCULATION
-                let safeLeverage = Math.floor(0.15 / slDistancePct); 
-                if (safeLeverage > 50) safeLeverage = 50; 
+                // PATCH: Dynamic Leverage Capping by Timeframe (Capital Protection)
+                let maxLevConfig = tfAgg <= 15 ? 50 : (tfAgg <= 60 ? 30 : 15);
+                let safeLeverage = Math.floor(0.15 / slDistancePct);
+                if (safeLeverage > maxLevConfig) safeLeverage = maxLevConfig;
                 if (safeLeverage < 1) safeLeverage = 1;
 
                 // Hitung Margin (Margin = Modal yang dijaminkan)
@@ -919,11 +934,12 @@
 
                 // DYNAMIC TRAILING STOP (Berbasis ATR, bukan sekadar persentase tetap)
                 // Jika harga bergerak searah profit > 1.5 ATR, pindahkan SL ke Entry (Breakeven).
-                // Jika bergerak > 3 ATR, pindahkan SL ke (Extreme Price - 1.5 ATR) untuk Long, dst.
+                // Jika bergerak > 3 ATR, pindahkan SL ke (Extreme Price - 1.2 ATR) untuk mengamankan profit
                 if (isLong) {
                     const priceMoveAtr = (currentPrice - pos.entry) / atr;
                     if (priceMoveAtr > 3) {
-                        const newTrailingSl = pos.highestPrice - (atr * 1.5);
+                        // PATCH: Adaptive Trailing Step
+                        const newTrailingSl = pos.highestPrice - (atr * 1.2); // Tighter lock when deep in profit
                         if (newTrailingSl > pos.sl) pos.sl = newTrailingSl; // Naikkan Trailing Stop
                     } else if (priceMoveAtr > 1.5) {
                         if (pos.sl < pos.entry) pos.sl = pos.entry + (atr * 0.1); // Breakeven + fee cover
@@ -931,7 +947,8 @@
                 } else {
                     const priceMoveAtr = (pos.entry - currentPrice) / atr;
                     if (priceMoveAtr > 3) {
-                        const newTrailingSl = pos.lowestPrice + (atr * 1.5);
+                        // PATCH: Adaptive Trailing Step
+                        const newTrailingSl = pos.lowestPrice + (atr * 1.2); // Tighter lock when deep in profit
                         if (newTrailingSl < pos.sl) pos.sl = newTrailingSl; // Turunkan Trailing Stop
                     } else if (priceMoveAtr > 1.5) {
                         if (pos.sl > pos.entry) pos.sl = pos.entry - (atr * 0.1);
@@ -1280,8 +1297,13 @@
         function updateHealthMonitor() {
             const now = Date.now(); const diff = now - lastSocketTime;
             const dot = document.getElementById('healthDot'); const txt = document.getElementById('healthText');
-            if (diff > 10000) {
-                dot.className = 'health-dot bad'; txt.textContent = `SYNC: Terputus...`; txt.style.color = 'var(--danger)';
+            
+            // PATCH: Auto-Healing Socket (12 seconds without data = force reconnect)
+            if (diff > 12000) { 
+                dot.className = 'health-dot bad'; txt.textContent = `SYNC: RECONNECTING...`; txt.style.color = 'var(--danger)';
+                if (binanceSocket && binanceSocket.readyState === WebSocket.OPEN) {
+                    binanceSocket.close(); // Memaksa event onclose() untuk memicu koneksi ulang
+                }
             } else {
                 dot.className = 'health-dot ok'; txt.textContent = binanceSocket ? `SYNC: WEBSOCKET LIVE (0ms)` : `SYNC: FAST POLLING (1s)`; txt.style.color = 'var(--binance-green)';
             }
@@ -1869,12 +1891,13 @@
             const currPrice = current.close;
             let stopLoss, target;
 
+            // PATCH: Institutional Stop Loss Routing (0.5 ATR pad to prevent spread stop-outs) & Enhanced 2.5 Target RR
             if (dominantDir === 'LONG') {
-                stopLoss = sweeps.sweepBull ? (current.low - (atr * 0.2)) : (orderBlk.obBull ? Math.min(orderBlk.obBull.bottom, cgProxies.longLiq) : cgProxies.longLiq);
-                target = cgProxies.shortLiq > currPrice ? cgProxies.shortLiq : currPrice + (atr * 2);
+                stopLoss = sweeps.sweepBull ? (current.low - (atr * 0.5)) : (orderBlk.obBull ? Math.min(orderBlk.obBull.bottom, cgProxies.longLiq) : cgProxies.longLiq);
+                target = cgProxies.shortLiq > currPrice ? cgProxies.shortLiq : currPrice + (atr * 2.5);
             } else {
-                stopLoss = sweeps.sweepBear ? (current.high + (atr * 0.2)) : (orderBlk.obBear ? Math.max(orderBlk.obBear.top, cgProxies.shortLiq) : cgProxies.shortLiq);
-                target = cgProxies.longLiq < currPrice ? cgProxies.longLiq : currPrice - (atr * 2);
+                stopLoss = sweeps.sweepBear ? (current.high + (atr * 0.5)) : (orderBlk.obBear ? Math.max(orderBlk.obBear.top, cgProxies.shortLiq) : cgProxies.shortLiq);
+                target = cgProxies.longLiq < currPrice ? cgProxies.longLiq : currPrice - (atr * 2.5);
             }
 
             let aiNote = '', exitAdvice = 'NEUTRAL', actionColor = 'var(--text-secondary)';
@@ -2228,5 +2251,6 @@
 
         const checkLib = setInterval(() => { if (typeof LightweightCharts !== 'undefined') { clearInterval(checkLib); startApp(); } }, 200);
     </script>
+
 
 </body></html>
